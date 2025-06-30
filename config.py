@@ -24,6 +24,8 @@ MONGODB_URI = os.getenv("MONGODB_URI")
 PINECONE_INDEX_NAME: str = "timeline-events"
 SIMILARITY_THRESHOLD: float = 0.8
 TOP_K_RESULTS: int = 5
+CLOUD_PROVIDER: str = "aws"
+CLOUD_REGION: str = "us-east-1"
 
 # ---------------------------------------------------------------------------
 # OpenAI
@@ -31,6 +33,7 @@ TOP_K_RESULTS: int = 5
 DEEP_RESEARCH_MODEL: str = "o4-mini-deep-research"
 EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
+METRIC: str = "cosine"
 
 # ---------------------------------------------------------------------------
 # Perplexity

@@ -1,3 +1,66 @@
-#third step - research
-#for each event received from step two, use perplexity to research the event and write a completed article with: headline, summary, story and sources (provided by perplexity default in the output).
-# so if we have 7 events, we make 7 different api calls to perplexity one for each event.
+from __future__ import annotations
+
+from typing import List
+
+from clients.perplexity import PerplexityClient
+from utils.logger import logger
+from utils.models import Article, Event
+
+
+_ARTICLE_PROMPT_TEMPLATE = (
+    "Using the information provided below, craft a well-structured news article.\n\n"
+    "Event:\n{event_summary}\n\n"
+    "The article must be returned strictly as JSON with the following keys:\n"
+    "headline (max 20 words), summary (80-120 words), story (400-600 words), sources (array of URLs)."
+)
+
+
+def research_events(events: List[Event], *, perplexity_client: PerplexityClient) -> List[Article]:
+    """Calls Perplexity once per event to generate full articles."""
+
+    articles: list[Article] = []
+
+    for event in events:
+        prompt = _ARTICLE_PROMPT_TEMPLATE.format(event_summary=event.summary)
+        response_text = perplexity_client.research(prompt)
+        logger.debug("Perplexity response for '%s': %s", event.title, response_text)
+        article = _parse_article_from_response(response_text)
+        articles.append(article)
+
+    logger.info("Generated %d articles.", len(articles))
+    return articles
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+import json
+import re
+
+_FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
+
+
+def _parse_article_from_response(response_text: str) -> Article:
+    """Parses the JSON (with optional fences) returned by Perplexity."""
+    # Ideally no fences due to structured output, but guard just in case
+    match = _FENCE_REGEX.search(response_text)
+    json_str = match.group(1) if match else response_text
+
+    try:
+        data = json.loads(json_str)
+    except json.JSONDecodeError as exc:  # pragma: no cover
+        logger.warning("Failed to parse article JSON: %s", exc)
+        data = {
+            "headline": "",
+            "summary": "",
+            "story": response_text,
+            "sources": [],
+        }
+
+    return Article(
+        headline=data.get("headline", ""),
+        summary=data.get("summary", ""),
+        story=data.get("story", ""),
+        sources=data.get("sources", []),
+    )

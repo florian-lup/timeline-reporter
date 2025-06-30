@@ -1,8 +1,73 @@
-#first step - discovery
-#use openai deep search to get the latest news from the web
-#make 2 calls to the openai deep research api, one to discover climate, environment & natural disasters, and one to discover major geopolitical events
-#prompt it to return a list with the latest news articles and a 300 word summary of each finding
-#documentation: https://platform.openai.com/docs/guides/deep-research
+from __future__ import annotations
+
+import json
+import re
+from typing import List
+
+from clients.openai import OpenAIClient
+from utils.logger import logger
+from utils.models import Event
+from utils.date import get_today_formatted
+
+
+# ---------------------------------------------------------------------------
+# Prompts
+# ---------------------------------------------------------------------------
+_DISCOVERY_INSTRUCTIONS = (
+    "You are tasked with identifying significant news about {topic} "
+    "from today {date}. Provide your answer strictly as JSON with the "
+    "following format:\n\n[\n  {{\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }}\n]\n\nDo not include any additional keys, commentary, or markdown."
+)
+
+# Older versions of the model sometimes wrap JSON in markdown fences; we keep a
+# fallback regex but expect pure JSON due to `response_format=json_object`.
+_FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def discover_events(openai_client: OpenAIClient) -> List[Event]:
+    """Discovers events for two broad topics and returns a combined list."""
+
+    topics = [
+        "climate, environment and natural disasters",
+        "major geopolitical events",
+    ]
+
+    today = get_today_formatted()
+    raw_events: list[Event] = []
+    for topic in topics:
+        prompt = _DISCOVERY_INSTRUCTIONS.format(topic=topic, date=today)
+        response_text = openai_client.deep_research(prompt)
+        logger.debug("Discovery response for '%s': %s", topic, response_text)
+        events = _parse_events_from_response(response_text)
+        raw_events.extend(events)
+
+    logger.info("Discovered %d events before deduplication.", len(raw_events))
+    return raw_events
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _parse_events_from_response(response_text: str) -> List[Event]:
+    """Extracts JSON from the model response and maps to Event objects."""
+    # Some models wrap JSON in markdown triple-backticks; strip them if needed.
+    match = _FENCE_REGEX.search(response_text)
+    json_blob = match.group(1) if match else response_text
+
+    try:
+        data = json.loads(json_blob)
+    except json.JSONDecodeError as exc:  # pragma: no cover
+        logger.warning("Failed to parse JSON, returning empty list. Error: %s", exc)
+        return []
+
+    # We no longer request or store source links at the discovery stage.
+    events: list[Event] = [Event(title=item["title"], summary=item["summary"]) for item in data]
+    return events
 
 
 
