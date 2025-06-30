@@ -1,0 +1,5 @@
+python-dotenv
+openai
+pymongo
+pinecone
+httpx
