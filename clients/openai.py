@@ -32,7 +32,7 @@ class OpenAIClient:
     # ---------------------------------------------------------------------
     # Public helpers
     # ---------------------------------------------------------------------
-    def deep_research(self, topic_prompt: str, *, max_tokens: int = 2048) -> str:
+    def deep_research(self, topic_prompt: str) -> str:
         """Runs the deep-research model with a user-supplied prompt.
 
         The low-level response is returned (i.e. the string content). Parsing is
@@ -41,27 +41,44 @@ class OpenAIClient:
 
         logger.info("Running deep research for prompt: %s", topic_prompt)
 
-        # Using Chat completions because research models adhere to the chat API.
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are an expert research assistant. Compile structured, "
-                    "factual results only from reputable sources."
-                ),
-            },
-            {"role": "user", "content": topic_prompt},
-        ]
-
-        response = self._client.chat.completions.create(  # type: ignore[attr-defined]
+        # Using the responses endpoint for deep research models
+        response = self._client.responses.create(  # type: ignore[attr-defined]
             model=DEEP_RESEARCH_MODEL,
-            messages=messages,
-            max_tokens=max_tokens,
-            response_format={"type": "json_object"},  # ensure pure-JSON output
+            max_tokens=max_tokens,  # Add token limit to reduce TPM usage
+            input=[
+                {
+                    "role": "developer",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": (
+                                "You are an expert research assistant. Compile structured, "
+                                "factual results only from reputable sources. Provide your answer strictly as JSON with the following format:\n\n"
+                                "[\n  {\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }\n]\n\n"
+                                "Do not include any additional keys, commentary, or markdown."
+                            ),
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": topic_prompt,
+                        }
+                    ]
+                }
+            ],
+            tools=[
+                {
+                    "type": "web_search_preview"
+                }
+            ]
         )
 
-        # Newer SDKs return `choices[0].message.content`, old returns similar
-        content: str = response.choices[0].message.content  # type: ignore
+        # Extract content from the final output
+        content: str = response.output[-1].content[0].text  # type: ignore
         logger.debug("Deep research raw response: %s", content)
         return content
 

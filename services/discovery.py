@@ -14,7 +14,7 @@ from utils.date import get_today_formatted
 # Prompts
 # ---------------------------------------------------------------------------
 _DISCOVERY_INSTRUCTIONS = (
-    "You are tasked with identifying significant news about {topic} "
+    "You are tasked with identifying significant news about {topics} "
     "from today {date}. Provide your answer strictly as JSON with the "
     "following format:\n\n[\n  {{\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }}\n]\n\nDo not include any additional keys, commentary, or markdown."
 )
@@ -29,24 +29,18 @@ _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 # ---------------------------------------------------------------------------
 
 def discover_events(openai_client: OpenAIClient) -> List[Event]:
-    """Discovers events for two broad topics and returns a combined list."""
+    """Discovers events for multiple topics in a single API call and returns the combined list."""
 
-    topics = [
-        "climate, environment and natural disasters",
-        "major geopolitical events",
-    ]
-
+    topics = "climate, environment and natural disasters, and major geopolitical events"
+    
     today = get_today_formatted()
-    raw_events: list[Event] = []
-    for topic in topics:
-        prompt = _DISCOVERY_INSTRUCTIONS.format(topic=topic, date=today)
-        response_text = openai_client.deep_research(prompt)
-        logger.debug("Discovery response for '%s': %s", topic, response_text)
-        events = _parse_events_from_response(response_text)
-        raw_events.extend(events)
+    prompt = _DISCOVERY_INSTRUCTIONS.format(topics=topics, date=today)
+    response_text = openai_client.deep_research(prompt)
+    logger.debug("Discovery response for combined topics: %s", response_text)
+    events = _parse_events_from_response(response_text)
 
-    logger.info("Discovered %d events before deduplication.", len(raw_events))
-    return raw_events
+    logger.info("Discovered %d events from combined topics.", len(events))
+    return events
 
 
 # ---------------------------------------------------------------------------
