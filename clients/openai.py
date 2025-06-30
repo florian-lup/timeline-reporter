@@ -8,6 +8,12 @@ import openai
 from config import DEEP_RESEARCH_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, OPENAI_API_KEY
 from utils.logger import logger
 
+# Import OpenAI at module level so tests can mock it
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None  # For older versions of openai package
+
 
 class OpenAIClient:
     """Lightweight wrapper around the OpenAI Python SDK."""
@@ -20,11 +26,9 @@ class OpenAIClient:
 
         # Newer `openai` package (>=1.0) exposes an explicit client class but we
         # gracefully fallback for older versions.
-        try:
-            from openai import OpenAI  # type: ignore
-
+        if OpenAI is not None:
             self._client = OpenAI(api_key=api_key)
-        except ImportError:
+        else:
             # Old style – global configuration.
             openai.api_key = api_key  # type: ignore[attr-defined]
             self._client = openai  # type: ignore
@@ -44,7 +48,6 @@ class OpenAIClient:
         # Using the responses endpoint for deep research models
         response = self._client.responses.create(  # type: ignore[attr-defined]
             model=DEEP_RESEARCH_MODEL,
-            max_tokens=max_tokens,  # Add token limit to reduce TPM usage
             input=[
                 {
                     "role": "developer",
