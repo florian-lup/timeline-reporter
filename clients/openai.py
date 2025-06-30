@@ -27,7 +27,12 @@ class OpenAIClient:
         # Newer `openai` package (>=1.0) exposes an explicit client class but we
         # gracefully fallback for older versions.
         if OpenAI is not None:
-            self._client = OpenAI(api_key=api_key)
+            try:
+                self._client = OpenAI(api_key=api_key)
+            except ImportError:
+                # Fall back to legacy configuration if OpenAI constructor fails
+                openai.api_key = api_key  # type: ignore[attr-defined]
+                self._client = openai  # type: ignore
         else:
             # Old style – global configuration.
             openai.api_key = api_key  # type: ignore[attr-defined]

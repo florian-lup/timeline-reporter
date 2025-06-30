@@ -2,7 +2,7 @@
 
 import json
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 import httpx
 
 from clients.perplexity import PerplexityClient
@@ -178,7 +178,7 @@ class TestPerplexityClient:
     def test_research_timeout_configuration(self, sample_response_data):
         """Test that HTTP client is configured with proper timeout."""
         with patch('clients.perplexity.httpx.Client') as mock_client_class:
-            mock_context_manager = Mock()
+            mock_context_manager = MagicMock()
             mock_client = Mock()
             mock_response = Mock()
             

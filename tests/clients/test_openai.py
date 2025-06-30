@@ -81,13 +81,11 @@ class TestOpenAIClient:
         mock_instance.responses.create.return_value = mock_response
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            # Fix the undefined max_tokens variable
-            with patch('clients.openai.max_tokens', 4000):
-                client = OpenAIClient()
-                result = client.deep_research("test prompt")
-                
-                assert result == '{"result": "test response"}'
-                mock_instance.responses.create.assert_called_once()
+            client = OpenAIClient()
+            result = client.deep_research("test prompt")
+            
+            assert result == '{"result": "test response"}'
+            mock_instance.responses.create.assert_called_once()
 
     def test_deep_research_with_proper_payload(self, mock_openai_client):
         """Test that deep research creates proper request payload."""
@@ -104,16 +102,14 @@ class TestOpenAIClient:
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
             with patch('clients.openai.DEEP_RESEARCH_MODEL', 'test-model'):
-                with patch('clients.openai.max_tokens', 4000):
-                    client = OpenAIClient()
-                    client.deep_research("test prompt")
-                    
-                    # Verify the call was made with correct parameters
-                    call_args = mock_instance.responses.create.call_args
-                    assert call_args[1]['model'] == 'test-model'
-                    assert call_args[1]['max_tokens'] == 4000
-                    assert len(call_args[1]['input']) == 2
-                    assert call_args[1]['tools'][0]['type'] == 'web_search_preview'
+                client = OpenAIClient()
+                client.deep_research("test prompt")
+                
+                # Verify the call was made with correct parameters
+                call_args = mock_instance.responses.create.call_args
+                assert call_args[1]['model'] == 'test-model'
+                assert len(call_args[1]['input']) == 2
+                assert call_args[1]['tools'][0]['type'] == 'web_search_preview'
 
     def test_embed_text_success(self, mock_openai_client):
         """Test successful text embedding."""
@@ -196,18 +192,17 @@ class TestOpenAIClient:
         mock_instance.responses.create.return_value = mock_response
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.max_tokens', 4000):
-                client = OpenAIClient()
-                client.deep_research("test prompt")
-                
-                mock_logger.info.assert_called_once_with(
-                    "Running deep research for prompt: %s",
-                    "test prompt"
-                )
-                mock_logger.debug.assert_called_once_with(
-                    "Deep research raw response: %s",
-                    '{"result": "test"}'
-                )
+            client = OpenAIClient()
+            client.deep_research("test prompt")
+            
+            mock_logger.info.assert_called_once_with(
+                "Running deep research for prompt: %s",
+                "test prompt"
+            )
+            mock_logger.debug.assert_called_once_with(
+                "Deep research raw response: %s",
+                '{"result": "test"}'
+            )
 
     @patch('clients.openai.logger')
     def test_logging_embed_text(self, mock_logger, mock_openai_client):
@@ -237,11 +232,10 @@ class TestOpenAIClient:
         mock_instance.responses.create.side_effect = Exception("API Error")
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.max_tokens', 4000):
-                client = OpenAIClient()
-                
-                with pytest.raises(Exception, match="API Error"):
-                    client.deep_research("test prompt")
+            client = OpenAIClient()
+            
+            with pytest.raises(Exception, match="API Error"):
+                client.deep_research("test prompt")
 
     def test_embed_text_exception_handling(self, mock_openai_client):
         """Test that embed_text properly propagates exceptions."""
@@ -300,14 +294,13 @@ class TestOpenAIClient:
         mock_instance.responses.create.return_value = mock_response
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.max_tokens', 4000):
-                client = OpenAIClient()
-                client.deep_research("test prompt")
-                
-                mock_logger.info.assert_called_with(
-                    "Running deep research for prompt: %s",
-                    "test prompt"
-                )
+            client = OpenAIClient()
+            client.deep_research("test prompt")
+            
+            mock_logger.info.assert_called_with(
+                "Running deep research for prompt: %s",
+                "test prompt"
+            )
 
     def test_legacy_openai_fallback(self):
         """Test fallback to legacy OpenAI configuration."""
