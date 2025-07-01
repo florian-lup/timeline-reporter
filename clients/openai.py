@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import List
 
 import openai
+from openai import OpenAI
 
 from config import (
     DEEP_RESEARCH_MODEL, 
@@ -16,12 +17,6 @@ from config import (
 )
 from utils import logger
 
-# Import OpenAI at module level so tests can mock it
-try:
-    from openai import OpenAI
-except ImportError:
-    OpenAI = None  # For older versions of openai package
-
 
 class OpenAIClient:
     """Lightweight wrapper around the OpenAI Python SDK."""
@@ -32,19 +27,7 @@ class OpenAIClient:
         if not api_key:
             raise ValueError("OPENAI_API_KEY is missing, cannot initialise OpenAI client.")
 
-        # Newer `openai` package (>=1.0) exposes an explicit client class but we
-        # gracefully fallback for older versions.
-        if OpenAI is not None:
-            try:
-                self._client = OpenAI(api_key=api_key)
-            except ImportError:
-                # Fall back to legacy configuration if OpenAI constructor fails
-                openai.api_key = api_key  # type: ignore[attr-defined]
-                self._client = openai  # type: ignore
-        else:
-            # Old style – global configuration.
-            openai.api_key = api_key  # type: ignore[attr-defined]
-            self._client = openai  # type: ignore
+        self._client = OpenAI(api_key=api_key)
 
     # ---------------------------------------------------------------------
     # Public helpers
