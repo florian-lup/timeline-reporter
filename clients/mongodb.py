@@ -18,13 +18,12 @@ class MongoDBClient:
         self._client = MongoClient(uri)
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]
-        logger.info("Connected to MongoDB database=%s collection=%s", MONGODB_DATABASE_NAME, MONGODB_COLLECTION_NAME)
+        logger.info("MongoDB connected: %s/%s", MONGODB_DATABASE_NAME, MONGODB_COLLECTION_NAME)
 
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------
     def insert_article(self, article: dict) -> str:
         """Inserts *article* dict and returns inserted document id as str."""
-        logger.debug("Inserting article: %s", article.get("headline"))
         result = self._collection.insert_one(article)
         return str(result.inserted_id)

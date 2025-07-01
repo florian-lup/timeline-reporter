@@ -33,9 +33,8 @@ def deduplicate_events(
         matches = pinecone_client.similarity_search(vector)
         if matches:
             logger.info(
-                "Skipping duplicate event '%s' (matched %d existing with score %.2f)",
+                "Skipping duplicate: '%s' (similarity: %.2f)",
                 event.title,
-                len(matches),
                 matches[0][1],
             )
             continue
@@ -49,5 +48,5 @@ def deduplicate_events(
         )
         unique_events.append(event)
 
-    logger.info("%d unique events after deduplication.", len(unique_events))
+    logger.info("Deduplication complete: %d unique events", len(unique_events))
     return unique_events 

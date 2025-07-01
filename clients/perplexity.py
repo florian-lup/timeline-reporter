@@ -73,7 +73,7 @@ class PerplexityClient:
         model returns a valid JSON object matching the article schema.
         """
 
-        logger.info("Calling Perplexity research endpoint with structured output…")
+        logger.info("Research request with %s", RESEARCH_MODEL)
 
         payload = {
             "model": RESEARCH_MODEL,
@@ -114,7 +114,7 @@ class PerplexityClient:
         Returns:
             JSON string containing the structured research results
         """
-        logger.info("Calling Perplexity deep research endpoint with structured output…")
+        logger.info("Deep research request with %s", DEEP_RESEARCH_MODEL)
 
         payload = {
             "model": DEEP_RESEARCH_MODEL,
@@ -164,9 +164,8 @@ class PerplexityClient:
         if think_end != -1:
             # Extract everything after </think>
             json_content = response[think_end + 8:].strip()
-            logger.debug("Extracted JSON after <think> section: %s", json_content[:200] + "...")
             return json_content
         else:
             # Fallback: if no <think> tags found, return the full response
-            logger.warning("No <think> tags found in response, returning full content")
+            logger.warning("No reasoning tags found, using full response")
             return response.strip()

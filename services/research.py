@@ -15,11 +15,10 @@ def research_events(events: List[Event], *, perplexity_client: PerplexityClient)
     for event in events:
         prompt = RESEARCH_INSTRUCTIONS.format(event_summary=event.summary)
         response_text = perplexity_client.research(prompt)
-        logger.debug("Perplexity response for '%s': %s", event.title, response_text)
         article = _parse_article_from_response(response_text)
         articles.append(article)
 
-    logger.info("Generated %d articles.", len(articles))
+    logger.info("Generated %d articles", len(articles))
     return articles
 
 
@@ -42,7 +41,7 @@ def _parse_article_from_response(response_text: str) -> Article:
     try:
         data = json.loads(json_str)
     except json.JSONDecodeError as exc:  # pragma: no cover
-        logger.warning("Failed to parse article JSON: %s", exc)
+        logger.warning("Article JSON parse failed: %s", exc)
         data = {
             "headline": "",
             "summary": "",

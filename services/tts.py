@@ -43,15 +43,15 @@ def generate_broadcast_analysis(
                 story=article.story
             )
             
-            logger.info("Generating reporter analysis for article: '%s'", article.headline)
+            logger.info("Generating analysis for: '%s'", article.headline)
             analysis_text = openai_client.chat_completion(analysis_prompt, model=CHAT_MODEL)
             
             # Get random reporter voice
             voice_api_name, voice_human_name = get_random_REPORTER_VOICE()
-            logger.info("Selected reporter voice: %s (%s)", voice_human_name, voice_api_name)
+            logger.info("Selected reporter: %s (%s)", voice_human_name, voice_api_name)
             
             # Convert analysis to speech using TTS_MODEL
-            logger.info("Converting analysis to speech for article: '%s'", article.headline)
+            logger.info("Converting to speech: '%s'", article.headline)
             mp3_data = openai_client.text_to_speech(analysis_text, voice_api_name)
             
             # Create new article with broadcast data and reporter info
@@ -68,7 +68,7 @@ def generate_broadcast_analysis(
             article_dict = article_with_broadcast.__dict__.copy()
             inserted_id = mongodb_client.insert_article(article_dict)
             logger.info(
-                "Stored article with broadcast '%s' (id=%s, reporter=%s, audio_size=%d bytes)", 
+                "Stored broadcast: '%s' (id=%s, reporter=%s, %d bytes)", 
                 article_with_broadcast.headline, 
                 inserted_id, 
                 voice_human_name,
@@ -85,7 +85,7 @@ def generate_broadcast_analysis(
             # such as generating a default TTS message or retrying with different parameters.
             continue
     
-    logger.info("Successfully generated broadcasts for %d/%d articles", 
+    logger.info("Generated broadcasts: %d/%d articles processed", 
                 len(processed_articles), 
                 len(articles))
     

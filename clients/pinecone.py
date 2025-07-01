@@ -27,10 +27,10 @@ class PineconeClient:
         if not api_key:
             raise ValueError("PINECONE_API_KEY is missing, cannot initialise Pinecone client.")
 
-        logger.info("Initialising Pinecone...")
+        logger.info("Initializing Pinecone")
         self._pc = Pinecone(api_key=api_key)
         self._index = self._ensure_index()
-        logger.info("Pinecone initialised (index: %s).", PINECONE_INDEX_NAME)
+        logger.info("Pinecone ready: %s", PINECONE_INDEX_NAME)
 
     # ------------------------------------------------------------------
     # Public helpers
@@ -39,14 +39,12 @@ class PineconeClient:
         """Returns list of (id, score) above SIMILARITY_THRESHOLD for *vector*."""
         if top_k is None:
             top_k = TOP_K_RESULTS
-        logger.debug("Performing similarity search with top_k=%d", top_k)
         res = self._index.query(vector=vector, top_k=top_k, include_values=False)
         return [
             (m.id, m.score) for m in res.matches if m.score and m.score >= SIMILARITY_THRESHOLD
         ]
 
     def upsert_vector(self, vector_id: str, values: List[float], metadata: dict | None = None) -> None:
-        logger.debug("Upserting vector id=%s", vector_id)
         self._index.upsert([(vector_id, values, metadata or {})])
 
     # ------------------------------------------------------------------
@@ -56,7 +54,7 @@ class PineconeClient:
         """Return an existing index or create if missing."""
         existing_indexes = self._pc.list_indexes().names()
         if PINECONE_INDEX_NAME not in existing_indexes:
-            logger.info("Creating pinecone index %s", PINECONE_INDEX_NAME)
+            logger.info("Creating index: %s", PINECONE_INDEX_NAME)
             self._pc.create_index(
                 name=PINECONE_INDEX_NAME,
                 dimension=EMBEDDING_DIMENSIONS,

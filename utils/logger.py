@@ -17,4 +17,7 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 
+# Suppress HTTP request logs from httpx
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 logger = logging.getLogger("timeline-reporter") 

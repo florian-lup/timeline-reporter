@@ -40,7 +40,7 @@ class OpenAIClient:
         Returns:
             The generated text response
         """
-        logger.info("Generating chat completion (length: %d chars, model: %s)", len(prompt), model)
+        logger.info("Chat completion with %s", model)
         
         kwargs = {
             "model": model,
@@ -53,7 +53,6 @@ class OpenAIClient:
         response = self._client.chat.completions.create(**kwargs)  # type: ignore[attr-defined]
         
         content: str = response.choices[0].message.content  # type: ignore
-        logger.debug("Chat completion response: %s", content)
         return content
 
     def text_to_speech(self, text: str, voice: str) -> bytes:
@@ -66,7 +65,7 @@ class OpenAIClient:
         Returns:
             MP3 audio data as bytes
         """
-        logger.info("Converting text to speech (length: %d chars, voice: %s)", len(text), voice)
+        logger.info("Converting to speech with voice: %s", voice)
         
         response = self._client.audio.speech.create(  # type: ignore[attr-defined]
             model=TTS_MODEL,
@@ -76,13 +75,10 @@ class OpenAIClient:
         )
         
         audio_data: bytes = response.content  # type: ignore
-        logger.debug("Generated audio data (size: %d bytes)", len(audio_data))
         return audio_data
 
     def embed_text(self, text: str) -> List[float]:
         """Gets an embedding vector for *text*."""
-        logger.debug("Creating embedding for %d chars", len(text))
-
         response = self._client.embeddings.create(  # type: ignore[attr-defined]
             input=text,
             model=EMBEDDING_MODEL,

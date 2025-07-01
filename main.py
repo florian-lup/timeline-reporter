@@ -22,7 +22,7 @@ from services import (
 def run_pipeline() -> None:  # noqa: D401
     """Run the 6-step AI reporter pipeline."""
 
-    logger.info("Starting pipeline…")
+    logger.info("Starting pipeline")
 
     # Initialise clients
     openai_client = OpenAIClient()
@@ -51,7 +51,7 @@ def run_pipeline() -> None:  # noqa: D401
 
     # 6️⃣ Storage (now handled within TTS service, but keeping for consistency)
     # Note: Articles are already stored in MongoDB by the TTS service
-    logger.info("Pipeline completed – %d articles processed with broadcasts.", len(articles_with_broadcast))
+    logger.info("Pipeline complete: %d articles with broadcasts", len(articles_with_broadcast))
 
 
 if __name__ == "__main__":

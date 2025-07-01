@@ -16,4 +16,4 @@ def store_articles(articles: List[Article], *, mongodb_client: MongoDBClient) ->
     for article in articles:
         article_dict = article.__dict__.copy()
         inserted_id = mongodb_client.insert_article(article_dict)
-        logger.info("Stored article '%s' (id=%s)", article.headline, inserted_id)
+        logger.info("Stored article: '%s' (id=%s)", article.headline, inserted_id)

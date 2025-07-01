@@ -17,10 +17,10 @@ def decide_events(events: List[Event], *, openai_client: OpenAIClient) -> List[E
     """
     
     if not events:
-        logger.info("No events to evaluate for decision making.")
+        logger.info("No events to evaluate")
         return []
     
-    logger.info("Evaluating %d events for impact and priority...", len(events))
+    logger.info("Evaluating %d events for priority", len(events))
     
     # Format events for evaluation with numbers
     events_text = "\n".join([
@@ -37,16 +37,14 @@ def decide_events(events: List[Event], *, openai_client: OpenAIClient) -> List[E
         model=DECISION_MODEL, 
     )
     
-    logger.debug("Decision response: %s", response_text)
-    
     # Parse the selected event indices and filter original events
     selected_events = _filter_events_by_indices(response_text, events)
     
-    logger.info("Selected %d high-impact events for research.", len(selected_events))
+    logger.info("Selected %d priority events", len(selected_events))
     
     # Log the selected events for transparency
     for i, event in enumerate(selected_events, 1):
-        logger.info("Selected event %d: %s", i, event.title)
+        logger.info("Priority %d: %s", i, event.title)
     
     return selected_events
 
@@ -63,7 +61,7 @@ def _filter_events_by_indices(response_text: str, original_events: List[Event]) 
     numbers = re.findall(r'\b(\d+)\b', response_text)
     
     if not numbers:
-        logger.warning("No valid numbers found in decision response, using fallback.")
+        logger.warning("No valid numbers in response, using fallback")
         return original_events[:3]
     
     selected_events = []
@@ -77,9 +75,8 @@ def _filter_events_by_indices(response_text: str, original_events: List[Event]) 
             if 0 <= index < len(original_events):
                 event = original_events[index]
                 selected_events.append(event)
-                logger.debug("Selected event %d: %s", index + 1, event.title)
             else:
-                logger.warning("Invalid event number %s (only %d events available)", num_str, len(original_events))
+                logger.warning("Invalid event number %s (max: %d)", num_str, len(original_events))
                 
         except ValueError:
             logger.warning("Could not parse number: %s", num_str)
@@ -87,7 +84,7 @@ def _filter_events_by_indices(response_text: str, original_events: List[Event]) 
     
     # Ensure we don't return empty list due to parsing issues
     if not selected_events and original_events:
-        logger.warning("No valid events selected, falling back to top 3 original events.")
+        logger.warning("No valid selections, using top 3 fallback")
         return original_events[:3]
     
     return selected_events
