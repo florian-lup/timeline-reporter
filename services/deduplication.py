@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from clients.openai import OpenAIClient
-from clients.pinecone import PineconeClient
+from clients import OpenAIClient, PineconeClient
 from utils import logger, Event
 
 

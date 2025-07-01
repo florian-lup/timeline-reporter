@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import httpx
 
-from clients.perplexity import PerplexityClient
+from clients import PerplexityClient
 
 
 class TestPerplexityClient:

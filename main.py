@@ -8,10 +8,7 @@ from __future__ import annotations
 
 from utils import logger  # noqa: F401 – configure logging first
 
-from clients.mongodb import MongoDBClient
-from clients.openai import OpenAIClient
-from clients.perplexity import PerplexityClient
-from clients.pinecone import PineconeClient
+from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
 from services import (
     deduplicate_events,
     discover_events,

@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from bson import ObjectId
 
-from clients.mongodb import MongoDBClient
+from clients import MongoDBClient
 
 
 class TestMongoDBClient:

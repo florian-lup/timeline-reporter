@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from clients.openai import OpenAIClient
-from clients.mongodb import MongoDBClient
+from clients import OpenAIClient, MongoDBClient
 from config import REPORTER_ANALYSIS_TEMPLATE
 from utils import logger, Article, get_random_REPORTER_VOICE
 

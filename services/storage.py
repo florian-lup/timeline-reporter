@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from clients.mongodb import MongoDBClient
+from clients import MongoDBClient
 from utils import logger, Article
 
 

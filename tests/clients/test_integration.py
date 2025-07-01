@@ -4,10 +4,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import json
 
-from clients.mongodb import MongoDBClient
-from clients.openai import OpenAIClient
-from clients.perplexity import PerplexityClient
-from clients.pinecone import PineconeClient
+from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
 from utils import Article
 
 

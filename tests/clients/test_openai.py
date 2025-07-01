@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 
-from clients.openai import OpenAIClient
+from clients import OpenAIClient
 
 
 class TestOpenAIClient:

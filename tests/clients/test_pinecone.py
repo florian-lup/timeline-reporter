@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from clients.pinecone import PineconeClient
+from clients import PineconeClient
 
 
 class TestPineconeClient:

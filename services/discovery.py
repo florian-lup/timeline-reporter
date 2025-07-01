@@ -4,7 +4,7 @@ import json
 import re
 from typing import List
 
-from clients.openai import OpenAIClient
+from clients import OpenAIClient
 from config import DISCOVERY_INSTRUCTIONS
 from utils import logger, Event, get_today_formatted
 
