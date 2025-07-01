@@ -5,7 +5,7 @@ import re
 from typing import List
 
 from clients.openai import OpenAIClient
-from config.prompts import DISCOVERY_INSTRUCTIONS
+from config import DISCOVERY_INSTRUCTIONS
 from utils import logger, Event, get_today_formatted
 
 # Older versions of the model sometimes wrap JSON in markdown fences; we keep a

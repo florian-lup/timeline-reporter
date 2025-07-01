@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List
 
 from clients.perplexity import PerplexityClient
-from config.prompts import ARTICLE_RESEARCH_TEMPLATE
+from config import ARTICLE_RESEARCH_TEMPLATE
 from utils import logger, Article, Event
 
 

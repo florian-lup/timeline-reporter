@@ -5,15 +5,15 @@ from typing import List
 
 import openai
 
-from config.settings import (
+from config import (
     DEEP_RESEARCH_MODEL, 
     EMBEDDING_DIMENSIONS, 
     EMBEDDING_MODEL, 
     OPENAI_API_KEY,
     TTS_MODEL,
-    CHAT_MODEL
+    CHAT_MODEL,
+    OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT,
 )
-from config.prompts import OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT
 from utils import logger
 
 # Import OpenAI at module level so tests can mock it

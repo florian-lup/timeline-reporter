@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import random
-from config.settings import REPORTER_VOICE, HOST_VOICE
+from config import REPORTER_VOICE, HOST_VOICE
 
 
 def get_random_REPORTER_VOICE() -> tuple[str, str]:
