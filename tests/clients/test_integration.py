@@ -134,7 +134,7 @@ class TestClientIntegration:
                     mock_collection.insert_one.return_value = mock_result
                     
                     # Execute TTS workflow
-                    from services.tts import generate_broadcast_analysis
+                    from services import generate_broadcast_analysis
                     
                     openai_client = OpenAIClient()
                     mongodb_client = MongoDBClient()
@@ -301,8 +301,7 @@ class TestClientIntegration:
                         mock_collection.insert_one.return_value = mock_result
                         
                         # Execute full pipeline
-                        from services.research import research_events
-                        from services.tts import generate_broadcast_analysis
+                        from services import research_events, generate_broadcast_analysis
                         from utils import Event
                         
                         perplexity_client = PerplexityClient()
@@ -434,7 +433,7 @@ class TestClientIntegration:
                 mock_mongo_instance.__getitem__ = Mock(return_value=mock_db)
                 mock_db.__getitem__ = Mock(return_value=mock_collection)
                 
-                from services.tts import generate_broadcast_analysis
+                from services import generate_broadcast_analysis
                 
                 openai_client = OpenAIClient()
                 mongodb_client = MongoDBClient()

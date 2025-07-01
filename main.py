@@ -12,11 +12,13 @@ from clients.mongodb import MongoDBClient
 from clients.openai import OpenAIClient
 from clients.perplexity import PerplexityClient
 from clients.pinecone import PineconeClient
-from services.deduplication import deduplicate_events
-from services.discovery import discover_events
-from services.research import research_events
-from services.tts import generate_broadcast_analysis
-from services.storage import store_articles
+from services import (
+    deduplicate_events,
+    discover_events,
+    research_events,
+    generate_broadcast_analysis,
+    store_articles,
+)
 
 
 def run_pipeline() -> None:  # noqa: D401
