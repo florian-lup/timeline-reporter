@@ -46,7 +46,7 @@ class PerplexityClient:
             "story": {"type": "string"},
             "sources": {
                 "type": "array",
-                "items": {"type": "string", "format": "uri"},
+                "items": {"type": "string"},
             },
         },
         "required": ["headline", "summary", "story", "sources"],
