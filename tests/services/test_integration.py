@@ -19,6 +19,16 @@ class TestServicesIntegration:
     """Integration tests showing how services work together."""
 
     @pytest.fixture
+    def test_discovery_instructions(self):
+        """Test-specific discovery instructions with fixed date."""
+        return (
+            "Identify significant news about climate, environment and natural disasters, and major geopolitical events from today 2024-01-15. "
+            "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience. "
+            "Return your findings as a JSON array of events, where each event has 'title' and 'summary' fields. "
+            "Example format: [{\"title\": \"Event Title\", \"summary\": \"Brief description...\"}]"
+        )
+
+    @pytest.fixture
     def mock_clients(self):
         """Mock all clients for integration testing."""
         mock_openai = Mock()
@@ -33,7 +43,7 @@ class TestServicesIntegration:
             'mongodb': mock_mongodb
         }
 
-    def test_complete_pipeline_success(self, mock_clients):
+    def test_complete_pipeline_success(self, mock_clients, test_discovery_instructions):
         """Test complete pipeline from discovery to storage."""
         # Setup mock responses for each service
         
@@ -87,7 +97,7 @@ class TestServicesIntegration:
         ]
         
         # Execute complete pipeline
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
                 
                 # 1. Discovery
@@ -152,7 +162,7 @@ class TestServicesIntegration:
         # MongoDB called twice in TTS service + twice in storage service = 4 total
         assert mock_clients['mongodb'].insert_article.call_count == 4
 
-    def test_pipeline_with_deduplication(self, mock_clients):
+    def test_pipeline_with_deduplication(self, mock_clients, test_discovery_instructions):
         """Test pipeline when duplicates are found and filtered."""
         # Discovery finds 3 events
         discovery_response = json.dumps([
@@ -193,7 +203,7 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.side_effect = [b"audio1", b"audio3"]
         mock_clients['mongodb'].insert_article.side_effect = ["id1", "id3"]
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('nova', 'Nova')]):
                 
                 # Execute pipeline
@@ -227,11 +237,11 @@ class TestServicesIntegration:
         # Verify research only processed non-duplicate events
         assert mock_clients['perplexity'].research.call_count == 2
 
-    def test_pipeline_error_handling_at_discovery(self, mock_clients):
+    def test_pipeline_error_handling_at_discovery(self, mock_clients, test_discovery_instructions):
         """Test pipeline error handling when discovery fails."""
         mock_clients['perplexity'].deep_research.side_effect = Exception("Discovery API failed")
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with pytest.raises(Exception, match="Discovery API failed"):
                 discover_events(mock_clients['perplexity'])
         
@@ -239,7 +249,7 @@ class TestServicesIntegration:
         mock_clients['pinecone'].similarity_search.assert_not_called()
         mock_clients['perplexity'].research.assert_not_called()
 
-    def test_pipeline_error_handling_at_research(self, mock_clients):
+    def test_pipeline_error_handling_at_research(self, mock_clients, test_discovery_instructions):
         """Test pipeline error handling when research fails."""
         # Discovery succeeds
         discovery_response = json.dumps([
@@ -254,7 +264,7 @@ class TestServicesIntegration:
         # Research fails
         mock_clients['perplexity'].research.side_effect = Exception("Research API failed")
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_clients['perplexity'])
             unique_events = deduplicate_events(
                 events,
@@ -273,7 +283,7 @@ class TestServicesIntegration:
         # TTS should not be called
         mock_clients['openai'].chat_completion.assert_not_called()
 
-    def test_pipeline_partial_tts_failure(self, mock_clients):
+    def test_pipeline_partial_tts_failure(self, mock_clients, test_discovery_instructions):
         """Test pipeline when some articles fail in TTS processing."""
         # Setup successful discovery, deduplication, and research
         discovery_response = json.dumps([
@@ -309,7 +319,7 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.side_effect = [b"audio1"]
         mock_clients['mongodb'].insert_article.side_effect = ["id1"]
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')]):
                 
                 events = discover_events(mock_clients['perplexity'])
@@ -337,7 +347,7 @@ class TestServicesIntegration:
         assert broadcast_articles[0].broadcast == b"audio1"
         assert broadcast_articles[0].reporter == "Alex"
 
-    def test_pipeline_data_transformation(self, mock_clients):
+    def test_pipeline_data_transformation(self, mock_clients, test_discovery_instructions):
         """Test data transformation through the pipeline."""
         # Discovery: Returns Event objects
         discovery_response = json.dumps([
@@ -363,7 +373,7 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.return_value = b"final_audio_data"
         mock_clients['mongodb'].insert_article.return_value = "final_id"
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
                 
                 # Execute pipeline and track transformations
@@ -406,12 +416,12 @@ class TestServicesIntegration:
         assert final_articles[0].broadcast == b"final_audio_data"  # Added by TTS
         assert final_articles[0].reporter == "Blake"               # Added by TTS
 
-    def test_empty_pipeline_flow(self, mock_clients):
+    def test_empty_pipeline_flow(self, mock_clients, test_discovery_instructions):
         """Test pipeline behavior with empty results at each stage."""
         # Discovery returns no events
         mock_clients['perplexity'].deep_research.return_value = "[]"
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_clients['perplexity'])
             
             unique_events = deduplicate_events(
@@ -445,7 +455,7 @@ class TestServicesIntegration:
         mock_clients['openai'].chat_completion.assert_not_called()
 
     @pytest.mark.slow
-    def test_large_scale_pipeline(self, mock_clients):
+    def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline with larger data volumes."""
         # Generate 10 events
         events_data = [
@@ -489,7 +499,7 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.side_effect = [f"audio_{i}".encode() for i in range(7)]
         mock_clients['mongodb'].insert_article.side_effect = [f"id_{i}" for i in range(7)]
         
-        with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
+        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')] * 7):
                 
                 events = discover_events(mock_clients['perplexity'])

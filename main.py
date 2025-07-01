@@ -30,7 +30,7 @@ def run_pipeline() -> None:  # noqa: D401
     mongodb_client = MongoDBClient()
 
     # 1️⃣ Discovery
-    events = discover_events(openai_client)
+    events = discover_events(perplexity_client)
 
     # 2️⃣ Deduplication
     unique_events = deduplicate_events(

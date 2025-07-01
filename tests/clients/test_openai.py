@@ -246,9 +246,7 @@ class TestOpenAIClient:
                 
                 mock_instance.chat.completions.create.assert_called_once_with(
                     model='gpt-4.1',
-                    messages=[{"role": "user", "content": "test prompt"}],
-                    temperature=0.7,
-                    max_tokens=1000
+                    messages=[{"role": "user", "content": "test prompt"}]
                 )
 
     @pytest.mark.parametrize("prompt", [

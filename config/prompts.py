@@ -4,6 +4,9 @@ This module contains all the prompts used across different services and clients
 to maintain consistency and make updates easier.
 """
 
+from config.settings import DISCOVERY_TOPICS
+from utils import get_today_formatted
+
 # ---------------------------------------------------------------------------
 # Discovery Prompts
 # ---------------------------------------------------------------------------
@@ -15,8 +18,10 @@ DISCOVERY_SYSTEM_PROMPT = (
 )
 
 DISCOVERY_INSTRUCTIONS = (
-    "Identify significant news about {topics} from today {date}. "
-    "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience."
+    f"Identify significant news about {DISCOVERY_TOPICS} from today {get_today_formatted()}. "
+    "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience. "
+    "Return your findings as a JSON array of events, where each event has 'title' and 'summary' fields. "
+    "Example format: [{\"title\": \"Event Title\", \"summary\": \"Brief description...\"}]"
 )
 
 # ---------------------------------------------------------------------------
