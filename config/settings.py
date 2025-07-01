@@ -34,7 +34,8 @@ EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
 METRIC: str = "cosine"
 TTS_MODEL: str = "gpt-4o-mini-tts"
-CHAT_MODEL: str = "gpt-4.1"
+CHAT_MODEL: str = "gpt-4.1-mini-2025-04-14"
+DECISION_MODEL: str = "o4-mini-2025-04-16"
 
 # Voice mappings: API name -> Human name
 REPORTER_VOICE = {

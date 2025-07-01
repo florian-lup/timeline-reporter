@@ -4,6 +4,7 @@ from typing import List
 
 from clients import OpenAIClient, MongoDBClient
 from config import TTS_INSTRUCTIONS
+from config.settings import CHAT_MODEL
 from utils import logger, Article, get_random_REPORTER_VOICE
 
 
@@ -43,7 +44,7 @@ def generate_broadcast_analysis(
             )
             
             logger.info("Generating reporter analysis for article: '%s'", article.headline)
-            analysis_text = openai_client.chat_completion(analysis_prompt)
+            analysis_text = openai_client.chat_completion(analysis_prompt, model=CHAT_MODEL)
             
             # Get random reporter voice
             voice_api_name, voice_human_name = get_random_REPORTER_VOICE()

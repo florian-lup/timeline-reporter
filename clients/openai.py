@@ -11,7 +11,6 @@ from config import (
     EMBEDDING_MODEL, 
     OPENAI_API_KEY,
     TTS_MODEL,
-    CHAT_MODEL,
 )
 from utils import logger
 
@@ -30,23 +29,28 @@ class OpenAIClient:
     # ---------------------------------------------------------------------
     # Public helpers
     # ---------------------------------------------------------------------
-    def chat_completion(self, prompt: str) -> str:
+    def chat_completion(self, prompt: str, *, model: str, temperature: float = None) -> str:
         """Generate text using the chat completion model.
         
         Args:
             prompt: The input prompt for text generation
+            model: Model to use for completion
+            temperature: Sampling temperature 0-2 (optional)
             
         Returns:
             The generated text response
         """
-        logger.info("Generating chat completion for prompt (length: %d chars)", len(prompt))
+        logger.info("Generating chat completion (length: %d chars, model: %s)", len(prompt), model)
         
-        response = self._client.chat.completions.create(  # type: ignore[attr-defined]
-            model=CHAT_MODEL,
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-        )
+        kwargs = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        
+        if temperature is not None:
+            kwargs["temperature"] = temperature
+        
+        response = self._client.chat.completions.create(**kwargs)  # type: ignore[attr-defined]
         
         content: str = response.choices[0].message.content  # type: ignore
         logger.debug("Chat completion response: %s", content)

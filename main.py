@@ -2,7 +2,7 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, researches, creates TTS broadcasts and stores articles
+    python -m main  # discovers, deduplicates, prioritizes, researches, creates TTS broadcasts and stores articles
 """
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from utils import logger  # noqa: F401 – configure logging first
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
 from services import (
     deduplicate_events,
+    decide_events,
     discover_events,
     research_events,
     generate_broadcast_analysis,
@@ -19,7 +20,7 @@ from services import (
 
 
 def run_pipeline() -> None:  # noqa: D401
-    """Run the 5-step AI reporter pipeline."""
+    """Run the 6-step AI reporter pipeline."""
 
     logger.info("Starting pipeline…")
 
@@ -37,15 +38,18 @@ def run_pipeline() -> None:  # noqa: D401
         events, openai_client=openai_client, pinecone_client=pinecone_client
     )
 
-    # 3️⃣ Research
-    articles = research_events(unique_events, perplexity_client=perplexity_client)
+    # 3️⃣ Decision (new step: prioritize most impactful events)
+    prioritized_events = decide_events(unique_events, openai_client=openai_client)
 
-    # 4️⃣ TTS Analysis & Broadcast Generation
+    # 4️⃣ Research
+    articles = research_events(prioritized_events, perplexity_client=perplexity_client)
+
+    # 5️⃣ TTS Analysis & Broadcast Generation
     articles_with_broadcast = generate_broadcast_analysis(
         articles, openai_client=openai_client, mongodb_client=mongodb_client
     )
 
-    # 5️⃣ Storage (now handled within TTS service, but keeping for consistency)
+    # 6️⃣ Storage (now handled within TTS service, but keeping for consistency)
     # Note: Articles are already stored in MongoDB by the TTS service
     logger.info("Pipeline completed – %d articles processed with broadcasts.", len(articles_with_broadcast))
 
