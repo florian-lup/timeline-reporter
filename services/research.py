@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List
 
 from clients import PerplexityClient
-from config import ARTICLE_RESEARCH_TEMPLATE
+from config import RESEARCH_INSTRUCTIONS
 from utils import logger, Article, Event
 
 
@@ -13,7 +13,7 @@ def research_events(events: List[Event], *, perplexity_client: PerplexityClient)
     articles: list[Article] = []
 
     for event in events:
-        prompt = ARTICLE_RESEARCH_TEMPLATE.format(event_summary=event.summary)
+        prompt = RESEARCH_INSTRUCTIONS.format(event_summary=event.summary)
         response_text = perplexity_client.research(prompt)
         logger.debug("Perplexity response for '%s': %s", event.title, response_text)
         article = _parse_article_from_response(response_text)

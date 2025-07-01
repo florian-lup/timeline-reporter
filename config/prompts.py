@@ -8,39 +8,42 @@ to maintain consistency and make updates easier.
 # Discovery Prompts
 # ---------------------------------------------------------------------------
 
-DISCOVERY_INSTRUCTIONS = (
-    "You are tasked with identifying significant news about {topics} "
-    "from today {date}. Provide your answer strictly as JSON with the "
-    "following format:\n\n[\n  {{\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }}\n]\n\nDo not include any additional keys, commentary, or markdown."
+DISCOVERY_SYSTEM_PROMPT = (
+    "You are an expert research assistant specializing in identifying significant current events. "
+    "Focus on finding factual, newsworthy developments from reputable sources. "
+    "Provide comprehensive summaries that capture the key details and implications of each event."
 )
 
-# ---------------------------------------------------------------------------
-# OpenAI Deep Research Prompts
-# ---------------------------------------------------------------------------
-
-OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT = (
-    "You are an expert research assistant. Compile structured, "
-    "factual results only from reputable sources. Provide your answer strictly as JSON with the following format:\n\n"
-    "[\n  {\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }\n]\n\n"
-    "Do not include any additional keys, commentary, or markdown."
+DISCOVERY_INSTRUCTIONS = (
+    "Identify significant news about {topics} from today {date}. "
+    "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience."
 )
 
 # ---------------------------------------------------------------------------
 # Research & Article Generation Prompts
 # ---------------------------------------------------------------------------
 
-ARTICLE_RESEARCH_TEMPLATE = (
+RESEARCH_SYSTEM_PROMPT = (
+    "You are an investigative journalist with expertise in current events analysis. "
+    "Focus on accuracy, clarity, and comprehensive coverage. "
+    "Provide factual reporting with proper context and balanced perspective."
+)
+
+RESEARCH_INSTRUCTIONS = (
     "Using the information provided below, craft a well-structured news article.\n\n"
     "Event:\n{event_summary}\n\n"
-    "The article must be returned strictly as JSON with the following keys:\n"
-    "headline (max 20 words), summary (80-120 words), story (400-600 words), sources (array of URLs)."
+    "Create a comprehensive news article with:\n"
+    "- A compelling headline (max 20 words)\n"
+    "- A concise summary (80-120 words) highlighting key points\n"
+    "- A detailed story (400-600 words) with context, implications, and analysis\n"
+    "- Include relevant source URLs for verification"
 )
 
 # ---------------------------------------------------------------------------
 # TTS & Broadcast Analysis Prompts
 # ---------------------------------------------------------------------------
 
-REPORTER_ANALYSIS_TEMPLATE = (
+TTS_INSTRUCTIONS = (
     "You are a professional news reporter. Based on the research article provided below, "
     "create a compelling analysis for broadcast presentation.\n\n"
     "Article:\n"
@@ -51,18 +54,16 @@ REPORTER_ANALYSIS_TEMPLATE = (
     "- Is conversational and suitable for audio broadcast\n"
     "- Captures the key points and implications\n"
     "- Uses a professional yet accessible tone\n"
-    "- Is between 200-400 words\n"
+    "- Is between 500-1000 words\n"
     "- Flows naturally when read aloud\n\n"
-    "Return only the analysis text, no JSON formatting needed."
-)
-
-# ---------------------------------------------------------------------------
-# Perplexity Client Prompts
-# ---------------------------------------------------------------------------
-
-PERPLEXITY_JOURNALIST_SYSTEM_PROMPT = (
-    "You are an investigative journalist. Respond ONLY with a JSON object "
-    "following the provided schema. Do NOT include markdown fences or commentary."
+    "IMPORTANT: Return ONLY clean, plain text suitable for text-to-speech conversion:\n"
+    "- No markdown formatting (no *, **, _, etc.)\n"
+    "- No special characters or symbols\n"
+    "- No quotation marks around the entire text\n"
+    "- No JSON formatting or code blocks\n"
+    "- Use full words instead of abbreviations for better pronunciation\n"
+    "- Write numbers as words when appropriate for speech clarity\n"
+    "Return only the clean analysis text that can be directly fed to TTS."
 )
 
 # ---------------------------------------------------------------------------
@@ -70,17 +71,17 @@ PERPLEXITY_JOURNALIST_SYSTEM_PROMPT = (
 # ---------------------------------------------------------------------------
 
 DISCOVERY_PROMPTS = {
+    "system": DISCOVERY_SYSTEM_PROMPT,
     "instructions": DISCOVERY_INSTRUCTIONS,
 }
 
 RESEARCH_PROMPTS = {
-    "openai_system": OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT,
-    "article_template": ARTICLE_RESEARCH_TEMPLATE,
-    "perplexity_system": PERPLEXITY_JOURNALIST_SYSTEM_PROMPT,
+    "system": RESEARCH_SYSTEM_PROMPT,
+    "instructions": RESEARCH_INSTRUCTIONS,
 }
 
 TTS_PROMPTS = {
-    "reporter_analysis": REPORTER_ANALYSIS_TEMPLATE,
+    "instructions": TTS_INSTRUCTIONS,
 }
 
 # All prompts for easy iteration/management

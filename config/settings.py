@@ -30,7 +30,6 @@ CLOUD_REGION: str = "us-east-1"
 # ---------------------------------------------------------------------------
 # OpenAI
 # ---------------------------------------------------------------------------
-DEEP_RESEARCH_MODEL: str = "o4-mini-deep-research"
 EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
 METRIC: str = "cosine"
@@ -57,7 +56,9 @@ HOST_VOICE = {
 # Perplexity
 # ---------------------------------------------------------------------------
 RESEARCH_MODEL: str = "sonar"
+DEEP_RESEARCH_MODEL: str = "sonar-deep-research"
 SEARCH_CONTEXT_SIZE: str = "medium"
+REASONING_EFFORT: str = "low"
 
 # ---------------------------------------------------------------------------
 # MongoDB

@@ -38,6 +38,7 @@ from .settings import (
     # Perplexity Configuration
     RESEARCH_MODEL,
     SEARCH_CONTEXT_SIZE,
+    REASONING_EFFORT,
     
     # MongoDB Configuration
     MONGODB_DATABASE_NAME,
@@ -47,15 +48,15 @@ from .settings import (
 # Import all prompts
 from .prompts import (
     # Discovery Prompts
+    DISCOVERY_SYSTEM_PROMPT,
     DISCOVERY_INSTRUCTIONS,
     
     # Research Prompts
-    OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT,
-    ARTICLE_RESEARCH_TEMPLATE,
-    PERPLEXITY_JOURNALIST_SYSTEM_PROMPT,
+    RESEARCH_SYSTEM_PROMPT,
+    RESEARCH_INSTRUCTIONS,
     
     # TTS Prompts
-    REPORTER_ANALYSIS_TEMPLATE,
+    TTS_INSTRUCTIONS,
     
     # Organized Prompt Collections
     DISCOVERY_PROMPTS,
@@ -93,21 +94,22 @@ __all__ = [
     # Perplexity Configuration
     "RESEARCH_MODEL",
     "SEARCH_CONTEXT_SIZE",
+    "REASONING_EFFORT",
     
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
     
     # Discovery Prompts
+    "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_INSTRUCTIONS",
     
     # Research Prompts
-    "OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT",
-    "ARTICLE_RESEARCH_TEMPLATE",
-    "PERPLEXITY_JOURNALIST_SYSTEM_PROMPT",
+    "RESEARCH_SYSTEM_PROMPT",
+    "RESEARCH_INSTRUCTIONS",
     
     # TTS Prompts
-    "REPORTER_ANALYSIS_TEMPLATE",
+    "TTS_INSTRUCTIONS",
     
     # Organized Prompt Collections
     "DISCOVERY_PROMPTS",

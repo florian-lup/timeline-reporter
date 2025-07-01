@@ -4,7 +4,7 @@ import json
 import re
 from typing import List
 
-from clients import OpenAIClient
+from clients import PerplexityClient
 from config import DISCOVERY_INSTRUCTIONS
 from utils import logger, Event, get_today_formatted
 
@@ -17,14 +17,14 @@ _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 # Public API
 # ---------------------------------------------------------------------------
 
-def discover_events(openai_client: OpenAIClient) -> List[Event]:
+def discover_events(perplexity_client: PerplexityClient) -> List[Event]:
     """Discovers events for multiple topics in a single API call and returns the combined list."""
 
     topics = "climate, environment and natural disasters, and major geopolitical events"
     
     today = get_today_formatted()
     prompt = DISCOVERY_INSTRUCTIONS.format(topics=topics, date=today)
-    response_text = openai_client.deep_research(prompt)
+    response_text = perplexity_client.deep_research(prompt)
     logger.debug("Discovery response for combined topics: %s", response_text)
     events = _parse_events_from_response(response_text)
 

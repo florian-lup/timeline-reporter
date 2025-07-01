@@ -120,9 +120,6 @@ def sample_articles():
 def mock_openai_client():
     """Mock OpenAI client for testing."""
     mock_client = Mock()
-    mock_client.deep_research.return_value = json.dumps([
-        {"title": "Test Event", "summary": "Test summary"}
-    ])
     mock_client.embed_text.return_value = [0.1] * 1536
     mock_client.chat_completion.return_value = "Test chat completion response"
     mock_client.text_to_speech.return_value = b"test_audio_data"
@@ -133,6 +130,9 @@ def mock_openai_client():
 def mock_perplexity_client():
     """Mock Perplexity client for testing."""
     mock_client = Mock()
+    mock_client.deep_research.return_value = json.dumps([
+        {"title": "Test Event", "summary": "Test summary"}
+    ])
     mock_client.research.return_value = json.dumps({
         "headline": "Test Headline",
         "summary": "Test summary",

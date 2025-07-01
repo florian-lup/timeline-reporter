@@ -7,13 +7,11 @@ import openai
 from openai import OpenAI
 
 from config import (
-    DEEP_RESEARCH_MODEL, 
     EMBEDDING_DIMENSIONS, 
     EMBEDDING_MODEL, 
     OPENAI_API_KEY,
     TTS_MODEL,
     CHAT_MODEL,
-    OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT,
 )
 from utils import logger
 
@@ -32,50 +30,6 @@ class OpenAIClient:
     # ---------------------------------------------------------------------
     # Public helpers
     # ---------------------------------------------------------------------
-    def deep_research(self, topic_prompt: str) -> str:
-        """Runs the deep-research model with a user-supplied prompt.
-
-        The low-level response is returned (i.e. the string content). Parsing is
-        left to callers since the desired structure differs per call site.
-        """
-
-        logger.info("Running deep research for prompt: %s", topic_prompt)
-
-        # Using the responses endpoint for deep research models
-        response = self._client.responses.create(  # type: ignore[attr-defined]
-            model=DEEP_RESEARCH_MODEL,
-            input=[
-                {
-                    "role": "developer",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT,
-                        }
-                    ]
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": topic_prompt,
-                        }
-                    ]
-                }
-            ],
-            tools=[
-                {
-                    "type": "web_search_preview"
-                }
-            ]
-        )
-
-        # Extract content from the final output
-        content: str = response.output[-1].content[0].text  # type: ignore
-        logger.debug("Deep research raw response: %s", content)
-        return content
-
     def chat_completion(self, prompt: str) -> str:
         """Generate text using the chat completion model.
         
@@ -92,8 +46,6 @@ class OpenAIClient:
             messages=[
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=1000
         )
         
         content: str = response.choices[0].message.content  # type: ignore

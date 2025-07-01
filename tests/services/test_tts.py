@@ -58,7 +58,7 @@ class TestTTSService:
         mock_mongodb_client.insert_article.side_effect = ["60a1b2c3d4e5f6789", "60a1b2c3d4e5f6790"]
         
         with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
-            with patch('services.tts.REPORTER_ANALYSIS_TEMPLATE', 'Analyze: {headline} - {summary} - {story}'):
+            with patch('services.tts.TTS_INSTRUCTIONS', 'Analyze: {headline} - {summary} - {story}'):
                 result = generate_broadcast_analysis(
                     sample_articles,
                     openai_client=mock_openai_client,
@@ -125,7 +125,7 @@ class TestTTSService:
         mock_mongodb_client.insert_article.return_value = "id123"
         
         with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
-            with patch('services.tts.REPORTER_ANALYSIS_TEMPLATE', 'Analyze {headline} and {summary} with {story}'):
+            with patch('services.tts.TTS_INSTRUCTIONS', 'Analyze {headline} and {summary} with {story}'):
                 generate_broadcast_analysis(
                     [sample_articles[0]],
                     openai_client=mock_openai_client,

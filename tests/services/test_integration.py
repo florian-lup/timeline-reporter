@@ -48,7 +48,7 @@ class TestServicesIntegration:
                 "summary": "Revolutionary AI technology promises to transform healthcare."
             }
         ])
-        mock_clients['openai'].deep_research.return_value = discovery_response
+        mock_clients['perplexity'].deep_research.return_value = discovery_response
         
         # 2. Deduplication Service Mocks
         embeddings = [[0.1] * 1536, [0.2] * 1536]  # Two different embeddings
@@ -91,7 +91,7 @@ class TestServicesIntegration:
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
                 
                 # 1. Discovery
-                events = discover_events(mock_clients['openai'])
+                events = discover_events(mock_clients['perplexity'])
                 
                 # 2. Deduplication
                 unique_events = deduplicate_events(
@@ -143,7 +143,7 @@ class TestServicesIntegration:
         assert broadcast_articles[1].reporter == "Blake"
         
         # Verify all clients were called
-        mock_clients['openai'].deep_research.assert_called_once()
+        mock_clients['perplexity'].deep_research.assert_called_once()
         assert mock_clients['openai'].embed_text.call_count == 2
         assert mock_clients['pinecone'].similarity_search.call_count == 2
         assert mock_clients['perplexity'].research.call_count == 2
@@ -160,7 +160,7 @@ class TestServicesIntegration:
             {"title": "Event 2", "summary": "Second event summary"},
             {"title": "Event 3", "summary": "Third event summary"}
         ])
-        mock_clients['openai'].deep_research.return_value = discovery_response
+        mock_clients['perplexity'].deep_research.return_value = discovery_response
         
         # Deduplication finds Event 2 is duplicate
         embeddings = [[0.1] * 1536, [0.2] * 1536, [0.3] * 1536]
@@ -197,7 +197,7 @@ class TestServicesIntegration:
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('nova', 'Nova')]):
                 
                 # Execute pipeline
-                events = discover_events(mock_clients['openai'])
+                events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
                     events,
                     openai_client=mock_clients['openai'],
@@ -229,11 +229,11 @@ class TestServicesIntegration:
 
     def test_pipeline_error_handling_at_discovery(self, mock_clients):
         """Test pipeline error handling when discovery fails."""
-        mock_clients['openai'].deep_research.side_effect = Exception("Discovery API failed")
+        mock_clients['perplexity'].deep_research.side_effect = Exception("Discovery API failed")
         
         with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
             with pytest.raises(Exception, match="Discovery API failed"):
-                discover_events(mock_clients['openai'])
+                discover_events(mock_clients['perplexity'])
         
         # Subsequent services should not be called
         mock_clients['pinecone'].similarity_search.assert_not_called()
@@ -245,7 +245,7 @@ class TestServicesIntegration:
         discovery_response = json.dumps([
             {"title": "Event 1", "summary": "Event summary"}
         ])
-        mock_clients['openai'].deep_research.return_value = discovery_response
+        mock_clients['perplexity'].deep_research.return_value = discovery_response
         
         # Deduplication succeeds
         mock_clients['openai'].embed_text.return_value = [0.1] * 1536
@@ -255,7 +255,7 @@ class TestServicesIntegration:
         mock_clients['perplexity'].research.side_effect = Exception("Research API failed")
         
         with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
-            events = discover_events(mock_clients['openai'])
+            events = discover_events(mock_clients['perplexity'])
             unique_events = deduplicate_events(
                 events,
                 openai_client=mock_clients['openai'],
@@ -266,7 +266,7 @@ class TestServicesIntegration:
                 research_events(unique_events, perplexity_client=mock_clients['perplexity'])
         
         # Verify services up to failure point were called
-        mock_clients['openai'].deep_research.assert_called_once()
+        mock_clients['perplexity'].deep_research.assert_called_once()
         mock_clients['pinecone'].similarity_search.assert_called_once()
         mock_clients['perplexity'].research.assert_called_once()
         
@@ -280,7 +280,7 @@ class TestServicesIntegration:
             {"title": "Event 1", "summary": "Event 1 summary"},
             {"title": "Event 2", "summary": "Event 2 summary"}
         ])
-        mock_clients['openai'].deep_research.return_value = discovery_response
+        mock_clients['perplexity'].deep_research.return_value = discovery_response
         
         mock_clients['openai'].embed_text.side_effect = [[0.1] * 1536, [0.2] * 1536]
         mock_clients['pinecone'].similarity_search.return_value = []
@@ -312,7 +312,7 @@ class TestServicesIntegration:
         with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')]):
                 
-                events = discover_events(mock_clients['openai'])
+                events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
                     events,
                     openai_client=mock_clients['openai'],
@@ -343,7 +343,7 @@ class TestServicesIntegration:
         discovery_response = json.dumps([
             {"title": "Original Event", "summary": "Original summary"}
         ])
-        mock_clients['openai'].deep_research.return_value = discovery_response
+        mock_clients['perplexity'].deep_research.return_value = discovery_response
         
         # Deduplication: Processes Event objects, returns Event objects
         mock_clients['openai'].embed_text.return_value = [0.1] * 1536
@@ -367,7 +367,7 @@ class TestServicesIntegration:
             with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
                 
                 # Execute pipeline and track transformations
-                events = discover_events(mock_clients['openai'])
+                events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
                     events,
                     openai_client=mock_clients['openai'],
@@ -409,10 +409,10 @@ class TestServicesIntegration:
     def test_empty_pipeline_flow(self, mock_clients):
         """Test pipeline behavior with empty results at each stage."""
         # Discovery returns no events
-        mock_clients['openai'].deep_research.return_value = "[]"
+        mock_clients['perplexity'].deep_research.return_value = "[]"
         
         with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
-            events = discover_events(mock_clients['openai'])
+            events = discover_events(mock_clients['perplexity'])
             
             unique_events = deduplicate_events(
                 events,
@@ -438,7 +438,7 @@ class TestServicesIntegration:
         assert broadcast_articles == []
         
         # Only discovery should be called
-        mock_clients['openai'].deep_research.assert_called_once()
+        mock_clients['perplexity'].deep_research.assert_called_once()
         mock_clients['openai'].embed_text.assert_not_called()
         mock_clients['pinecone'].similarity_search.assert_not_called()
         mock_clients['perplexity'].research.assert_not_called()
@@ -453,7 +453,7 @@ class TestServicesIntegration:
             for i in range(10)
         ]
         discovery_response = json.dumps(events_data)
-        mock_clients['openai'].deep_research.return_value = discovery_response
+        mock_clients['perplexity'].deep_research.return_value = discovery_response
         
         # Deduplication: Filter out 3 events as duplicates
         embeddings = [[i * 0.1] * 1536 for i in range(10)]
@@ -492,7 +492,7 @@ class TestServicesIntegration:
         with patch('services.discovery.get_today_formatted', return_value='2024-01-15'):
             with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')] * 7):
                 
-                events = discover_events(mock_clients['openai'])
+                events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
                     events,
                     openai_client=mock_clients['openai'],

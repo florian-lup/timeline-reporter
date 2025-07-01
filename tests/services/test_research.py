@@ -65,7 +65,7 @@ class TestResearchService:
         """Test successful research of events."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
-        with patch('services.research.ARTICLE_RESEARCH_TEMPLATE', 'Research this event: {event_summary}'):
+        with patch('services.research.RESEARCH_INSTRUCTIONS', 'Research this event: {event_summary}'):
             articles = research_events(sample_events, perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 2
@@ -85,7 +85,7 @@ class TestResearchService:
         """Test that research prompts are properly formatted."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
-        with patch('services.research.ARTICLE_RESEARCH_TEMPLATE', 'Research event: {event_summary}'):
+        with patch('services.research.RESEARCH_INSTRUCTIONS', 'Research event: {event_summary}'):
             research_events(sample_events, perplexity_client=mock_perplexity_client)
         
         # Verify prompts were formatted with event summaries

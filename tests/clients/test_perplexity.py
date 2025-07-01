@@ -252,9 +252,9 @@ class TestPerplexityClient:
             system_message = payload['messages'][0]['content']
             
             assert "investigative journalist" in system_message
-            assert "JSON object" in system_message
-            assert "schema" in system_message
-            assert "markdown fences" in system_message
+            assert "current events analysis" in system_message
+            assert "accuracy" in system_message
+            assert "factual reporting" in system_message
 
     def test_response_content_extraction(self, mock_httpx_client):
         """Test that response content is properly extracted."""
@@ -295,4 +295,241 @@ class TestPerplexityClient:
         
         # Verify instances have different auth headers
         assert client1._headers['Authorization'] == "Bearer test-key-1"
-        assert client2._headers['Authorization'] == "Bearer test-key-2" 
+        assert client2._headers['Authorization'] == "Bearer test-key-2"
+
+    def test_deep_research_success(self, mock_httpx_client):
+        """Test successful deep research call."""
+        mock_client, mock_response = mock_httpx_client
+        
+        # Mock response with <think> tags as per documentation
+        raw_response = '''<think>
+I need to find recent events about climate and geopolitical developments. Let me search for current information.
+</think>
+[
+  {
+    "title": "Climate Summit Reaches Agreement",
+    "summary": "World leaders at COP29 reach historic agreement on climate funding."
+  },
+  {
+    "title": "Geopolitical Tensions Rise",
+    "summary": "Recent diplomatic developments show increasing tensions in Eastern Europe."
+  }
+]'''
+        
+        response_data = {
+            "choices": [
+                {
+                    "message": {
+                        "content": raw_response
+                    }
+                }
+            ]
+        }
+        
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            result = client.deep_research("Find recent events about climate and geopolitics")
+            
+            # Should extract JSON after <think> section
+            expected_json = '''[
+  {
+    "title": "Climate Summit Reaches Agreement",
+    "summary": "World leaders at COP29 reach historic agreement on climate funding."
+  },
+  {
+    "title": "Geopolitical Tensions Rise",
+    "summary": "Recent diplomatic developments show increasing tensions in Eastern Europe."
+  }
+]'''
+            assert result == expected_json
+
+    def test_deep_research_request_structure(self, mock_httpx_client):
+        """Test that deep research creates proper request structure."""
+        mock_client, mock_response = mock_httpx_client
+        
+        response_data = {
+            "choices": [{"message": {"content": '[]'}}]
+        }
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity.DEEP_RESEARCH_MODEL', 'sonar-deep-research'):
+                with patch('clients.perplexity.REASONING_EFFORT', 'medium'):
+                    client = PerplexityClient()
+                    client.deep_research("test prompt")
+                    
+                    # Verify the POST call
+                    mock_client.post.assert_called_once()
+                    call_args = mock_client.post.call_args
+                    
+                    # Check payload structure
+                    payload = call_args[1]['json']
+                    assert payload['model'] == 'sonar-deep-research'
+                    assert payload['reasoning_effort'] == 'medium'
+                    assert len(payload['messages']) == 2
+                    assert payload['messages'][0]['role'] == 'system'
+                    assert payload['messages'][1]['role'] == 'user'
+                    assert payload['messages'][1]['content'] == 'test prompt'
+                    assert payload['response_format']['type'] == 'json_schema'
+                    assert 'web_search_options' in payload
+                    assert 'search_context_size' in payload['web_search_options']
+
+    def test_deep_research_discovery_schema(self, mock_httpx_client):
+        """Test that deep research uses the correct discovery JSON schema."""
+        mock_client, mock_response = mock_httpx_client
+        
+        response_data = {
+            "choices": [{"message": {"content": '[]'}}]
+        }
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            client.deep_research("test prompt")
+            
+            payload = mock_client.post.call_args[1]['json']
+            schema = payload['response_format']['json_schema']['schema']
+            
+            # Verify discovery schema structure (array of events)
+            assert schema['type'] == 'array'
+            assert 'items' in schema
+            
+            item_schema = schema['items']
+            assert item_schema['type'] == 'object'
+            assert set(item_schema['required']) == {'title', 'summary'}
+            assert 'title' in item_schema['properties']
+            assert 'summary' in item_schema['properties']
+
+    def test_deep_research_without_think_tags(self, mock_httpx_client):
+        """Test deep research with response that doesn't have <think> tags."""
+        mock_client, mock_response = mock_httpx_client
+        
+        # Response without <think> tags
+        raw_response = '''[
+  {
+    "title": "Direct Response",
+    "summary": "This response doesn't have think tags."
+  }
+]'''
+        
+        response_data = {
+            "choices": [{"message": {"content": raw_response}}]
+        }
+        
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            result = client.deep_research("test prompt")
+            
+            # Should return the full response as-is
+            assert result == raw_response
+
+    def test_deep_research_timeout_configuration(self):
+        """Test that deep research uses longer timeout (180s)."""
+        with patch('clients.perplexity.httpx.Client') as mock_client_class:
+            mock_context_manager = MagicMock()
+            mock_client = Mock()
+            mock_response = Mock()
+            
+            mock_client_class.return_value = mock_context_manager
+            mock_context_manager.__enter__.return_value = mock_client
+            mock_context_manager.__exit__.return_value = None
+            
+            response_data = {"choices": [{"message": {"content": "[]"}}]}
+            mock_response.json.return_value = response_data
+            mock_response.raise_for_status.return_value = None
+            mock_client.post.return_value = mock_response
+            
+            with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+                client = PerplexityClient()
+                client.deep_research("test prompt")
+                
+                # Verify Client was initialized with timeout=180 (longer for deep research)
+                mock_client_class.assert_called_with(timeout=180)
+
+    @patch('clients.perplexity.logger')
+    def test_logging_deep_research(self, mock_logger, mock_httpx_client):
+        """Test that deep research logs properly."""
+        mock_client, mock_response = mock_httpx_client
+        
+        response_data = {"choices": [{"message": {"content": "[]"}}]}
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            client.deep_research("test prompt")
+            
+            mock_logger.info.assert_called_once_with(
+                "Calling Perplexity deep research endpoint with structured output…"
+            )
+
+    def test_extract_json_from_reasoning_response_with_think(self):
+        """Test the _extract_json_from_reasoning_response method with <think> tags."""
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            
+            response_with_think = '''<think>
+Let me analyze the request and find relevant information.
+This is reasoning content that should be removed.
+</think>
+{"result": "extracted json"}'''
+            
+            result = client._extract_json_from_reasoning_response(response_with_think)
+            assert result == '{"result": "extracted json"}'
+
+    def test_extract_json_from_reasoning_response_without_think(self):
+        """Test the _extract_json_from_reasoning_response method without <think> tags."""
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            
+            response_without_think = '{"result": "direct json"}'
+            
+            result = client._extract_json_from_reasoning_response(response_without_think)
+            assert result == '{"result": "direct json"}'
+
+    def test_deep_research_system_prompt(self, mock_httpx_client):
+        """Test that deep research uses appropriate system prompt."""
+        mock_client, mock_response = mock_httpx_client
+        
+        response_data = {"choices": [{"message": {"content": "[]"}}]}
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            client = PerplexityClient()
+            client.deep_research("test prompt")
+            
+            payload = mock_client.post.call_args[1]['json']
+            system_message = payload['messages'][0]['content']
+            
+            # Should contain discovery-specific instructions
+            assert "expert research assistant specializing in identifying significant current events" in system_message
+            assert "factual" in system_message
+            assert "reputable sources" in system_message
+
+    def test_deep_research_search_context_size(self, mock_httpx_client):
+        """Test that deep research uses the configured search context size."""
+        mock_client, mock_response = mock_httpx_client
+        
+        response_data = {"choices": [{"message": {"content": "[]"}}]}
+        mock_response.json.return_value = response_data
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity.SEARCH_CONTEXT_SIZE', 'large'):
+                client = PerplexityClient()
+                client.deep_research("test prompt")
+                
+                payload = mock_client.post.call_args[1]['json']
+                web_search_options = payload['web_search_options']
+                
+                # Verify search context size is included and uses configured value
+                assert web_search_options['search_context_size'] == 'large' 

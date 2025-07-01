@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List
 
 from clients import OpenAIClient, MongoDBClient
-from config import REPORTER_ANALYSIS_TEMPLATE
+from config import TTS_INSTRUCTIONS
 from utils import logger, Article, get_random_REPORTER_VOICE
 
 
@@ -36,7 +36,7 @@ def generate_broadcast_analysis(
     for article in articles:
         try:
             # Generate reporter analysis using CHAT_MODEL
-            analysis_prompt = REPORTER_ANALYSIS_TEMPLATE.format(
+            analysis_prompt = TTS_INSTRUCTIONS.format(
                 headline=article.headline,
                 summary=article.summary,
                 story=article.story

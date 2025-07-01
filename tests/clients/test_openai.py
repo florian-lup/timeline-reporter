@@ -49,50 +49,7 @@ class TestOpenAIClient:
             with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
                 OpenAIClient()
 
-    def test_deep_research_success(self, mock_openai_client):
-        """Test successful deep research call."""
-        mock_openai, mock_instance = mock_openai_client
-        
-        # Mock the response structure
-        mock_response = Mock()
-        mock_output = Mock()
-        mock_content = Mock()
-        mock_content.text = '{"result": "test response"}'
-        mock_output.content = [mock_content]
-        mock_response.output = [mock_output]
-        
-        mock_instance.responses.create.return_value = mock_response
-        
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            client = OpenAIClient()
-            result = client.deep_research("test prompt")
-            
-            assert result == '{"result": "test response"}'
-            mock_instance.responses.create.assert_called_once()
 
-    def test_deep_research_with_proper_payload(self, mock_openai_client):
-        """Test that deep research creates proper request payload."""
-        mock_openai, mock_instance = mock_openai_client
-        
-        mock_response = Mock()
-        mock_output = Mock()
-        mock_content = Mock()
-        mock_content.text = '{"result": "test"}'
-        mock_output.content = [mock_content]
-        mock_response.output = [mock_output]
-        
-        mock_instance.responses.create.return_value = mock_response
-        
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.DEEP_RESEARCH_MODEL', 'test-model'):
-                client = OpenAIClient()
-                client.deep_research("test prompt")
-                
-                # Verify the call was made with correct parameters
-                call_args = mock_instance.responses.create.call_args
-                assert call_args[1]['model'] == 'test-model'
-                assert len(call_args[1]['input']) == 2
-                assert call_args[1]['tools'][0]['type'] == 'web_search_preview'
 
     def test_embed_text_success(self, mock_openai_client):
         """Test successful text embedding."""
@@ -160,32 +117,7 @@ class TestOpenAIClient:
             assert isinstance(result, list)
             assert all(isinstance(x, float) for x in result)
 
-    @patch('clients.openai.logger')
-    def test_logging_deep_research(self, mock_logger, mock_openai_client):
-        """Test that deep research logs properly."""
-        mock_openai, mock_instance = mock_openai_client
-        
-        mock_response = Mock()
-        mock_output = Mock()
-        mock_content = Mock()
-        mock_content.text = '{"result": "test"}'
-        mock_output.content = [mock_content]
-        mock_response.output = [mock_output]
-        
-        mock_instance.responses.create.return_value = mock_response
-        
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            client = OpenAIClient()
-            client.deep_research("test prompt")
-            
-            mock_logger.info.assert_called_once_with(
-                "Running deep research for prompt: %s",
-                "test prompt"
-            )
-            mock_logger.debug.assert_called_once_with(
-                "Deep research raw response: %s",
-                '{"result": "test"}'
-            )
+
 
     @patch('clients.openai.logger')
     def test_logging_embed_text(self, mock_logger, mock_openai_client):
@@ -208,17 +140,7 @@ class TestOpenAIClient:
                 9  # length of "test text"
             )
 
-    def test_deep_research_exception_handling(self, mock_openai_client):
-        """Test that deep research properly propagates exceptions."""
-        mock_openai, mock_instance = mock_openai_client
         
-        mock_instance.responses.create.side_effect = Exception("API Error")
-        
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            client = OpenAIClient()
-            
-            with pytest.raises(Exception, match="API Error"):
-                client.deep_research("test prompt")
 
     def test_embed_text_exception_handling(self, mock_openai_client):
         """Test that embed_text properly propagates exceptions."""
@@ -266,23 +188,21 @@ class TestOpenAIClient:
         """Test that methods log properly."""
         mock_openai, mock_instance = mock_openai_client
         
-        # Test deep research logging
+        # Test embedding logging
         mock_response = Mock()
-        mock_output = Mock()
-        mock_content = Mock()
-        mock_content.text = '{"result": "test"}'
-        mock_output.content = [mock_content]
-        mock_response.output = [mock_output]
+        mock_data = Mock()
+        mock_data.embedding = [0.1, 0.2, 0.3]
+        mock_response.data = [mock_data]
         
-        mock_instance.responses.create.return_value = mock_response
+        mock_instance.embeddings.create.return_value = mock_response
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
-            client.deep_research("test prompt")
+            client.embed_text("test text")
             
-            mock_logger.info.assert_called_with(
-                "Running deep research for prompt: %s",
-                "test prompt"
+            mock_logger.debug.assert_called_with(
+                "Creating embedding for %d chars",
+                9  # length of "test text"
             )
 
     def test_chat_completion_success(self, mock_openai_client):
