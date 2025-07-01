@@ -312,6 +312,52 @@ class TestOpenAIClient:
                     assert mock_openai_module.api_key == 'test-api-key'
                     assert client._client == mock_openai_module
 
+    def test_openai_import_none_fallback(self):
+        """Test fallback when OpenAI import results in None."""
+        with patch('clients.openai.OpenAI', None):  # Simulate OpenAI = None scenario
+            with patch('clients.openai.openai') as mock_openai_module:
+                with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+                    client = OpenAIClient()
+                    
+                    assert mock_openai_module.api_key == 'test-api-key'
+                    assert client._client == mock_openai_module
+
+    def test_module_level_import_error_scenario(self):
+        """Test the scenario that would occur if module-level import failed."""
+        
+        import clients.openai as openai_module
+        original_openai = openai_module.OpenAI
+        
+        try:
+            # Temporarily set OpenAI to None to simulate the import failure scenario
+            openai_module.OpenAI = None
+            
+            # This should trigger the else branch in __init__ (lines 43-45)
+            with patch('clients.openai.openai') as mock_openai_module:
+                with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+                    client = OpenAIClient()
+                    
+                    # Verify it uses legacy configuration
+                    assert mock_openai_module.api_key == 'test-api-key'
+                    assert client._client == mock_openai_module
+                    
+        finally:
+            # Restore the original OpenAI class
+            openai_module.OpenAI = original_openai
+
+    def test_openai_constructor_import_error_fallback(self):
+        """Test fallback when OpenAI constructor raises ImportError."""
+        mock_openai_class = Mock(side_effect=ImportError("OpenAI constructor failed"))
+        
+        with patch('clients.openai.OpenAI', mock_openai_class):
+            with patch('clients.openai.openai') as mock_openai_module:
+                with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+                    client = OpenAIClient()
+                    
+                    # Should fall back to legacy configuration
+                    assert mock_openai_module.api_key == 'test-api-key'
+                    assert client._client == mock_openai_module
+
     def test_chat_completion_success(self, mock_openai_client):
         """Test successful chat completion call."""
         mock_openai, mock_instance = mock_openai_client

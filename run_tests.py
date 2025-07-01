@@ -16,9 +16,23 @@ def run_tests(test_type="all", coverage=True, verbose=False):
         cmd.extend(["-m", "integration"])
     elif test_type == "clients":
         cmd.extend(["tests/clients/"])
+    elif test_type == "services":
+        cmd.extend(["tests/services/"])
     
     if coverage:
-        cmd.extend(["--cov=clients", "--cov-report=term-missing"])
+        if test_type == "clients":
+            cmd.extend([
+                "--override-ini", "addopts=--verbose --tb=short --strict-markers --disable-warnings",
+                "--cov=clients", "--cov-report=term-missing", "--cov-fail-under=85"
+            ])
+        elif test_type == "services":
+            cmd.extend([
+                "--override-ini", "addopts=--verbose --tb=short --strict-markers --disable-warnings",
+                "--cov=services", "--cov-report=term-missing", "--cov-fail-under=85"
+            ])
+        # For "all", "unit", "integration" use default pytest.ini settings
+    else:
+        cmd.append("--no-cov")
     
     if verbose:
         cmd.append("-v")
@@ -34,7 +48,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run tests for timeline-reporter")
     parser.add_argument(
         "--type", 
-        choices=["all", "unit", "integration", "clients"],
+        choices=["all", "unit", "integration", "clients", "services"],
         default="all",
         help="Type of tests to run (default: all)"
     )

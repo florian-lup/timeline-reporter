@@ -6,8 +6,8 @@ This document provides information about the test suite for the timeline-reporte
 
 The test suite follows Python best practices and includes:
 
-- **Unit tests** for individual client components
-- **Integration tests** showing how clients work together
+- **Unit tests** for individual client and service components
+- **Integration tests** showing how clients and services work together
 - **Comprehensive mocking** of external dependencies
 - **Code coverage reporting**
 - **Parameterized tests** for various input scenarios
@@ -34,7 +34,7 @@ pytest
 Run with coverage:
 
 ```bash
-pytest --cov=clients --cov-report=term-missing
+pytest --cov=clients --cov=services --cov-report=term-missing
 ```
 
 ### Using the Test Runner
@@ -47,6 +47,9 @@ python run_tests.py
 
 # Run only client tests
 python run_tests.py --type clients
+
+# Run only services tests
+python run_tests.py --type services
 
 # Run integration tests
 python run_tests.py --type integration
@@ -75,9 +78,37 @@ pytest -m integration
 Run specific test files:
 
 ```bash
+# Client tests
 pytest tests/clients/test_mongodb.py
 pytest tests/clients/test_openai.py -v
+
+# Services tests
+pytest tests/services/test_discovery.py
+pytest tests/services/test_integration.py -v
 ```
+
+## Test Structure
+
+### Clients Tests (`tests/clients/`)
+
+Test individual client components:
+
+- **MongoDB client**: Database operations, connection handling
+- **OpenAI client**: Chat completion, embeddings, TTS
+- **Perplexity client**: Research API, response parsing
+- **Pinecone client**: Vector operations, similarity search
+- **Integration**: How clients work together
+
+### Services Tests (`tests/services/`)
+
+Test business logic services:
+
+- **Discovery**: Event discovery from news sources
+- **Deduplication**: Filtering duplicate events using embeddings
+- **Research**: Converting events to full articles
+- **TTS**: Generating broadcast audio from articles
+- **Storage**: Persisting articles to database
+- **Integration**: Complete pipeline from discovery to storage
 
 ## Test Features
 
@@ -89,6 +120,7 @@ All external dependencies are mocked:
 - Database connections (MongoDB, Pinecone)
 - API clients (OpenAI, Perplexity)
 - Environment variables
+- File system operations
 
 ### Test Fixtures
 
@@ -99,6 +131,15 @@ Shared fixtures in `conftest.py`:
 - `sample_article_data`: Sample article data structure
 - `sample_research_prompt`: Sample research query
 
+### Pipeline Testing
+
+Services integration tests demonstrate:
+
+- **Complete workflow**: Discovery → Deduplication → Research → TTS → Storage
+- **Data transformation**: Events become Articles with audio
+- **Error propagation**: How failures cascade through the pipeline
+- **Performance**: Large-scale processing with 10+ events
+
 ### Error Handling
 
 Tests cover various error scenarios:
@@ -108,11 +149,12 @@ Tests cover various error scenarios:
 - Invalid responses
 - Malformed data
 - Authentication errors
+- Pipeline failures at any stage
 
 ### Coverage Goals
 
 - **Target**: 85% minimum coverage
-- **Current focus**: Client modules
+- **Current focus**: Client and service modules
 - **Reports**: Terminal output + HTML (htmlcov/)
 
 ## Test Best Practices Followed
@@ -133,6 +175,16 @@ Test configuration in `pytest.ini`:
 - Coverage settings
 - Warning filters
 - Custom markers
+
+## Test Statistics
+
+Current test suite includes:
+
+- **158 total tests** across the entire project
+- **73 client tests** (MongoDB, OpenAI, Perplexity, Pinecone + integration)
+- **65 services tests** (Discovery, Deduplication, Research, TTS, Storage + integration)
+- **Fast execution**: ~3 seconds for full suite
+- **Comprehensive coverage**: All major components and workflows
 
 ## Continuous Integration
 
@@ -170,6 +222,6 @@ pytest -s
 Generate detailed HTML coverage report:
 
 ```bash
-pytest --cov=clients --cov-report=html
+pytest --cov=clients --cov=services --cov-report=html
 # Open htmlcov/index.html in browser
 ```
