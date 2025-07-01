@@ -14,7 +14,7 @@ from config.settings import (
     CHAT_MODEL
 )
 from config.prompts import OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT
-from utils.logger import logger
+from utils import logger
 
 # Import OpenAI at module level so tests can mock it
 try:

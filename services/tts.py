@@ -5,9 +5,7 @@ from typing import List
 from clients.openai import OpenAIClient
 from clients.mongodb import MongoDBClient
 from config.prompts import REPORTER_ANALYSIS_TEMPLATE
-from utils.logger import logger
-from utils.models import Article
-from utils.voice import get_random_REPORTER_VOICE
+from utils import logger, Article, get_random_REPORTER_VOICE
 
 
 def generate_broadcast_analysis(

@@ -4,8 +4,7 @@ from typing import List
 
 from clients.perplexity import PerplexityClient
 from config.prompts import ARTICLE_RESEARCH_TEMPLATE
-from utils.logger import logger
-from utils.models import Article, Event
+from utils import logger, Article, Event
 
 
 def research_events(events: List[Event], *, perplexity_client: PerplexityClient) -> List[Article]:

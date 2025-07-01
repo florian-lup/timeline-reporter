@@ -4,8 +4,7 @@ from typing import List
 
 from clients.openai import OpenAIClient
 from clients.pinecone import PineconeClient
-from utils.logger import logger
-from utils.models import Event
+from utils import logger, Event
 
 
 # ---------------------------------------------------------------------------

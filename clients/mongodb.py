@@ -4,7 +4,7 @@ from __future__ import annotations
 from pymongo import MongoClient
 
 from config.settings import MONGODB_COLLECTION_NAME, MONGODB_DATABASE_NAME, MONGODB_URI
-from utils.logger import logger
+from utils import logger
 
 
 class MongoDBClient:

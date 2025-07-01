@@ -8,7 +8,7 @@ from clients.mongodb import MongoDBClient
 from clients.openai import OpenAIClient
 from clients.perplexity import PerplexityClient
 from clients.pinecone import PineconeClient
-from utils.models import Article
+from utils import Article
 
 
 @pytest.mark.integration
@@ -303,7 +303,7 @@ class TestClientIntegration:
                         # Execute full pipeline
                         from services.research import research_events
                         from services.tts import generate_broadcast_analysis
-                        from utils.models import Event
+                        from utils import Event
                         
                         perplexity_client = PerplexityClient()
                         openai_client = OpenAIClient()

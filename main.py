@@ -6,7 +6,7 @@ Usage::
 """
 from __future__ import annotations
 
-from utils.logger import logger  # noqa: F401 – configure logging first
+from utils import logger  # noqa: F401 – configure logging first
 
 from clients.mongodb import MongoDBClient
 from clients.openai import OpenAIClient

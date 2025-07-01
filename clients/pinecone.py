@@ -15,7 +15,7 @@ from config.settings import (
     SIMILARITY_THRESHOLD,
     TOP_K_RESULTS,
 )
-from utils.logger import logger
+from utils import logger
 
 
 class PineconeClient:

@@ -10,7 +10,7 @@ import httpx
 
 from config.settings import PERPLEXITY_API_KEY, RESEARCH_MODEL, SEARCH_CONTEXT_SIZE
 from config.prompts import PERPLEXITY_JOURNALIST_SYSTEM_PROMPT
-from utils.logger import logger
+from utils import logger
 
 _PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions"
 

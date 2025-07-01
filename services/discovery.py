@@ -6,9 +6,7 @@ from typing import List
 
 from clients.openai import OpenAIClient
 from config.prompts import DISCOVERY_INSTRUCTIONS
-from utils.logger import logger
-from utils.models import Event
-from utils.date import get_today_formatted
+from utils import logger, Event, get_today_formatted
 
 # Older versions of the model sometimes wrap JSON in markdown fences; we keep a
 # fallback regex but expect pure JSON due to `response_format=json_object`.
