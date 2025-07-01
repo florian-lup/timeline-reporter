@@ -5,19 +5,10 @@ import re
 from typing import List
 
 from clients.openai import OpenAIClient
+from config.prompts import DISCOVERY_INSTRUCTIONS
 from utils.logger import logger
 from utils.models import Event
 from utils.date import get_today_formatted
-
-
-# ---------------------------------------------------------------------------
-# Prompts
-# ---------------------------------------------------------------------------
-_DISCOVERY_INSTRUCTIONS = (
-    "You are tasked with identifying significant news about {topics} "
-    "from today {date}. Provide your answer strictly as JSON with the "
-    "following format:\n\n[\n  {{\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }}\n]\n\nDo not include any additional keys, commentary, or markdown."
-)
 
 # Older versions of the model sometimes wrap JSON in markdown fences; we keep a
 # fallback regex but expect pure JSON due to `response_format=json_object`.
@@ -34,7 +25,7 @@ def discover_events(openai_client: OpenAIClient) -> List[Event]:
     topics = "climate, environment and natural disasters, and major geopolitical events"
     
     today = get_today_formatted()
-    prompt = _DISCOVERY_INSTRUCTIONS.format(topics=topics, date=today)
+    prompt = DISCOVERY_INSTRUCTIONS.format(topics=topics, date=today)
     response_text = openai_client.deep_research(prompt)
     logger.debug("Discovery response for combined topics: %s", response_text)
     events = _parse_events_from_response(response_text)

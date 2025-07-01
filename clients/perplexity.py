@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import httpx
 
-from config import PERPLEXITY_API_KEY, RESEARCH_MODEL, SEARCH_CONTEXT_SIZE
+from config.settings import PERPLEXITY_API_KEY, RESEARCH_MODEL, SEARCH_CONTEXT_SIZE
+from config.prompts import PERPLEXITY_JOURNALIST_SYSTEM_PROMPT
 from utils.logger import logger
 
 _PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions"
@@ -58,10 +59,7 @@ class PerplexityClient:
             "messages": [
                 {
                     "role": "system",
-                    "content": (
-                        "You are an investigative journalist. Respond ONLY with a JSON object "
-                        "following the provided schema. Do NOT include markdown fences or commentary."
-                    ),
+                    "content": PERPLEXITY_JOURNALIST_SYSTEM_PROMPT,
                 },
                 {"role": "user", "content": prompt},
             ],

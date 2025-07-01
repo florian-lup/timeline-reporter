@@ -3,16 +3,9 @@ from __future__ import annotations
 from typing import List
 
 from clients.perplexity import PerplexityClient
+from config.prompts import ARTICLE_RESEARCH_TEMPLATE
 from utils.logger import logger
 from utils.models import Article, Event
-
-
-_ARTICLE_PROMPT_TEMPLATE = (
-    "Using the information provided below, craft a well-structured news article.\n\n"
-    "Event:\n{event_summary}\n\n"
-    "The article must be returned strictly as JSON with the following keys:\n"
-    "headline (max 20 words), summary (80-120 words), story (400-600 words), sources (array of URLs)."
-)
 
 
 def research_events(events: List[Event], *, perplexity_client: PerplexityClient) -> List[Article]:
@@ -21,7 +14,7 @@ def research_events(events: List[Event], *, perplexity_client: PerplexityClient)
     articles: list[Article] = []
 
     for event in events:
-        prompt = _ARTICLE_PROMPT_TEMPLATE.format(event_summary=event.summary)
+        prompt = ARTICLE_RESEARCH_TEMPLATE.format(event_summary=event.summary)
         response_text = perplexity_client.research(prompt)
         logger.debug("Perplexity response for '%s': %s", event.title, response_text)
         article = _parse_article_from_response(response_text)

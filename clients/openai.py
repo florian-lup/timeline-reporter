@@ -5,7 +5,8 @@ from typing import List
 
 import openai
 
-from config import DEEP_RESEARCH_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, OPENAI_API_KEY
+from config.settings import DEEP_RESEARCH_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, OPENAI_API_KEY
+from config.prompts import OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT
 from utils.logger import logger
 
 # Import OpenAI at module level so tests can mock it
@@ -59,12 +60,7 @@ class OpenAIClient:
                     "content": [
                         {
                             "type": "input_text",
-                            "text": (
-                                "You are an expert research assistant. Compile structured, "
-                                "factual results only from reputable sources. Provide your answer strictly as JSON with the following format:\n\n"
-                                "[\n  {\n    \"title\": <short headline>,\n    \"summary\": <~300 word summary>\n  }\n]\n\n"
-                                "Do not include any additional keys, commentary, or markdown."
-                            ),
+                            "text": OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT,
                         }
                     ]
                 },

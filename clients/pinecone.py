@@ -5,7 +5,7 @@ from typing import List
 
 from pinecone import Pinecone, ServerlessSpec
 
-from config import (
+from config.settings import (
     CLOUD_PROVIDER,
     CLOUD_REGION,
     EMBEDDING_DIMENSIONS,
