@@ -38,7 +38,7 @@ TTS_MODEL: str = "gpt-4o-mini-tts"
 CHAT_MODEL: str = "gpt-4.1"
 
 # Voice mappings: API name -> Human name
-TTS_VOICE = {
+REPORTER_VOICE = {
     "ash": "Alex",        # API name -> Human name
     "ballad": "Blake", 
     "coral": "Claire",
@@ -46,7 +46,7 @@ TTS_VOICE = {
     "verse": "Victoria"
 }
 
-REPORTER_VOICE = {
+HOST_VOICE = {
     "breeze": "Brian",    # API name -> Human name
     "cove": "Catherine", 
     "ember": "Emma",
