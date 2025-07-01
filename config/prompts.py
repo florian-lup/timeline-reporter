@@ -37,6 +37,26 @@ ARTICLE_RESEARCH_TEMPLATE = (
 )
 
 # ---------------------------------------------------------------------------
+# TTS & Broadcast Analysis Prompts
+# ---------------------------------------------------------------------------
+
+REPORTER_ANALYSIS_TEMPLATE = (
+    "You are a professional news reporter. Based on the research article provided below, "
+    "create a compelling analysis for broadcast presentation.\n\n"
+    "Article:\n"
+    "Headline: {headline}\n"
+    "Summary: {summary}\n"
+    "Story: {story}\n\n"
+    "Create a natural, engaging reporter analysis that:\n"
+    "- Is conversational and suitable for audio broadcast\n"
+    "- Captures the key points and implications\n"
+    "- Uses a professional yet accessible tone\n"
+    "- Is between 200-400 words\n"
+    "- Flows naturally when read aloud\n\n"
+    "Return only the analysis text, no JSON formatting needed."
+)
+
+# ---------------------------------------------------------------------------
 # Perplexity Client Prompts
 # ---------------------------------------------------------------------------
 
@@ -59,8 +79,13 @@ RESEARCH_PROMPTS = {
     "perplexity_system": PERPLEXITY_JOURNALIST_SYSTEM_PROMPT,
 }
 
+TTS_PROMPTS = {
+    "reporter_analysis": REPORTER_ANALYSIS_TEMPLATE,
+}
+
 # All prompts for easy iteration/management
 ALL_PROMPTS = {
     "discovery": DISCOVERY_PROMPTS,
     "research": RESEARCH_PROMPTS,
+    "tts": TTS_PROMPTS,
 }

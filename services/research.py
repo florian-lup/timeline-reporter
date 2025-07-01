@@ -56,4 +56,6 @@ def _parse_article_from_response(response_text: str) -> Article:
         summary=data.get("summary", ""),
         story=data.get("story", ""),
         sources=data.get("sources", []),
+        broadcast=b"",  # Placeholder - will be populated by TTS service
+        reporter="",    # Placeholder - will be populated by TTS service
     )

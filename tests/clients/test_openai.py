@@ -310,4 +310,220 @@ class TestOpenAIClient:
                     client = OpenAIClient()
                     
                     assert mock_openai_module.api_key == 'test-api-key'
-                    assert client._client == mock_openai_module 
+                    assert client._client == mock_openai_module
+
+    def test_chat_completion_success(self, mock_openai_client):
+        """Test successful chat completion call."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        # Mock the chat completion response
+        mock_response = Mock()
+        mock_choice = Mock()
+        mock_message = Mock()
+        mock_message.content = "This is a test response from the chat model."
+        mock_choice.message = mock_message
+        mock_response.choices = [mock_choice]
+        
+        mock_instance.chat.completions.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            result = client.chat_completion("test prompt")
+            
+            assert result == "This is a test response from the chat model."
+            mock_instance.chat.completions.create.assert_called_once()
+
+    def test_chat_completion_with_proper_parameters(self, mock_openai_client):
+        """Test that chat_completion uses correct parameters."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_response = Mock()
+        mock_choice = Mock()
+        mock_message = Mock()
+        mock_message.content = "Test response"
+        mock_choice.message = mock_message
+        mock_response.choices = [mock_choice]
+        
+        mock_instance.chat.completions.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            with patch('clients.openai.CHAT_MODEL', 'gpt-4.1'):
+                client = OpenAIClient()
+                client.chat_completion("test prompt")
+                
+                mock_instance.chat.completions.create.assert_called_once_with(
+                    model='gpt-4.1',
+                    messages=[{"role": "user", "content": "test prompt"}],
+                    temperature=0.7,
+                    max_tokens=1000
+                )
+
+    @pytest.mark.parametrize("prompt", [
+        "simple prompt",
+        "",
+        "very " * 100 + "long prompt",
+        "unicode: 🚀 emoji prompt",
+        "special chars: !@#$%^&*()",
+        "multi\nline\nprompt"
+    ])
+    def test_chat_completion_various_prompts(self, mock_openai_client, prompt):
+        """Test chat_completion with various prompt inputs."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_response = Mock()
+        mock_choice = Mock()
+        mock_message = Mock()
+        mock_message.content = "Response"
+        mock_choice.message = mock_message
+        mock_response.choices = [mock_choice]
+        
+        mock_instance.chat.completions.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            result = client.chat_completion(prompt)
+            
+            assert result == "Response"
+            # Verify the prompt was passed correctly
+            call_args = mock_instance.chat.completions.create.call_args
+            assert call_args[1]['messages'][0]['content'] == prompt
+
+    def test_chat_completion_exception_handling(self, mock_openai_client):
+        """Test that chat_completion properly propagates exceptions."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_instance.chat.completions.create.side_effect = Exception("Chat API Error")
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            
+            with pytest.raises(Exception, match="Chat API Error"):
+                client.chat_completion("test prompt")
+
+    @patch('clients.openai.logger')
+    def test_logging_chat_completion(self, mock_logger, mock_openai_client):
+        """Test that chat_completion logs properly."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_response = Mock()
+        mock_choice = Mock()
+        mock_message = Mock()
+        mock_message.content = "Test response"
+        mock_choice.message = mock_message
+        mock_response.choices = [mock_choice]
+        
+        mock_instance.chat.completions.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            client.chat_completion("test prompt")
+            
+            mock_logger.info.assert_called_once_with(
+                "Generating chat completion for prompt (length: %d chars)",
+                11  # length of "test prompt"
+            )
+            mock_logger.debug.assert_called_once_with(
+                "Chat completion response: %s",
+                "Test response"
+            )
+
+    def test_text_to_speech_success(self, mock_openai_client):
+        """Test successful text-to-speech conversion."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        # Mock the TTS response
+        mock_response = Mock()
+        mock_response.content = b"fake_mp3_audio_data"
+        
+        mock_instance.audio.speech.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            result = client.text_to_speech("Hello world", "alloy")
+            
+            assert result == b"fake_mp3_audio_data"
+            mock_instance.audio.speech.create.assert_called_once()
+
+    def test_text_to_speech_with_proper_parameters(self, mock_openai_client):
+        """Test that text_to_speech uses correct parameters."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_response = Mock()
+        mock_response.content = b"audio_data"
+        
+        mock_instance.audio.speech.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            with patch('clients.openai.TTS_MODEL', 'gpt-4o-mini-tts'):
+                client = OpenAIClient()
+                client.text_to_speech("Hello world", "ash")
+                
+                mock_instance.audio.speech.create.assert_called_once_with(
+                    model='gpt-4o-mini-tts',
+                    voice="ash",
+                    input="Hello world",
+                    response_format="mp3"
+                )
+
+    @pytest.mark.parametrize("text,voice", [
+        ("short text", "alloy"),
+        ("", "echo"),
+        ("long " * 50 + "text", "fable"),
+        ("unicode: 🚀 emoji text", "nova"),
+        ("special chars: !@#$%^&*()", "shimmer"),
+        ("multi\nline\ntext", "ash")
+    ])
+    def test_text_to_speech_various_inputs(self, mock_openai_client, text, voice):
+        """Test text_to_speech with various text and voice inputs."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_response = Mock()
+        mock_response.content = b"audio_data"
+        
+        mock_instance.audio.speech.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            result = client.text_to_speech(text, voice)
+            
+            assert result == b"audio_data"
+            # Verify parameters were passed correctly
+            call_args = mock_instance.audio.speech.create.call_args
+            assert call_args[1]['input'] == text
+            assert call_args[1]['voice'] == voice
+
+    def test_text_to_speech_exception_handling(self, mock_openai_client):
+        """Test that text_to_speech properly propagates exceptions."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_instance.audio.speech.create.side_effect = Exception("TTS API Error")
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            
+            with pytest.raises(Exception, match="TTS API Error"):
+                client.text_to_speech("test text", "alloy")
+
+    @patch('clients.openai.logger')
+    def test_logging_text_to_speech(self, mock_logger, mock_openai_client):
+        """Test that text_to_speech logs properly."""
+        mock_openai, mock_instance = mock_openai_client
+        
+        mock_response = Mock()
+        mock_response.content = b"fake_audio_data_12345"
+        
+        mock_instance.audio.speech.create.return_value = mock_response
+        
+        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            client = OpenAIClient()
+            client.text_to_speech("test text", "alloy")
+            
+            mock_logger.info.assert_called_once_with(
+                "Converting text to speech (length: %d chars, voice: %s)",
+                9,  # length of "test text"
+                "alloy"
+            )
+            mock_logger.debug.assert_called_once_with(
+                "Generated audio data (size: %d bytes)",
+                21  # length of b"fake_audio_data_12345"
+            ) 

@@ -19,4 +19,6 @@ class Article:
     headline: str
     summary: str
     story: str
-    sources: List[str] 
+    sources: List[str]
+    broadcast: bytes     # MP3 audio data
+    reporter: str        # Human name of the reporter voice 

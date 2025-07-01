@@ -5,7 +5,14 @@ from typing import List
 
 import openai
 
-from config.settings import DEEP_RESEARCH_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, OPENAI_API_KEY
+from config.settings import (
+    DEEP_RESEARCH_MODEL, 
+    EMBEDDING_DIMENSIONS, 
+    EMBEDDING_MODEL, 
+    OPENAI_API_KEY,
+    TTS_MODEL,
+    CHAT_MODEL
+)
 from config.prompts import OPENAI_DEEP_RESEARCH_SYSTEM_PROMPT
 from utils.logger import logger
 
@@ -85,6 +92,53 @@ class OpenAIClient:
         content: str = response.output[-1].content[0].text  # type: ignore
         logger.debug("Deep research raw response: %s", content)
         return content
+
+    def chat_completion(self, prompt: str) -> str:
+        """Generate text using the chat completion model.
+        
+        Args:
+            prompt: The input prompt for text generation
+            
+        Returns:
+            The generated text response
+        """
+        logger.info("Generating chat completion for prompt (length: %d chars)", len(prompt))
+        
+        response = self._client.chat.completions.create(  # type: ignore[attr-defined]
+            model=CHAT_MODEL,
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
+        )
+        
+        content: str = response.choices[0].message.content  # type: ignore
+        logger.debug("Chat completion response: %s", content)
+        return content
+
+    def text_to_speech(self, text: str, voice: str) -> bytes:
+        """Convert text to speech using OpenAI's TTS model.
+        
+        Args:
+            text: The text to convert to speech
+            voice: The voice to use (e.g., "alloy", "echo", "fable", etc.)
+            
+        Returns:
+            MP3 audio data as bytes
+        """
+        logger.info("Converting text to speech (length: %d chars, voice: %s)", len(text), voice)
+        
+        response = self._client.audio.speech.create(  # type: ignore[attr-defined]
+            model=TTS_MODEL,
+            voice=voice,
+            input=text,
+            response_format="mp3"
+        )
+        
+        audio_data: bytes = response.content  # type: ignore
+        logger.debug("Generated audio data (size: %d bytes)", len(audio_data))
+        return audio_data
 
     def embed_text(self, text: str) -> List[float]:
         """Gets an embedding vector for *text*."""

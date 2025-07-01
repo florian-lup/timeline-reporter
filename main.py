@@ -2,7 +2,7 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, researches and stores articles
+    python -m main  # discovers, deduplicates, researches, creates TTS broadcasts and stores articles
 """
 from __future__ import annotations
 
@@ -15,11 +15,12 @@ from clients.pinecone import PineconeClient
 from services.deduplication import deduplicate_events
 from services.discovery import discover_events
 from services.research import research_events
+from services.tts import generate_broadcast_analysis
 from services.storage import store_articles
 
 
 def run_pipeline() -> None:  # noqa: D401
-    """Run the 4-step AI reporter pipeline."""
+    """Run the 5-step AI reporter pipeline."""
 
     logger.info("Starting pipeline…")
 
@@ -40,10 +41,14 @@ def run_pipeline() -> None:  # noqa: D401
     # 3️⃣ Research
     articles = research_events(unique_events, perplexity_client=perplexity_client)
 
-    # 4️⃣ Storage
-    store_articles(articles, mongodb_client=mongodb_client)
+    # 4️⃣ TTS Analysis & Broadcast Generation
+    articles_with_broadcast = generate_broadcast_analysis(
+        articles, openai_client=openai_client, mongodb_client=mongodb_client
+    )
 
-    logger.info("Pipeline completed – %d articles stored.", len(articles))
+    # 5️⃣ Storage (now handled within TTS service, but keeping for consistency)
+    # Note: Articles are already stored in MongoDB by the TTS service
+    logger.info("Pipeline completed – %d articles processed with broadcasts.", len(articles_with_broadcast))
 
 
 if __name__ == "__main__":
