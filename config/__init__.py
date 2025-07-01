@@ -30,6 +30,7 @@ from .settings import (
     METRIC,
     TTS_MODEL,
     CHAT_MODEL,
+    DECISION_MODEL,
     
     # Voice Mappings
     REPORTER_VOICE,
@@ -51,6 +52,10 @@ from .prompts import (
     DISCOVERY_SYSTEM_PROMPT,
     DISCOVERY_INSTRUCTIONS,
     
+    # Decision Prompts
+    DECISION_SYSTEM_PROMPT,
+    DECISION_INSTRUCTIONS,
+    
     # Research Prompts
     RESEARCH_SYSTEM_PROMPT,
     RESEARCH_INSTRUCTIONS,
@@ -60,6 +65,7 @@ from .prompts import (
     
     # Organized Prompt Collections
     DISCOVERY_PROMPTS,
+    DECISION_PROMPTS,
     RESEARCH_PROMPTS,
     TTS_PROMPTS,
     ALL_PROMPTS,
@@ -86,6 +92,7 @@ __all__ = [
     "METRIC",
     "TTS_MODEL",
     "CHAT_MODEL",
+    "DECISION_MODEL",
     
     # Voice Mappings
     "REPORTER_VOICE",
@@ -104,6 +111,10 @@ __all__ = [
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_INSTRUCTIONS",
     
+    # Decision Prompts
+    "DECISION_SYSTEM_PROMPT",
+    "DECISION_INSTRUCTIONS",
+    
     # Research Prompts
     "RESEARCH_SYSTEM_PROMPT",
     "RESEARCH_INSTRUCTIONS",
@@ -113,6 +124,7 @@ __all__ = [
     
     # Organized Prompt Collections
     "DISCOVERY_PROMPTS",
+    "DECISION_PROMPTS",
     "RESEARCH_PROMPTS",
     "TTS_PROMPTS",
     "ALL_PROMPTS",

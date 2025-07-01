@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 from services import (
     discover_events,
     deduplicate_events,
+    decide_events,
     research_events,
     generate_broadcast_analysis,
     store_articles
@@ -65,7 +66,10 @@ class TestServicesIntegration:
         mock_clients['openai'].embed_text.side_effect = embeddings
         mock_clients['pinecone'].similarity_search.return_value = []  # No duplicates found
         
-        # 3. Research Service Mocks
+        # 3. Decision Service Mocks
+        mock_clients['openai'].chat_completion.return_value = "1, 2"  # Select both events
+        
+        # 4. Research Service Mocks
         research_responses = [
             json.dumps({
                 "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
@@ -82,8 +86,9 @@ class TestServicesIntegration:
         ]
         mock_clients['perplexity'].research.side_effect = research_responses
         
-        # 4. TTS Service Mocks
+        # 5. TTS Service Mocks
         mock_clients['openai'].chat_completion.side_effect = [
+            "1, 2",  # Decision service response
             "Professional analysis of the climate summit developments for broadcast.",
             "Breaking news analysis of the AI breakthrough in healthcare technology."
         ]
@@ -110,20 +115,26 @@ class TestServicesIntegration:
                     pinecone_client=mock_clients['pinecone']
                 )
                 
-                # 3. Research
-                articles = research_events(
+                # 3. Decision (prioritize most impactful events)
+                prioritized_events = decide_events(
                     unique_events,
+                    openai_client=mock_clients['openai']
+                )
+                
+                # 4. Research
+                articles = research_events(
+                    prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 
-                # 4. TTS & Storage (combined in one service)
+                # 5. TTS & Storage (combined in one service)
                 broadcast_articles = generate_broadcast_analysis(
                     articles,
                     openai_client=mock_clients['openai'],
                     mongodb_client=mock_clients['mongodb']
                 )
                 
-                # 5. Additional Storage (if needed)
+                # 6. Additional Storage (if needed)
                 store_articles(
                     broadcast_articles,
                     mongodb_client=mock_clients['mongodb']
@@ -132,6 +143,7 @@ class TestServicesIntegration:
         # Verify pipeline results
         assert len(events) == 2
         assert len(unique_events) == 2  # No duplicates filtered
+        assert len(prioritized_events) == 2  # Both events selected by decision service
         assert len(articles) == 2
         assert len(broadcast_articles) == 2
         
@@ -156,8 +168,8 @@ class TestServicesIntegration:
         mock_clients['perplexity'].deep_research.assert_called_once()
         assert mock_clients['openai'].embed_text.call_count == 2
         assert mock_clients['pinecone'].similarity_search.call_count == 2
+        assert mock_clients['openai'].chat_completion.call_count == 3  # 1 decision + 2 TTS
         assert mock_clients['perplexity'].research.call_count == 2
-        assert mock_clients['openai'].chat_completion.call_count == 2
         assert mock_clients['openai'].text_to_speech.call_count == 2
         # MongoDB called twice in TTS service + twice in storage service = 4 total
         assert mock_clients['mongodb'].insert_article.call_count == 4
@@ -198,8 +210,13 @@ class TestServicesIntegration:
         ]
         mock_clients['perplexity'].research.side_effect = research_responses
         
+        # Decision selects remaining 2 events
+        mock_clients['openai'].chat_completion.side_effect = [
+            "1, 2",  # Decision service: select both remaining events
+            "Analysis 1", "Analysis 2"  # TTS analyses
+        ]
+        
         # TTS processes 2 articles
-        mock_clients['openai'].chat_completion.side_effect = ["Analysis 1", "Analysis 3"]
         mock_clients['openai'].text_to_speech.side_effect = [b"audio1", b"audio3"]
         mock_clients['mongodb'].insert_article.side_effect = ["id1", "id3"]
         
@@ -213,8 +230,12 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                articles = research_events(
+                prioritized_events = decide_events(
                     unique_events,
+                    openai_client=mock_clients['openai']
+                )
+                articles = research_events(
+                    prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 broadcast_articles = generate_broadcast_analysis(
@@ -226,13 +247,14 @@ class TestServicesIntegration:
         # Verify deduplication worked
         assert len(events) == 3
         assert len(unique_events) == 2  # One duplicate filtered
+        assert len(prioritized_events) == 2  # Decision kept both remaining events
         assert len(articles) == 2
         assert len(broadcast_articles) == 2
         
         # Verify correct events were kept
         assert unique_events[0].title == "Event 1"
         assert unique_events[1].title == "Event 3"
-        # Event 2 should be filtered out
+        # Event 2 should be filtered out by deduplication
         
         # Verify research only processed non-duplicate events
         assert mock_clients['perplexity'].research.call_count == 2
@@ -295,6 +317,13 @@ class TestServicesIntegration:
         mock_clients['openai'].embed_text.side_effect = [[0.1] * 1536, [0.2] * 1536]
         mock_clients['pinecone'].similarity_search.return_value = []
         
+        # Decision: Select both events
+        decision_and_tts_responses = [
+            "1, 2",  # Decision service: select both events
+            "Analysis 1",
+            Exception("TTS failed for second article")
+        ]
+        
         research_responses = [
             json.dumps({
                 "headline": "Article 1",
@@ -311,11 +340,8 @@ class TestServicesIntegration:
         ]
         mock_clients['perplexity'].research.side_effect = research_responses
         
-        # TTS: First article succeeds, second fails
-        mock_clients['openai'].chat_completion.side_effect = [
-            "Analysis 1",
-            Exception("TTS failed for second article")
-        ]
+        # TTS: First article succeeds, second fails (including decision service call)
+        mock_clients['openai'].chat_completion.side_effect = decision_and_tts_responses
         mock_clients['openai'].text_to_speech.side_effect = [b"audio1"]
         mock_clients['mongodb'].insert_article.side_effect = ["id1"]
         
@@ -328,8 +354,12 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                articles = research_events(
+                prioritized_events = decide_events(
                     unique_events,
+                    openai_client=mock_clients['openai']
+                )
+                articles = research_events(
+                    prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 
@@ -359,6 +389,12 @@ class TestServicesIntegration:
         mock_clients['openai'].embed_text.return_value = [0.1] * 1536
         mock_clients['pinecone'].similarity_search.return_value = []
         
+        # Decision: Processes Event objects, returns filtered Event objects
+        mock_clients['openai'].chat_completion.side_effect = [
+            "1",  # Decision service: select first event
+            "Professional broadcast analysis"  # TTS service
+        ]
+        
         # Research: Processes Event objects, returns Article objects
         research_response = json.dumps({
             "headline": "Transformed Headline",
@@ -369,7 +405,6 @@ class TestServicesIntegration:
         mock_clients['perplexity'].research.return_value = research_response
         
         # TTS: Processes Article objects, returns Article objects with broadcast data
-        mock_clients['openai'].chat_completion.return_value = "Professional broadcast analysis"
         mock_clients['openai'].text_to_speech.return_value = b"final_audio_data"
         mock_clients['mongodb'].insert_article.return_value = "final_id"
         
@@ -383,8 +418,12 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                articles = research_events(
+                prioritized_events = decide_events(
                     unique_events,
+                    openai_client=mock_clients['openai']
+                )
+                articles = research_events(
+                    prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 final_articles = generate_broadcast_analysis(
@@ -399,10 +438,14 @@ class TestServicesIntegration:
         assert isinstance(unique_events[0], Event)
         assert events[0].title == unique_events[0].title
         
+        # Event -> Event (decision preserves structure, filters by impact)
+        assert isinstance(prioritized_events[0], Event)
+        assert prioritized_events[0].title == unique_events[0].title
+        
         # Event -> Article (research transforms and enhances)
         assert isinstance(articles[0], Article)
         assert articles[0].headline == "Transformed Headline"
-        assert articles[0].summary != unique_events[0].summary  # Enhanced by research
+        assert articles[0].summary != prioritized_events[0].summary  # Enhanced by research
         assert len(articles[0].sources) == 2
         assert articles[0].broadcast == b""  # Empty before TTS
         assert articles[0].reporter == ""    # Empty before TTS
@@ -482,7 +525,13 @@ class TestServicesIntegration:
         ]
         mock_clients['pinecone'].similarity_search.side_effect = similarity_results
         
-        # Research: Process 7 unique events
+        # Decision: Select top 5 events from the 7 unique events
+        mock_clients['openai'].chat_completion.side_effect = [
+            "1, 2, 3, 4, 5",  # Decision service: select first 5 events
+            *[f"Analysis {i}" for i in range(5)]  # TTS analyses for 5 selected events
+        ]
+        
+        # Research: Process 5 selected events
         research_responses = [
             json.dumps({
                 "headline": f"Article {i}",
@@ -490,17 +539,16 @@ class TestServicesIntegration:
                 "story": f"Article story {i}",
                 "sources": [f"https://example.com/{i}"]
             })
-            for i in [0, 1, 3, 4, 6, 7, 9]  # Non-duplicate events
+            for i in range(5)  # First 5 events selected by decision service
         ]
         mock_clients['perplexity'].research.side_effect = research_responses
         
-        # TTS: Process all 7 articles successfully
-        mock_clients['openai'].chat_completion.side_effect = [f"Analysis {i}" for i in range(7)]
-        mock_clients['openai'].text_to_speech.side_effect = [f"audio_{i}".encode() for i in range(7)]
-        mock_clients['mongodb'].insert_article.side_effect = [f"id_{i}" for i in range(7)]
+        # TTS: Process 5 articles successfully
+        mock_clients['openai'].text_to_speech.side_effect = [f"audio_{i}".encode() for i in range(5)]
+        mock_clients['mongodb'].insert_article.side_effect = [f"id_{i}" for i in range(5)]
         
         with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')] * 7):
+            with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')] * 5):
                 
                 events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
@@ -508,8 +556,12 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                articles = research_events(
+                prioritized_events = decide_events(
                     unique_events,
+                    openai_client=mock_clients['openai']
+                )
+                articles = research_events(
+                    prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 broadcast_articles = generate_broadcast_analysis(
@@ -521,12 +573,13 @@ class TestServicesIntegration:
         # Verify scale processing
         assert len(events) == 10
         assert len(unique_events) == 7  # 3 duplicates filtered
-        assert len(articles) == 7
-        assert len(broadcast_articles) == 7
+        assert len(prioritized_events) == 5  # Decision service selected top 5
+        assert len(articles) == 5
+        assert len(broadcast_articles) == 5
         
         # Verify correct call counts
         assert mock_clients['openai'].embed_text.call_count == 10
         assert mock_clients['pinecone'].similarity_search.call_count == 10
-        assert mock_clients['perplexity'].research.call_count == 7
-        assert mock_clients['openai'].chat_completion.call_count == 7
-        assert mock_clients['openai'].text_to_speech.call_count == 7 
+        assert mock_clients['openai'].chat_completion.call_count == 6  # 1 decision + 5 TTS
+        assert mock_clients['perplexity'].research.call_count == 5
+        assert mock_clients['openai'].text_to_speech.call_count == 5 

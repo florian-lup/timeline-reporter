@@ -221,7 +221,7 @@ class TestOpenAIClient:
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
-            result = client.chat_completion("test prompt")
+            result = client.chat_completion("test prompt", model="test-model")
             
             assert result == "This is a test response from the chat model."
             mock_instance.chat.completions.create.assert_called_once()
@@ -240,14 +240,13 @@ class TestOpenAIClient:
         mock_instance.chat.completions.create.return_value = mock_response
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.CHAT_MODEL', 'gpt-4.1'):
-                client = OpenAIClient()
-                client.chat_completion("test prompt")
-                
-                mock_instance.chat.completions.create.assert_called_once_with(
-                    model='gpt-4.1',
-                    messages=[{"role": "user", "content": "test prompt"}]
-                )
+            client = OpenAIClient()
+            client.chat_completion("test prompt", model="gpt-4.1")
+            
+            mock_instance.chat.completions.create.assert_called_once_with(
+                model='gpt-4.1',
+                messages=[{"role": "user", "content": "test prompt"}]
+            )
 
     @pytest.mark.parametrize("prompt", [
         "simple prompt",
@@ -272,7 +271,7 @@ class TestOpenAIClient:
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
-            result = client.chat_completion(prompt)
+            result = client.chat_completion(prompt, model="test-model")
             
             assert result == "Response"
             # Verify the prompt was passed correctly
@@ -289,7 +288,7 @@ class TestOpenAIClient:
             client = OpenAIClient()
             
             with pytest.raises(Exception, match="Chat API Error"):
-                client.chat_completion("test prompt")
+                client.chat_completion("test prompt", model="test-model")
 
     @patch('clients.openai.logger')
     def test_logging_chat_completion(self, mock_logger, mock_openai_client):
@@ -307,11 +306,12 @@ class TestOpenAIClient:
         
         with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
-            client.chat_completion("test prompt")
+            client.chat_completion("test prompt", model="test-model")
             
             mock_logger.info.assert_called_once_with(
-                "Generating chat completion for prompt (length: %d chars)",
-                11  # length of "test prompt"
+                "Generating chat completion (length: %d chars, model: %s)",
+                11,  # length of "test prompt"
+                "test-model"
             )
             mock_logger.debug.assert_called_once_with(
                 "Chat completion response: %s",

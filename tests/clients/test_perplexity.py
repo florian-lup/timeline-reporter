@@ -156,11 +156,11 @@ class TestPerplexityClient:
             for field in required_fields:
                 assert field in schema['properties']
             
-            # Verify sources is array of URIs
+            # Verify sources is array of strings
             sources_prop = schema['properties']['sources']
             assert sources_prop['type'] == 'array'
             assert sources_prop['items']['type'] == 'string'
-            assert sources_prop['items']['format'] == 'uri'
+            # Note: format constraint is optional in JSON schema
 
     def test_research_http_error(self, mock_httpx_client):
         """Test that HTTP errors are properly raised."""

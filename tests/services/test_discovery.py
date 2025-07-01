@@ -98,7 +98,7 @@ class TestDiscoveryService:
                 events = discover_events(mock_perplexity_client)
         
         assert events == []
-        mock_logger.error.assert_called()
+        mock_logger.warning.assert_called()
 
     def test_discover_events_missing_fields(self, mock_perplexity_client, test_discovery_instructions):
         """Test event discovery with missing required fields."""

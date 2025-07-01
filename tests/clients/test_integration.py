@@ -204,7 +204,7 @@ class TestClientIntegration:
                 client = OpenAIClient()
                 
                 # 1. Generate analysis text
-                analysis_text = client.chat_completion("Create analysis for: AI breakthrough news")
+                analysis_text = client.chat_completion("Create analysis for: AI breakthrough news", model="test-model")
                 
                 # 2. Convert to speech
                 audio_data = client.text_to_speech(analysis_text, "alloy")
