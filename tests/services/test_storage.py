@@ -66,14 +66,14 @@ class TestStorageService:
         # Verify logging
         assert mock_logger.info.call_count == 2
         mock_logger.info.assert_any_call(
-            "Stored article '%s' (id=%s)", 
-            "Climate Summit Agreement", 
-            "60a1b2c3d4e5f6789"
+            "Stored article: '%s' (id=%s)",
+            "Climate Summit Agreement",
+            '60a1b2c3d4e5f6789'
         )
         mock_logger.info.assert_any_call(
-            "Stored article '%s' (id=%s)", 
-            "Tech Innovation News", 
-            "60a1b2c3d4e5f6790"
+            "Stored article: '%s' (id=%s)",
+            "Tech Innovation News",
+            '60a1b2c3d4e5f6790'
         )
 
     def test_store_articles_empty_list(self, mock_mongodb_client):

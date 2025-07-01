@@ -142,11 +142,11 @@ class TestResearchService:
     def test_research_events_empty_list(self, mock_perplexity_client):
         """Test research with empty event list."""
         with patch('services.research.logger') as mock_logger:
-            articles = research_events([], perplexity_client=mock_perplexity_client)
+            result = research_events([], perplexity_client=mock_perplexity_client)
         
-        assert articles == []
+        assert result == []
         mock_perplexity_client.research.assert_not_called()
-        mock_logger.info.assert_called_with("Generated %d articles.", 0)
+        mock_logger.info.assert_called_with("Generated %d articles", 0)
 
     def test_research_events_unicode_content(self, mock_perplexity_client, sample_events):
         """Test research with unicode characters in response."""
@@ -193,17 +193,17 @@ class TestResearchService:
 
     @patch('services.research.logger')
     def test_logging_research(self, mock_logger, mock_perplexity_client, sample_events, sample_research_responses):
-        """Test that research logs properly."""
+        """Test that research service logs properly."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
         research_events(sample_events, perplexity_client=mock_perplexity_client)
         
-        # Verify debug logging for each event
-        debug_calls = mock_logger.debug.call_args_list
-        assert len(debug_calls) == 2
+        # Verify final count logging
+        mock_logger.info.assert_called_with("Generated %d articles", 2)
         
-        # Verify info logging for final count
-        mock_logger.info.assert_called_with("Generated %d articles.", 2)
+        # Debug logging was removed - no debug assertions needed
+        debug_calls = [call for call in mock_logger.debug.call_args_list]
+        assert len(debug_calls) == 0
 
     def test_research_events_article_structure(self, mock_perplexity_client, sample_events, sample_research_responses):
         """Test that generated articles have correct structure."""

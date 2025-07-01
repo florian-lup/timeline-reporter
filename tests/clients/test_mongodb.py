@@ -141,7 +141,7 @@ class TestMongoDBClient:
                     MongoDBClient()
                     
                     mock_logger.info.assert_called_once_with(
-                        "Connected to MongoDB database=%s collection=%s",
+                        "MongoDB connected: %s/%s",
                         'test_db',
                         'test_collection'
                     )
@@ -160,10 +160,8 @@ class TestMongoDBClient:
             client = MongoDBClient()
             client.insert_article(sample_article)
             
-            mock_logger.debug.assert_called_once_with(
-                "Inserting article: %s",
-                "Test Article"
-            )
+            # Debug logging was removed - no assertion needed
+            pass
 
     def test_database_and_collection_configuration(self, mock_mongo_client):
         """Test that correct database and collection names are used."""

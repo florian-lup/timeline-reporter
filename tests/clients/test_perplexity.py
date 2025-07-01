@@ -225,7 +225,7 @@ class TestPerplexityClient:
 
     @patch('clients.perplexity.logger')
     def test_logging_research(self, mock_logger, mock_httpx_client, sample_response_data):
-        """Test that research logs properly."""
+        """Test that research method logs properly."""
         mock_client, mock_response = mock_httpx_client
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
@@ -235,7 +235,7 @@ class TestPerplexityClient:
             client.research("test prompt")
             
             mock_logger.info.assert_called_once_with(
-                "Calling Perplexity research endpoint with structured output…"
+                "Research request with %s", "sonar"
             )
 
     def test_system_message_content(self, mock_httpx_client, sample_response_data):
@@ -468,7 +468,7 @@ I need to find recent events about climate and geopolitical developments. Let me
             client.deep_research("test prompt")
             
             mock_logger.info.assert_called_once_with(
-                "Calling Perplexity deep research endpoint with structured output…"
+                "Deep research request with %s", "sonar-deep-research"
             )
 
     def test_extract_json_from_reasoning_response_with_think(self):

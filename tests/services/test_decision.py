@@ -86,7 +86,7 @@ class TestDecisionService:
         
         assert result == []
         mock_openai_client.chat_completion.assert_not_called()
-        mock_logger.info.assert_called_with("No events to evaluate for decision making.")
+        mock_logger.info.assert_called_with("No events to evaluate")
 
     def test_decide_events_single_event(self, mock_openai_client):
         """Test decision making with single event."""
@@ -141,7 +141,7 @@ class TestDecisionService:
         assert result == sample_events[:3]
         
         mock_logger.warning.assert_any_call(
-            "No valid numbers found in decision response, using fallback."
+            "No valid numbers in response, using fallback"
         )
 
     def test_decide_events_ai_error_handling(self, mock_openai_client, sample_events):
@@ -175,13 +175,13 @@ class TestDecisionService:
         
         # Verify logging
         mock_logger.info.assert_any_call(
-            "Evaluating %d events for impact and priority...", 5
+            "Evaluating %d events for priority", 5
         )
         mock_logger.info.assert_any_call(
-            "Selected %d high-impact events for research.", 3
+            "Selected %d priority events", 3
         )
         mock_logger.info.assert_any_call(
-            "Selected event %d: %s", 1, "Climate Summit 2024"
+            "Priority %d: %s", 1, "Climate Summit 2024"
         )
 
     def test_decide_events_fallback_behavior(self, mock_openai_client, sample_events):
@@ -196,7 +196,7 @@ class TestDecisionService:
         assert result == sample_events[:3]
         
         mock_logger.warning.assert_any_call(
-            "No valid numbers found in decision response, using fallback."
+            "No valid numbers in response, using fallback"
         )
 
     def test_decide_events_partial_parsing_success(self, mock_openai_client, sample_events):

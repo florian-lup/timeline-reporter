@@ -104,7 +104,7 @@ class TestTTSService:
         mock_mongodb_client.insert_article.assert_not_called()
 
     def test_generate_broadcast_analysis_empty_list(self, mock_openai_client, mock_mongodb_client):
-        """Test with empty article list."""
+        """Test TTS generation with empty article list."""
         with patch('services.tts.logger') as mock_logger:
             result = generate_broadcast_analysis(
                 [],
@@ -114,8 +114,11 @@ class TestTTSService:
         
         assert result == []
         mock_openai_client.chat_completion.assert_not_called()
+        mock_openai_client.text_to_speech.assert_not_called()
+        mock_mongodb_client.insert_article.assert_not_called()
+        
         mock_logger.info.assert_called_once_with(
-            "Successfully generated broadcasts for %d/%d articles", 0, 0
+            "Generated broadcasts: %d/%d articles processed", 0, 0
         )
 
     def test_generate_broadcast_analysis_prompt_formatting(self, mock_openai_client, mock_mongodb_client, sample_articles):
@@ -141,27 +144,31 @@ class TestTTSService:
     @patch('services.tts.logger')
     def test_logging_tts_service(self, mock_logger, mock_openai_client, mock_mongodb_client, sample_articles):
         """Test that TTS service logs properly."""
-        mock_openai_client.chat_completion.return_value = "Analysis"
-        mock_openai_client.text_to_speech.return_value = b"audio_data"
-        mock_mongodb_client.insert_article.return_value = "id123"
+        # Mock OpenAI responses
+        mock_openai_client.chat_completion.return_value = "Generated reporter analysis"
+        mock_openai_client.text_to_speech.return_value = b"fake_audio_data"
         
-        with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
+        # Mock MongoDB insertion
+        mock_mongodb_client.insert_article.return_value = "60a1b2c3d4e5f6789"
+        
+        # Mock voice selection
+        with patch('services.tts.get_random_REPORTER_VOICE', return_value=('alloy', 'Alex')):
             generate_broadcast_analysis(
-                [sample_articles[0]],
+                sample_articles,
                 openai_client=mock_openai_client,
                 mongodb_client=mock_mongodb_client
             )
         
         # Verify logging calls
         mock_logger.info.assert_any_call(
-            "Generating reporter analysis for article: '%s'", 
-            sample_articles[0].headline
+            "Generating analysis for: '%s'", "Climate Summit Reaches Agreement"
         )
         mock_logger.info.assert_any_call(
-            "Selected reporter voice: %s (%s)", 
-            "Alex", "ash"
+            "Selected reporter: %s (%s)", "Alex", "alloy"
         )
         mock_logger.info.assert_any_call(
-            "Converting analysis to speech for article: '%s'", 
-            sample_articles[0].headline
+            "Converting to speech: '%s'", "Climate Summit Reaches Agreement"
+        )
+        mock_logger.info.assert_called_with(
+            "Generated broadcasts: %d/%d articles processed", 2, 2
         ) 

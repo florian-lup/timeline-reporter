@@ -135,10 +135,8 @@ class TestOpenAIClient:
             client = OpenAIClient()
             client.embed_text("test text")
             
-            mock_logger.debug.assert_called_once_with(
-                "Creating embedding for %d chars",
-                9  # length of "test text"
-            )
+            # Debug logging was removed - no assertion needed
+            pass
 
         
 
@@ -200,10 +198,8 @@ class TestOpenAIClient:
             client = OpenAIClient()
             client.embed_text("test text")
             
-            mock_logger.debug.assert_called_with(
-                "Creating embedding for %d chars",
-                9  # length of "test text"
-            )
+            # Debug logging was removed - no assertion needed
+            pass
 
     def test_chat_completion_success(self, mock_openai_client):
         """Test successful chat completion call."""
@@ -309,14 +305,10 @@ class TestOpenAIClient:
             client.chat_completion("test prompt", model="test-model")
             
             mock_logger.info.assert_called_once_with(
-                "Generating chat completion (length: %d chars, model: %s)",
-                11,  # length of "test prompt"
+                "Chat completion with %s",
                 "test-model"
             )
-            mock_logger.debug.assert_called_once_with(
-                "Chat completion response: %s",
-                "Test response"
-            )
+            # Debug logging was removed - no debug assertion needed
 
     def test_text_to_speech_success(self, mock_openai_client):
         """Test successful text-to-speech conversion."""
@@ -410,11 +402,7 @@ class TestOpenAIClient:
             client.text_to_speech("test text", "alloy")
             
             mock_logger.info.assert_called_once_with(
-                "Converting text to speech (length: %d chars, voice: %s)",
-                9,  # length of "test text"
+                "Converting to speech with voice: %s",
                 "alloy"
             )
-            mock_logger.debug.assert_called_once_with(
-                "Generated audio data (size: %d bytes)",
-                21  # length of b"fake_audio_data_12345"
-            ) 
+            # Debug logging was removed - no debug assertion needed 

@@ -100,9 +100,8 @@ class TestDeduplicationService:
         
         # Verify duplicate was logged
         mock_logger.info.assert_any_call(
-            "Skipping duplicate event '%s' (matched %d existing with score %.2f)",
+            "Skipping duplicate: '%s' (similarity: %.2f)",
             sample_events[1].title,
-            1,
             0.95
         )
         
@@ -170,7 +169,7 @@ class TestDeduplicationService:
         mock_pinecone_client.similarity_search.assert_not_called()
         mock_pinecone_client.upsert_vector.assert_not_called()
         
-        mock_logger.info.assert_called_with("%d unique events after deduplication.", 0)
+        mock_logger.info.assert_called_with("Deduplication complete: %d unique events", 0)
 
     def test_deduplicate_events_single_event(self, mock_openai_client, mock_pinecone_client):
         """Test deduplication with single event."""
@@ -210,9 +209,8 @@ class TestDeduplicationService:
         
         # Verify logging shows multiple matches
         mock_logger.info.assert_any_call(
-            "Skipping duplicate event '%s' (matched %d existing with score %.2f)",
+            "Skipping duplicate: '%s' (similarity: %.2f)",
             sample_events[0].title,
-            3,  # 3 matches
             0.95  # Best score
         )
 
@@ -252,7 +250,7 @@ class TestDeduplicationService:
             pinecone_client=mock_pinecone_client
         )
         
-        mock_logger.info.assert_called_with("%d unique events after deduplication.", 3)
+        mock_logger.info.assert_called_with("Deduplication complete: %d unique events", 3)
 
     def test_deduplicate_events_embedding_error_handling(self, mock_openai_client, mock_pinecone_client, sample_events):
         """Test error handling when embedding fails."""

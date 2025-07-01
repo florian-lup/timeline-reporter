@@ -165,9 +165,9 @@ class TestPineconeClient:
             with patch('clients.pinecone.PINECONE_INDEX_NAME', 'test-index'):
                 PineconeClient()
                 
-                mock_logger.info.assert_any_call("Initialising Pinecone...")
+                mock_logger.info.assert_any_call("Initializing Pinecone")
                 mock_logger.info.assert_any_call(
-                    "Pinecone initialised (index: %s).", 'test-index'
+                    "Pinecone ready: %s", 'test-index'
                 )
 
     @patch('clients.pinecone.logger')
@@ -181,7 +181,7 @@ class TestPineconeClient:
                 PineconeClient()
                 
                 mock_logger.info.assert_any_call(
-                    "Creating pinecone index %s", 'new-index'
+                    "Creating index: %s", 'new-index'
                 )
 
     @patch('clients.pinecone.logger')
@@ -198,9 +198,8 @@ class TestPineconeClient:
             client = PineconeClient()
             client.similarity_search([0.1, 0.2, 0.3], top_k=10)
             
-            mock_logger.debug.assert_called_once_with(
-                "Performing similarity search with top_k=%d", 10
-            )
+            # Debug logging was removed - no assertion needed
+            pass
 
     @patch('clients.pinecone.logger')
     def test_logging_upsert_vector(self, mock_logger, mock_pinecone):
@@ -212,6 +211,5 @@ class TestPineconeClient:
             client = PineconeClient()
             client.upsert_vector("test-id", [0.1, 0.2, 0.3])
             
-            mock_logger.debug.assert_called_once_with(
-                "Upserting vector id=%s", "test-id"
-            ) 
+            # Debug logging was removed - no assertion needed
+            pass 
