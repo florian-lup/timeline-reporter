@@ -34,6 +34,24 @@ DEEP_RESEARCH_MODEL: str = "o4-mini-deep-research"
 EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
 METRIC: str = "cosine"
+TTS_MODEL: str = "gpt-4o-mini-tts"
+CHAT_MODEL: str = "gpt-4.1"
+
+# Voice mappings: API name -> Human name
+TTS_VOICE = {
+    "ash": "Alex",        # API name -> Human name
+    "ballad": "Blake", 
+    "coral": "Claire",
+    "sage": "Sam",
+    "verse": "Victoria"
+}
+
+REPORTER_VOICE = {
+    "breeze": "Brian",    # API name -> Human name
+    "cove": "Catherine", 
+    "ember": "Emma",
+    "juniper": "Jordan"
+}
 
 # ---------------------------------------------------------------------------
 # Perplexity

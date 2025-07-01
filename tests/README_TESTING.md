@@ -13,21 +13,6 @@ The test suite follows Python best practices and includes:
 - **Parameterized tests** for various input scenarios
 - **Error handling tests** for robust code
 
-## Test Structure
-
-```
-tests/
-├── __init__.py
-├── conftest.py              # Shared fixtures and configuration
-├── test_integration.py      # Integration tests
-└── clients/
-    ├── __init__.py
-    ├── test_mongodb.py      # MongoDB client tests
-    ├── test_openai.py       # OpenAI client tests
-    ├── test_perplexity.py   # Perplexity client tests
-    └── test_pinecone.py     # Pinecone client tests
-```
-
 ## Running Tests
 
 ### Prerequisites
