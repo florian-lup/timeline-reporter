@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
+
+from utils.date import get_today_formatted
 
 
 @dataclass
@@ -10,6 +12,7 @@ class Event:
 
     title: str
     summary: str
+    date: str = field(default_factory=get_today_formatted)
 
 
 @dataclass
@@ -20,5 +23,6 @@ class Article:
     summary: str
     story: str
     sources: List[str]
-    broadcast: bytes     # MP3 audio data
-    reporter: str        # Human name of the reporter voice 
+    broadcast: bytes
+    reporter: str
+    date: str = field(default_factory=get_today_formatted)

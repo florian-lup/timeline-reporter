@@ -239,7 +239,7 @@ class TestClientIntegration:
         
         # Test converting to dict for MongoDB storage
         article_dict = article.__dict__
-        expected_keys = {'headline', 'summary', 'story', 'sources', 'broadcast', 'reporter'}
+        expected_keys = {'headline', 'summary', 'story', 'sources', 'broadcast', 'reporter', 'date'}
         assert set(article_dict.keys()) == expected_keys
         
         # Test that all fields are present (no None values)
