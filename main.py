@@ -4,19 +4,19 @@ Usage::
 
     python -m main  # discovers, deduplicates, prioritizes, researches, creates TTS broadcasts and stores articles
 """
-from __future__ import annotations
 
-from utils import logger  # noqa: F401 – configure logging first
+from __future__ import annotations
 
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
 from services import (
     deduplicate_events,
-    select_events,
     discover_events,
-    research_articles,
     generate_audio,
     insert_articles,
+    research_articles,
+    select_events,
 )
+from utils import logger  # noqa: F401 – configure logging first
 
 
 def run_pipeline() -> None:  # noqa: D401
@@ -42,17 +42,20 @@ def run_pipeline() -> None:  # noqa: D401
     prioritized_events = select_events(unique_events, openai_client=openai_client)
 
     # 4️⃣ Research
-    articles = research_articles(prioritized_events, perplexity_client=perplexity_client)
+    articles = research_articles(
+        prioritized_events, perplexity_client=perplexity_client
+    )
 
     # 5️⃣ TTS Analysis & Broadcast Generation
-    articles_with_broadcast = generate_audio(
-        articles, openai_client=openai_client
-    )
+    articles_with_broadcast = generate_audio(articles, openai_client=openai_client)
 
     # 6️⃣ Storage
     insert_articles(articles_with_broadcast, mongodb_client=mongodb_client)
 
-    logger.info("Pipeline complete: %d articles with broadcasts stored", len(articles_with_broadcast))
+    logger.info(
+        "Pipeline complete: %d articles with broadcasts stored",
+        len(articles_with_broadcast),
+    )
 
 
 if __name__ == "__main__":

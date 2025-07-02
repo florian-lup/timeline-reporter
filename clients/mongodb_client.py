@@ -1,4 +1,5 @@
 """MongoDB helper client using `pymongo`."""
+
 from __future__ import annotations
 
 from pymongo import MongoClient
@@ -14,11 +15,15 @@ class MongoDBClient:
         if uri is None:
             uri = MONGODB_URI
         if not uri:
-            raise ValueError("MONGODB_URI is missing, cannot initialise MongoDB client.")
-        self._client = MongoClient(uri)
+            raise ValueError(
+                "MONGODB_URI is missing, cannot initialise MongoDB client."
+            )
+        self._client: MongoClient = MongoClient(uri)
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]
-        logger.info("MongoDB connected: %s/%s", MONGODB_DATABASE_NAME, MONGODB_COLLECTION_NAME)
+        logger.info(
+            "MongoDB connected: %s/%s", MONGODB_DATABASE_NAME, MONGODB_COLLECTION_NAME
+        )
 
     # ------------------------------------------------------------------
     # Public helpers

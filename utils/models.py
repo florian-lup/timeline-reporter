@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
 
 from utils.date import get_today_formatted
 
@@ -22,7 +21,7 @@ class Article:
     headline: str
     summary: str
     story: str
-    sources: List[str]
+    sources: list[str]
     broadcast: bytes
     reporter: str
     date: str = field(default_factory=get_today_formatted)

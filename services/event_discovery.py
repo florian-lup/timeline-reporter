@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-from typing import List
 
 from clients import PerplexityClient
 from config import DISCOVERY_INSTRUCTIONS
-from utils import logger, Event
+from utils import Event, logger
 
 # Older versions of the model sometimes wrap JSON in markdown fences; we keep a
 # fallback regex but expect pure JSON due to `response_format=json_object`.
@@ -17,7 +16,8 @@ _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 # Public API
 # ---------------------------------------------------------------------------
 
-def discover_events(perplexity_client: PerplexityClient) -> List[Event]:
+
+def discover_events(perplexity_client: PerplexityClient) -> list[Event]:
     """Discovers events for multiple topics in a single API call and returns the combined list."""
 
     response_text = perplexity_client.deep_research(DISCOVERY_INSTRUCTIONS)
@@ -31,12 +31,13 @@ def discover_events(perplexity_client: PerplexityClient) -> List[Event]:
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _parse_events_from_response(response_text: str) -> List[Event]:
+
+def _parse_events_from_response(response_text: str) -> list[Event]:
     """Extracts JSON from the model response and maps to Event objects."""
     # Some models wrap JSON in markdown triple-backticks; strip them if needed.
     match = _FENCE_REGEX.search(response_text)
     json_blob = match.group(1) if match else response_text
-    
+
     try:
         data = json.loads(json_blob)
     except json.JSONDecodeError as exc:  # pragma: no cover
@@ -48,15 +49,7 @@ def _parse_events_from_response(response_text: str) -> List[Event]:
         logger.warning("Expected JSON array, got %s", type(data))
         return []
 
-    events: list[Event] = [Event(title=item["title"], summary=item["summary"]) for item in data]
+    events: list[Event] = [
+        Event(title=item["title"], summary=item["summary"]) for item in data
+    ]
     return events
-
-
-
-
-
-
-
-
-
-

@@ -21,7 +21,7 @@ DISCOVERY_INSTRUCTIONS = (
     f"Identify significant news about {DISCOVERY_TOPICS} from today {get_today_formatted()}. "
     "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience. "
     "Return your findings as a JSON array of events, where each event has 'title' and 'summary' fields. "
-    "Example format: [{\"title\": \"Event Title\", \"summary\": \"Brief description...\"}]"
+    'Example format: [{"title": "Event Title", "summary": "Brief description..."}]'
 )
 
 # ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ DECISION_INSTRUCTIONS = (
     "4. Uniqueness and newsworthiness\n"
     "5. Credibility and verifiability\n\n"
     "Select the top 3-5 most impactful events that warrant comprehensive research and reporting.\n\n"
-    "Return only the numbers of the events you want to keep (e.g., \"1, 3, 5\" or \"2, 4, 7\").\n"
+    'Return only the numbers of the events you want to keep (e.g., "1, 3, 5" or "2, 4, 7").\n'
     "Focus on stories that will have the greatest impact on your audience and society."
 )
 

@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from typing import List
-
 from clients import MongoDBClient
-from utils import logger, Article
-
+from utils import Article, logger
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-def insert_articles(articles: List[Article], *, mongodb_client: MongoDBClient) -> None:
+
+def insert_articles(articles: list[Article], *, mongodb_client: MongoDBClient) -> None:
     """Stores articles in MongoDB."""
 
     for article in articles:

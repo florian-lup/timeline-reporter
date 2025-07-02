@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-from typing import List
-
 from clients import PerplexityClient
 from config import RESEARCH_INSTRUCTIONS
-from utils import logger, Article, Event
+from utils import Article, Event, logger
 
 
-def research_articles(events: List[Event], *, perplexity_client: PerplexityClient) -> List[Article]:
+def research_articles(
+    events: list[Event], *, perplexity_client: PerplexityClient
+) -> list[Article]:
     """Calls Perplexity once per event to generate full articles."""
 
     articles: list[Article] = []
 
     for event in events:
-        prompt = RESEARCH_INSTRUCTIONS.format(event_summary=event.summary, event_date=event.date)
+        prompt = RESEARCH_INSTRUCTIONS.format(
+            event_summary=event.summary, event_date=event.date
+        )
         response_text = perplexity_client.research(prompt)
         article = _parse_article_from_response(response_text)
         articles.append(article)
@@ -55,5 +57,5 @@ def _parse_article_from_response(response_text: str) -> Article:
         story=data.get("story", ""),
         sources=data.get("sources", []),
         broadcast=b"",  # Placeholder - will be populated by TTS service
-        reporter="",    # Placeholder - will be populated by TTS service
+        reporter="",  # Placeholder - will be populated by TTS service
     )

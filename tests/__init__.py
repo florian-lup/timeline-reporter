@@ -1,1 +1,1 @@
-"""Test package for the timeline-reporter project.""" 
+"""Test package for the timeline-reporter project."""

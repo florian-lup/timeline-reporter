@@ -1,7 +1,8 @@
 """Wrapper around Pinecone client utilities."""
+
 from __future__ import annotations
 
-from typing import List
+from typing import Any
 
 from pinecone import Pinecone, ServerlessSpec
 
@@ -25,7 +26,9 @@ class PineconeClient:
         if api_key is None:
             api_key = PINECONE_API_KEY
         if not api_key:
-            raise ValueError("PINECONE_API_KEY is missing, cannot initialise Pinecone client.")
+            raise ValueError(
+                "PINECONE_API_KEY is missing, cannot initialise Pinecone client."
+            )
 
         logger.info("Initializing Pinecone")
         self._pc = Pinecone(api_key=api_key)
@@ -35,22 +38,28 @@ class PineconeClient:
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------
-    def similarity_search(self, vector: List[float], *, top_k: int | None = None) -> List[tuple[str, float]]:
+    def similarity_search(
+        self, vector: list[float], *, top_k: int | None = None
+    ) -> list[tuple[str, float]]:
         """Returns list of (id, score) above SIMILARITY_THRESHOLD for *vector*."""
         if top_k is None:
             top_k = TOP_K_RESULTS
         res = self._index.query(vector=vector, top_k=top_k, include_values=False)
         return [
-            (m.id, m.score) for m in res.matches if m.score and m.score >= SIMILARITY_THRESHOLD
+            (m.id, m.score)
+            for m in res.matches
+            if m.score and m.score >= SIMILARITY_THRESHOLD
         ]
 
-    def upsert_vector(self, vector_id: str, values: List[float], metadata: dict | None = None) -> None:
+    def upsert_vector(
+        self, vector_id: str, values: list[float], metadata: dict | None = None
+    ) -> None:
         self._index.upsert([(vector_id, values, metadata or {})])
 
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
-    def _ensure_index(self):  # noqa: D401
+    def _ensure_index(self) -> Any:  # noqa: D401
         """Return an existing index or create if missing."""
         existing_indexes = self._pc.list_indexes().names()
         if PINECONE_INDEX_NAME not in existing_indexes:
@@ -59,9 +68,6 @@ class PineconeClient:
                 name=PINECONE_INDEX_NAME,
                 dimension=EMBEDDING_DIMENSIONS,
                 metric=METRIC,
-                spec=ServerlessSpec(
-                    cloud=CLOUD_PROVIDER,
-                    region=CLOUD_REGION
-                ),
+                spec=ServerlessSpec(cloud=CLOUD_PROVIDER, region=CLOUD_REGION),
             )
         return self._pc.Index(PINECONE_INDEX_NAME)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+
 from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
@@ -39,18 +40,18 @@ DECISION_MODEL: str = "o4-mini-2025-04-16"
 
 # Voice mappings: API name -> Human name
 REPORTER_VOICE = {
-    "ash": "Alex",        # API name -> Human name
-    "ballad": "Blake", 
+    "ash": "Alex",  # API name -> Human name
+    "ballad": "Blake",
     "coral": "Claire",
     "sage": "Sam",
-    "verse": "Victoria"
+    "verse": "Victoria",
 }
 
 HOST_VOICE = {
-    "breeze": "Brian",    # API name -> Human name
-    "cove": "Catherine", 
+    "breeze": "Brian",  # API name -> Human name
+    "cove": "Catherine",
     "ember": "Emma",
-    "juniper": "Jordan"
+    "juniper": "Jordan",
 }
 
 # ---------------------------------------------------------------------------
@@ -64,7 +65,9 @@ REASONING_EFFORT: str = "low"
 # ---------------------------------------------------------------------------
 # Discovery
 # ---------------------------------------------------------------------------
-DISCOVERY_TOPICS: str = "climate, environment, natural disasters, major political and geopolitical events, global econnomy, technology,science, space and major sporting achievements"
+DISCOVERY_TOPICS: str = (
+    "climate, environment, natural disasters, major political and geopolitical events, global econnomy, technology,science, space and major sporting achievements"
+)
 
 # ---------------------------------------------------------------------------
 # MongoDB

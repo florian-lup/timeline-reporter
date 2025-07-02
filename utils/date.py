@@ -5,4 +5,4 @@ from datetime import date
 
 def get_today_formatted() -> str:
     """Returns today's date in a human-readable format for prompts."""
-    return date.today().strftime("%d %B %Y") 
+    return date.today().strftime("%d %B %Y")

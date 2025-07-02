@@ -1,21 +1,19 @@
 from __future__ import annotations
 
-from typing import List
-
 from clients import OpenAIClient, PineconeClient
-from utils import logger, Event
-
+from utils import Event, logger
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def deduplicate_events(
-    events: List[Event],
+    events: list[Event],
     *,
     openai_client: OpenAIClient,
     pinecone_client: PineconeClient,
-) -> List[Event]:
+) -> list[Event]:
     """Removes near-duplicate events based on vector similarity.
 
     Each *event*'s summary is embedded and compared against existing vectors in
@@ -44,9 +42,13 @@ def deduplicate_events(
         pinecone_client.upsert_vector(
             vector_id,
             vector,
-            metadata={"title": event.title, "summary": event.summary, "date": event.date},
+            metadata={
+                "title": event.title,
+                "summary": event.summary,
+                "date": event.date,
+            },
         )
         unique_events.append(event)
 
     logger.info("Deduplication complete: %d unique events", len(unique_events))
-    return unique_events 
+    return unique_events

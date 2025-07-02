@@ -7,7 +7,7 @@ from .pinecone_client import PineconeClient
 
 __all__ = [
     "MongoDBClient",
-    "OpenAIClient", 
+    "OpenAIClient",
     "PerplexityClient",
     "PineconeClient",
-] 
+]
