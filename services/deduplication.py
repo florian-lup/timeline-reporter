@@ -44,7 +44,7 @@ def deduplicate_events(
         pinecone_client.upsert_vector(
             vector_id,
             vector,
-            metadata={"title": event.title, "summary": event.summary},
+            metadata={"title": event.title, "summary": event.summary, "date": event.date},
         )
         unique_events.append(event)
 

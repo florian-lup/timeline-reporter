@@ -60,12 +60,14 @@ RESEARCH_SYSTEM_PROMPT = (
 
 RESEARCH_INSTRUCTIONS = (
     "Using the information provided below, craft a well-structured news article.\n\n"
-    "Event:\n{event_summary}\n\n"
+    "Event:\n{event_summary}\n"
+    "Date: {event_date}\n\n"
     "Create a comprehensive news article with:\n"
     "- A compelling headline (max 20 words)\n"
     "- A concise summary (80-120 words) highlighting key points\n"
     "- A detailed story (400-600 words) with context, implications, and analysis\n"
-    "- Include relevant source URLs for verification"
+    "- Include relevant source URLs for verification\n"
+    "- Ensure the reporting reflects the timeliness and relevance of the {event_date} date"
 )
 
 # ---------------------------------------------------------------------------

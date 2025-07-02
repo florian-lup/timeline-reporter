@@ -13,7 +13,7 @@ def research_events(events: List[Event], *, perplexity_client: PerplexityClient)
     articles: list[Article] = []
 
     for event in events:
-        prompt = RESEARCH_INSTRUCTIONS.format(event_summary=event.summary)
+        prompt = RESEARCH_INSTRUCTIONS.format(event_summary=event.summary, event_date=event.date)
         response_text = perplexity_client.research(prompt)
         article = _parse_article_from_response(response_text)
         articles.append(article)

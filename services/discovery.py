@@ -48,7 +48,6 @@ def _parse_events_from_response(response_text: str) -> List[Event]:
         logger.warning("Expected JSON array, got %s", type(data))
         return []
 
-    # We no longer request or store source links at the discovery stage.
     events: list[Event] = [Event(title=item["title"], summary=item["summary"]) for item in data]
     return events
 
