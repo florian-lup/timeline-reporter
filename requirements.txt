@@ -1,11 +1,11 @@
-python-dotenv
-openai
-pymongo
-pinecone
-httpx
+python-dotenv==1.1.1
+openai==1.93.0
+pymongo==4.13.2
+pinecone==7.3.0
+httpx==0.28.1
 
 # Testing dependencies
-pytest
-pytest-mock
-pytest-cov
-responses
+pytest==8.4.1
+pytest-mock==3.14.1
+pytest-cov==6.2.1
+responses==0.25.7
