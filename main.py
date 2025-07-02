@@ -46,12 +46,13 @@ def run_pipeline() -> None:  # noqa: D401
 
     # 5️⃣ TTS Analysis & Broadcast Generation
     articles_with_broadcast = generate_broadcast_analysis(
-        articles, openai_client=openai_client, mongodb_client=mongodb_client
+        articles, openai_client=openai_client
     )
 
-    # 6️⃣ Storage (now handled within TTS service, but keeping for consistency)
-    # Note: Articles are already stored in MongoDB by the TTS service
-    logger.info("Pipeline complete: %d articles with broadcasts", len(articles_with_broadcast))
+    # 6️⃣ Storage
+    store_articles(articles_with_broadcast, mongodb_client=mongodb_client)
+
+    logger.info("Pipeline complete: %d articles with broadcasts stored", len(articles_with_broadcast))
 
 
 if __name__ == "__main__":

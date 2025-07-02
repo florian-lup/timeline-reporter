@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from clients import OpenAIClient, MongoDBClient
+from clients import OpenAIClient
 from config import TTS_INSTRUCTIONS
 from config.settings import CHAT_MODEL
 from utils import logger, Article, get_random_REPORTER_VOICE
@@ -11,23 +11,21 @@ from utils import logger, Article, get_random_REPORTER_VOICE
 def generate_broadcast_analysis(
     articles: List[Article], 
     *, 
-    openai_client: OpenAIClient,
-    mongodb_client: MongoDBClient
+    openai_client: OpenAIClient
 ) -> List[Article]:
     """
-    Generate TTS analysis for articles and store them in MongoDB.
+    Generate TTS analysis for articles with broadcast and reporter fields.
     
     This service:
     1. Takes research articles as input
     2. Generates reporter analysis using CHAT_MODEL
     3. Converts analysis to MP3 using TTS_MODEL with random reporter voice
-    4. Stores MP3 data as "broadcast" field in MongoDB
-    5. Stores human name as "reporter" field in MongoDB
+    4. Adds MP3 data as "broadcast" field
+    5. Adds human name as "reporter" field
     
     Args:
         articles: List of articles from research service
         openai_client: OpenAI client for chat and TTS
-        mongodb_client: MongoDB client for storage
         
     Returns:
         List of articles with broadcast and reporter fields populated
@@ -64,13 +62,9 @@ def generate_broadcast_analysis(
                 reporter=voice_human_name
             )
             
-            # Store updated article in MongoDB
-            article_dict = article_with_broadcast.__dict__.copy()
-            inserted_id = mongodb_client.insert_article(article_dict)
             logger.info(
-                "Stored broadcast: '%s' (id=%s, reporter=%s, %d bytes)", 
+                "Generated broadcast for: '%s' (reporter=%s, %d bytes)", 
                 article_with_broadcast.headline, 
-                inserted_id, 
                 voice_human_name,
                 len(mp3_data)
             )

@@ -17,12 +17,6 @@ class TestTTSService:
         return mock_client
 
     @pytest.fixture
-    def mock_mongodb_client(self):
-        """Mock MongoDB client for testing."""
-        mock_client = Mock()
-        return mock_client
-
-    @pytest.fixture
     def sample_articles(self):
         """Sample articles for testing."""
         return [
@@ -44,7 +38,7 @@ class TestTTSService:
             )
         ]
 
-    def test_generate_broadcast_analysis_success(self, mock_openai_client, mock_mongodb_client, sample_articles):
+    def test_generate_broadcast_analysis_success(self, mock_openai_client, sample_articles):
         """Test successful broadcast analysis generation."""
         # Setup mocks
         mock_openai_client.chat_completion.side_effect = [
@@ -55,14 +49,12 @@ class TestTTSService:
             b"climate_audio_data",
             b"tech_audio_data"
         ]
-        mock_mongodb_client.insert_article.side_effect = ["60a1b2c3d4e5f6789", "60a1b2c3d4e5f6790"]
         
         with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
             with patch('services.tts.TTS_INSTRUCTIONS', 'Analyze: {headline} - {summary} - {story}'):
                 result = generate_broadcast_analysis(
                     sample_articles,
-                    openai_client=mock_openai_client,
-                    mongodb_client=mock_mongodb_client
+                    openai_client=mock_openai_client
                 )
         
         assert len(result) == 2
@@ -80,11 +72,8 @@ class TestTTSService:
         # Verify OpenAI calls
         assert mock_openai_client.chat_completion.call_count == 2
         assert mock_openai_client.text_to_speech.call_count == 2
-        
-        # Verify MongoDB calls
-        assert mock_mongodb_client.insert_article.call_count == 2
 
-    def test_generate_broadcast_analysis_error_handling(self, mock_openai_client, mock_mongodb_client, sample_articles):
+    def test_generate_broadcast_analysis_error_handling(self, mock_openai_client, sample_articles):
         """Test error handling in broadcast analysis generation."""
         # Chat completion succeeds, TTS fails
         mock_openai_client.chat_completion.return_value = "Analysis text"
@@ -94,45 +83,39 @@ class TestTTSService:
             with patch('services.tts.logger') as mock_logger:
                 result = generate_broadcast_analysis(
                     [sample_articles[0]],
-                    openai_client=mock_openai_client,
-                    mongodb_client=mock_mongodb_client
+                    openai_client=mock_openai_client
                 )
         
         # Should return empty list when TTS fails
         assert len(result) == 0
         mock_logger.error.assert_called_once()
-        mock_mongodb_client.insert_article.assert_not_called()
 
-    def test_generate_broadcast_analysis_empty_list(self, mock_openai_client, mock_mongodb_client):
+    def test_generate_broadcast_analysis_empty_list(self, mock_openai_client):
         """Test TTS generation with empty article list."""
         with patch('services.tts.logger') as mock_logger:
             result = generate_broadcast_analysis(
                 [],
-                openai_client=mock_openai_client,
-                mongodb_client=mock_mongodb_client
+                openai_client=mock_openai_client
             )
         
         assert result == []
         mock_openai_client.chat_completion.assert_not_called()
         mock_openai_client.text_to_speech.assert_not_called()
-        mock_mongodb_client.insert_article.assert_not_called()
         
         mock_logger.info.assert_called_once_with(
             "Generated broadcasts: %d/%d articles processed", 0, 0
         )
 
-    def test_generate_broadcast_analysis_prompt_formatting(self, mock_openai_client, mock_mongodb_client, sample_articles):
+    def test_generate_broadcast_analysis_prompt_formatting(self, mock_openai_client, sample_articles):
         """Test that analysis prompts are properly formatted."""
         mock_openai_client.chat_completion.return_value = "Analysis"
         mock_openai_client.text_to_speech.return_value = b"audio"
-        mock_mongodb_client.insert_article.return_value = "id123"
         
         with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
             with patch('services.tts.TTS_INSTRUCTIONS', 'Analyze {headline} and {summary} with {story}'):
                 generate_broadcast_analysis(
                     [sample_articles[0]],
-                    openai_client=mock_openai_client,
-                    mongodb_client=mock_mongodb_client
+                    openai_client=mock_openai_client
                 )
         
         # Verify prompt formatting
@@ -142,21 +125,17 @@ class TestTTSService:
         assert sample_articles[0].story in call_args
 
     @patch('services.tts.logger')
-    def test_logging_tts_service(self, mock_logger, mock_openai_client, mock_mongodb_client, sample_articles):
+    def test_logging_tts_service(self, mock_logger, mock_openai_client, sample_articles):
         """Test that TTS service logs properly."""
         # Mock OpenAI responses
         mock_openai_client.chat_completion.return_value = "Generated reporter analysis"
         mock_openai_client.text_to_speech.return_value = b"fake_audio_data"
         
-        # Mock MongoDB insertion
-        mock_mongodb_client.insert_article.return_value = "60a1b2c3d4e5f6789"
-        
         # Mock voice selection
         with patch('services.tts.get_random_REPORTER_VOICE', return_value=('alloy', 'Alex')):
             generate_broadcast_analysis(
                 sample_articles,
-                openai_client=mock_openai_client,
-                mongodb_client=mock_mongodb_client
+                openai_client=mock_openai_client
             )
         
         # Verify logging calls

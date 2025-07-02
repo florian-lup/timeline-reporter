@@ -151,8 +151,7 @@ class TestClientIntegration:
                     # Run TTS service
                     result_articles = generate_broadcast_analysis(
                         test_articles,
-                        openai_client=openai_client,
-                        mongodb_client=mongodb_client
+                        openai_client=openai_client
                     )
                     
                     # Verify results
@@ -174,11 +173,8 @@ class TestClientIntegration:
                     assert tts_call[1]['input'] == "This is an engaging analysis of the AI breakthrough for broadcast presentation."
                     assert tts_call[1]['response_format'] == 'mp3'
                     
-                    # Verify MongoDB storage
-                    mock_collection.insert_one.assert_called_once()
-                    stored_data = mock_collection.insert_one.call_args[0][0]
-                    assert stored_data['broadcast'] == b"fake_mp3_audio_data_for_broadcast"
-                    assert stored_data['reporter'] == "Alex"
+                    # Note: Storage is handled separately in the new architecture
+                    # TTS service only adds broadcast and reporter fields, doesn't store
 
     def test_openai_chat_and_tts_integration(self):
         """Test integration of OpenAI chat completion and TTS functionality."""
@@ -312,8 +308,7 @@ class TestClientIntegration:
                         # 2. TTS phase
                         final_articles = generate_broadcast_analysis(
                             articles,
-                            openai_client=openai_client,
-                            mongodb_client=mongodb_client
+                            openai_client=openai_client
                         )
                         
                         # Verify end-to-end pipeline
@@ -334,7 +329,7 @@ class TestClientIntegration:
                         mock_http_client.post.assert_called_once()  # Perplexity research
                         mock_openai_instance.chat.completions.create.assert_called_once()  # Analysis generation
                         mock_openai_instance.audio.speech.create.assert_called_once()  # TTS conversion
-                        mock_collection.insert_one.assert_called_once()  # MongoDB storage
+                        # Note: Storage handled separately in the new architecture
 
     def test_similarity_search_workflow(self):
         """Test workflow for finding similar articles."""
@@ -449,9 +444,8 @@ class TestClientIntegration:
                 # Should handle error gracefully and return empty list
                 result = generate_broadcast_analysis(
                     test_articles,
-                    openai_client=openai_client,
-                    mongodb_client=mongodb_client
+                    openai_client=openai_client
                 )
                 
                 assert len(result) == 0  # Article skipped due to TTS failure
-                mock_collection.insert_one.assert_not_called()  # No storage due to failure 
+                # Note: Storage handled separately in the new architecture 

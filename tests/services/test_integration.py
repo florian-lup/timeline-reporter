@@ -127,14 +127,13 @@ class TestServicesIntegration:
                     perplexity_client=mock_clients['perplexity']
                 )
                 
-                # 5. TTS & Storage (combined in one service)
+                # 5. TTS Analysis & Broadcast Generation
                 broadcast_articles = generate_broadcast_analysis(
                     articles,
-                    openai_client=mock_clients['openai'],
-                    mongodb_client=mock_clients['mongodb']
+                    openai_client=mock_clients['openai']
                 )
                 
-                # 6. Additional Storage (if needed)
+                # 6. Storage
                 store_articles(
                     broadcast_articles,
                     mongodb_client=mock_clients['mongodb']
@@ -171,8 +170,8 @@ class TestServicesIntegration:
         assert mock_clients['openai'].chat_completion.call_count == 3  # 1 decision + 2 TTS
         assert mock_clients['perplexity'].research.call_count == 2
         assert mock_clients['openai'].text_to_speech.call_count == 2
-        # MongoDB called twice in TTS service + twice in storage service = 4 total
-        assert mock_clients['mongodb'].insert_article.call_count == 4
+        # MongoDB called twice in storage service only = 2 total
+        assert mock_clients['mongodb'].insert_article.call_count == 2
 
     def test_pipeline_with_deduplication(self, mock_clients, test_discovery_instructions):
         """Test pipeline when duplicates are found and filtered."""
@@ -240,7 +239,12 @@ class TestServicesIntegration:
                 )
                 broadcast_articles = generate_broadcast_analysis(
                     articles,
-                    openai_client=mock_clients['openai'],
+                    openai_client=mock_clients['openai']
+                )
+                
+                # Store the articles with broadcasts
+                store_articles(
+                    broadcast_articles,
                     mongodb_client=mock_clients['mongodb']
                 )
         
@@ -366,9 +370,15 @@ class TestServicesIntegration:
                 # TTS processing with partial failure
                 broadcast_articles = generate_broadcast_analysis(
                     articles,
-                    openai_client=mock_clients['openai'],
-                    mongodb_client=mock_clients['mongodb']
+                    openai_client=mock_clients['openai']
                 )
+                
+                # Store successfully processed articles
+                if broadcast_articles:
+                    store_articles(
+                        broadcast_articles,
+                        mongodb_client=mock_clients['mongodb']
+                    )
         
         # Should have 2 articles going into TTS, 1 coming out (due to failure)
         assert len(articles) == 2
@@ -428,7 +438,12 @@ class TestServicesIntegration:
                 )
                 final_articles = generate_broadcast_analysis(
                     articles,
-                    openai_client=mock_clients['openai'],
+                    openai_client=mock_clients['openai']
+                )
+                
+                # Store final articles
+                store_articles(
+                    final_articles,
                     mongodb_client=mock_clients['mongodb']
                 )
         
@@ -480,8 +495,7 @@ class TestServicesIntegration:
             
             broadcast_articles = generate_broadcast_analysis(
                 articles,
-                openai_client=mock_clients['openai'],
-                mongodb_client=mock_clients['mongodb']
+                openai_client=mock_clients['openai']
             )
         
         # All results should be empty
@@ -566,9 +580,15 @@ class TestServicesIntegration:
                 )
                 broadcast_articles = generate_broadcast_analysis(
                     articles,
-                    openai_client=mock_clients['openai'],
-                    mongodb_client=mock_clients['mongodb']
+                    openai_client=mock_clients['openai']
                 )
+                
+                # Store articles if any were processed
+                if broadcast_articles:
+                    store_articles(
+                        broadcast_articles,
+                        mongodb_client=mock_clients['mongodb']
+                    )
         
         # Verify scale processing
         assert len(events) == 10
