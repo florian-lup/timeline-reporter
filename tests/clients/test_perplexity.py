@@ -32,7 +32,7 @@ class TestPerplexityClient:
     @pytest.fixture
     def mock_httpx_client(self):
         """Mock httpx.Client."""
-        with patch('clients.perplexity.httpx.Client') as mock_client_class:
+        with patch('clients.perplexity_client.httpx.Client') as mock_client_class:
             mock_client = Mock()
             mock_response = Mock()
             mock_client_class.return_value.__enter__.return_value = mock_client
@@ -41,7 +41,7 @@ class TestPerplexityClient:
 
     def test_init_with_default_api_key(self):
         """Test initialization with default API key from config."""
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             
             expected_headers = {
@@ -63,19 +63,19 @@ class TestPerplexityClient:
 
     def test_init_with_none_api_key_and_missing_config(self):
         """Test initialization fails when API key is None and config is missing."""
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', None):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', None):
             with pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"):
                 PerplexityClient()
 
     def test_init_with_empty_api_key_and_empty_config(self):
         """Test initialization fails when API key is empty and config is empty."""
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', ''):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', ''):
             with pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"):
                 PerplexityClient()
 
     def test_init_with_explicit_none_api_key_and_missing_config(self):
         """Test initialization fails when API key is explicitly None and config is missing."""
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', None):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', None):
             with pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"):
                 PerplexityClient(api_key=None)
 
@@ -85,7 +85,7 @@ class TestPerplexityClient:
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             result = client.research("test prompt")
             
@@ -103,9 +103,9 @@ class TestPerplexityClient:
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
-            with patch('clients.perplexity.RESEARCH_MODEL', 'test-model'):
-                with patch('clients.perplexity.SEARCH_CONTEXT_SIZE', 'large'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity_client.RESEARCH_MODEL', 'test-model'):
+                with patch('clients.perplexity_client.SEARCH_CONTEXT_SIZE', 'large'):
                     client = PerplexityClient()
                     client.research("test prompt")
                     
@@ -136,7 +136,7 @@ class TestPerplexityClient:
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             client.research("test prompt")
             
@@ -169,7 +169,7 @@ class TestPerplexityClient:
             "404 Not Found", request=Mock(), response=Mock()
         )
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             
             with pytest.raises(httpx.HTTPStatusError):
@@ -177,7 +177,7 @@ class TestPerplexityClient:
 
     def test_research_timeout_configuration(self, sample_response_data):
         """Test that HTTP client is configured with proper timeout."""
-        with patch('clients.perplexity.httpx.Client') as mock_client_class:
+        with patch('clients.perplexity_client.httpx.Client') as mock_client_class:
             mock_context_manager = MagicMock()
             mock_client = Mock()
             mock_response = Mock()
@@ -190,7 +190,7 @@ class TestPerplexityClient:
             mock_response.raise_for_status.return_value = None
             mock_client.post.return_value = mock_response
             
-            with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
                 client = PerplexityClient()
                 client.research("test prompt")
                 
@@ -211,7 +211,7 @@ class TestPerplexityClient:
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             result = client.research(prompt)
             
@@ -223,14 +223,14 @@ class TestPerplexityClient:
             assert isinstance(result, str)
             json.loads(result)  # Should not raise exception
 
-    @patch('clients.perplexity.logger')
+    @patch('clients.perplexity_client.logger')
     def test_logging_research(self, mock_logger, mock_httpx_client, sample_response_data):
         """Test that research method logs properly."""
         mock_client, mock_response = mock_httpx_client
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             client.research("test prompt")
             
@@ -244,7 +244,7 @@ class TestPerplexityClient:
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             client.research("test prompt")
             
@@ -274,7 +274,7 @@ class TestPerplexityClient:
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             result = client.research("test prompt")
             
@@ -284,10 +284,10 @@ class TestPerplexityClient:
         """Test that default headers are not modified by instance creation."""
         original_defaults = PerplexityClient._DEFAULT_HEADERS.copy()
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-key-1'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-key-1'):
             client1 = PerplexityClient()
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-key-2'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-key-2'):
             client2 = PerplexityClient()
         
         # Verify original defaults weren't modified
@@ -329,7 +329,7 @@ I need to find recent events about climate and geopolitical developments. Let me
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             result = client.deep_research("Find recent events about climate and geopolitics")
             
@@ -356,9 +356,9 @@ I need to find recent events about climate and geopolitical developments. Let me
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
-            with patch('clients.perplexity.DEEP_RESEARCH_MODEL', 'sonar-deep-research'):
-                with patch('clients.perplexity.REASONING_EFFORT', 'medium'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity_client.DEEP_RESEARCH_MODEL', 'sonar-deep-research'):
+                with patch('clients.perplexity_client.REASONING_EFFORT', 'medium'):
                     client = PerplexityClient()
                     client.deep_research("test prompt")
                     
@@ -388,7 +388,7 @@ I need to find recent events about climate and geopolitical developments. Let me
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             client.deep_research("test prompt")
             
@@ -424,7 +424,7 @@ I need to find recent events about climate and geopolitical developments. Let me
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             result = client.deep_research("test prompt")
             
@@ -433,7 +433,7 @@ I need to find recent events about climate and geopolitical developments. Let me
 
     def test_deep_research_timeout_configuration(self):
         """Test that deep research uses longer timeout (180s)."""
-        with patch('clients.perplexity.httpx.Client') as mock_client_class:
+        with patch('clients.perplexity_client.httpx.Client') as mock_client_class:
             mock_context_manager = MagicMock()
             mock_client = Mock()
             mock_response = Mock()
@@ -447,14 +447,14 @@ I need to find recent events about climate and geopolitical developments. Let me
             mock_response.raise_for_status.return_value = None
             mock_client.post.return_value = mock_response
             
-            with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
                 client = PerplexityClient()
                 client.deep_research("test prompt")
                 
                 # Verify Client was initialized with timeout=180 (longer for deep research)
                 mock_client_class.assert_called_with(timeout=180)
 
-    @patch('clients.perplexity.logger')
+    @patch('clients.perplexity_client.logger')
     def test_logging_deep_research(self, mock_logger, mock_httpx_client):
         """Test that deep research logs properly."""
         mock_client, mock_response = mock_httpx_client
@@ -463,7 +463,7 @@ I need to find recent events about climate and geopolitical developments. Let me
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             client.deep_research("test prompt")
             
@@ -473,7 +473,7 @@ I need to find recent events about climate and geopolitical developments. Let me
 
     def test_extract_json_from_reasoning_response_with_think(self):
         """Test the _extract_json_from_reasoning_response method with <think> tags."""
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             
             response_with_think = '''<think>
@@ -487,7 +487,7 @@ This is reasoning content that should be removed.
 
     def test_extract_json_from_reasoning_response_without_think(self):
         """Test the _extract_json_from_reasoning_response method without <think> tags."""
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             
             response_without_think = '{"result": "direct json"}'
@@ -503,7 +503,7 @@ This is reasoning content that should be removed.
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
             client = PerplexityClient()
             client.deep_research("test prompt")
             
@@ -523,8 +523,8 @@ This is reasoning content that should be removed.
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
         
-        with patch('clients.perplexity.PERPLEXITY_API_KEY', 'test-api-key'):
-            with patch('clients.perplexity.SEARCH_CONTEXT_SIZE', 'large'):
+        with patch('clients.perplexity_client.PERPLEXITY_API_KEY', 'test-api-key'):
+            with patch('clients.perplexity_client.SEARCH_CONTEXT_SIZE', 'large'):
                 client = PerplexityClient()
                 client.deep_research("test prompt")
                 

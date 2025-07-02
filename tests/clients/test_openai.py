@@ -12,7 +12,7 @@ class TestOpenAIClient:
     @pytest.fixture
     def mock_openai_client(self):
         """Mock OpenAI client."""
-        with patch('clients.openai.OpenAI') as mock_openai:
+        with patch('clients.openai_client.OpenAI') as mock_openai:
             mock_instance = Mock()
             mock_openai.return_value = mock_instance
             yield mock_openai, mock_instance
@@ -21,7 +21,7 @@ class TestOpenAIClient:
         """Test initialization with default API key from config."""
         mock_openai, mock_instance = mock_openai_client
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             
             mock_openai.assert_called_once_with(api_key='test-api-key')
@@ -39,13 +39,13 @@ class TestOpenAIClient:
 
     def test_init_with_none_api_key_and_missing_config(self, mock_openai_client):
         """Test initialization fails when API key is None and config is missing."""
-        with patch('clients.openai.OPENAI_API_KEY', None):
+        with patch('clients.openai_client.OPENAI_API_KEY', None):
             with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
                 OpenAIClient()
 
     def test_init_with_empty_api_key_and_empty_config(self, mock_openai_client):
         """Test initialization fails when API key is empty and config is empty."""
-        with patch('clients.openai.OPENAI_API_KEY', ''):
+        with patch('clients.openai_client.OPENAI_API_KEY', ''):
             with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
                 OpenAIClient()
 
@@ -63,7 +63,7 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             result = client.embed_text("test text")
             
@@ -81,9 +81,9 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.EMBEDDING_MODEL', 'text-embedding-3-small'):
-                with patch('clients.openai.EMBEDDING_DIMENSIONS', 1536):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
+            with patch('clients.openai_client.EMBEDDING_MODEL', 'text-embedding-3-small'):
+                with patch('clients.openai_client.EMBEDDING_DIMENSIONS', 1536):
                     client = OpenAIClient()
                     client.embed_text("test text")
                     
@@ -110,7 +110,7 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             result = client.embed_text(text_input)
             
@@ -119,7 +119,7 @@ class TestOpenAIClient:
 
 
 
-    @patch('clients.openai.logger')
+    @patch('clients.openai_client.logger')
     def test_logging_embed_text(self, mock_logger, mock_openai_client):
         """Test that embed_text logs properly."""
         mock_openai, mock_instance = mock_openai_client
@@ -131,7 +131,7 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             client.embed_text("test text")
             
@@ -146,7 +146,7 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.side_effect = Exception("Embedding Error")
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             
             with pytest.raises(Exception, match="Embedding Error"):
@@ -154,7 +154,7 @@ class TestOpenAIClient:
 
     def test_init_fails_without_api_key(self, mock_openai_client):
         """Test initialization fails when API key is missing."""
-        with patch('clients.openai.OPENAI_API_KEY', None):
+        with patch('clients.openai_client.OPENAI_API_KEY', None):
             with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
                 OpenAIClient()
 
@@ -169,9 +169,9 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.EMBEDDING_MODEL', 'text-embedding-3-small'):
-                with patch('clients.openai.EMBEDDING_DIMENSIONS', 1536):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
+            with patch('clients.openai_client.EMBEDDING_MODEL', 'text-embedding-3-small'):
+                with patch('clients.openai_client.EMBEDDING_DIMENSIONS', 1536):
                     client = OpenAIClient()
                     client.embed_text("test text")
                     
@@ -181,7 +181,7 @@ class TestOpenAIClient:
                         dimensions=1536
                     )
 
-    @patch('clients.openai.logger')
+    @patch('clients.openai_client.logger')
     def test_logging(self, mock_logger, mock_openai_client):
         """Test that methods log properly."""
         mock_openai, mock_instance = mock_openai_client
@@ -194,7 +194,7 @@ class TestOpenAIClient:
         
         mock_instance.embeddings.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             client.embed_text("test text")
             
@@ -215,7 +215,7 @@ class TestOpenAIClient:
         
         mock_instance.chat.completions.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             result = client.chat_completion("test prompt", model="test-model")
             
@@ -235,7 +235,7 @@ class TestOpenAIClient:
         
         mock_instance.chat.completions.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             client.chat_completion("test prompt", model="gpt-4.1")
             
@@ -265,7 +265,7 @@ class TestOpenAIClient:
         
         mock_instance.chat.completions.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             result = client.chat_completion(prompt, model="test-model")
             
@@ -280,13 +280,13 @@ class TestOpenAIClient:
         
         mock_instance.chat.completions.create.side_effect = Exception("Chat API Error")
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             
             with pytest.raises(Exception, match="Chat API Error"):
                 client.chat_completion("test prompt", model="test-model")
 
-    @patch('clients.openai.logger')
+    @patch('clients.openai_client.logger')
     def test_logging_chat_completion(self, mock_logger, mock_openai_client):
         """Test that chat_completion logs properly."""
         mock_openai, mock_instance = mock_openai_client
@@ -300,7 +300,7 @@ class TestOpenAIClient:
         
         mock_instance.chat.completions.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             client.chat_completion("test prompt", model="test-model")
             
@@ -320,7 +320,7 @@ class TestOpenAIClient:
         
         mock_instance.audio.speech.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             result = client.text_to_speech("Hello world", "alloy")
             
@@ -336,8 +336,8 @@ class TestOpenAIClient:
         
         mock_instance.audio.speech.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
-            with patch('clients.openai.TTS_MODEL', 'gpt-4o-mini-tts'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
+            with patch('clients.openai_client.TTS_MODEL', 'gpt-4o-mini-tts'):
                 client = OpenAIClient()
                 client.text_to_speech("Hello world", "ash")
                 
@@ -365,7 +365,7 @@ class TestOpenAIClient:
         
         mock_instance.audio.speech.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             result = client.text_to_speech(text, voice)
             
@@ -381,13 +381,13 @@ class TestOpenAIClient:
         
         mock_instance.audio.speech.create.side_effect = Exception("TTS API Error")
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             
             with pytest.raises(Exception, match="TTS API Error"):
                 client.text_to_speech("test text", "alloy")
 
-    @patch('clients.openai.logger')
+    @patch('clients.openai_client.logger')
     def test_logging_text_to_speech(self, mock_logger, mock_openai_client):
         """Test that text_to_speech logs properly."""
         mock_openai, mock_instance = mock_openai_client
@@ -397,7 +397,7 @@ class TestOpenAIClient:
         
         mock_instance.audio.speech.create.return_value = mock_response
         
-        with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+        with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
             client = OpenAIClient()
             client.text_to_speech("test text", "alloy")
             

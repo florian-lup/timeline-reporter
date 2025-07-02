@@ -13,7 +13,7 @@ class TestMongoDBClient:
     @pytest.fixture
     def mock_mongo_client(self):
         """Mock pymongo.MongoClient."""
-        with patch('clients.mongodb.MongoClient') as mock_client:
+        with patch('clients.mongodb_client.MongoClient') as mock_client:
             mock_instance = Mock()
             mock_db = Mock()
             mock_collection = Mock()
@@ -40,7 +40,7 @@ class TestMongoDBClient:
         """Test initialization with default URI from config."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
             client = MongoDBClient()
             
             mock_client.assert_called_once_with('mongodb://localhost:27017')
@@ -60,19 +60,19 @@ class TestMongoDBClient:
 
     def test_init_with_none_uri_and_missing_config(self, mock_mongo_client):
         """Test initialization fails when URI is None and config is missing."""
-        with patch('clients.mongodb.MONGODB_URI', None):
+        with patch('clients.mongodb_client.MONGODB_URI', None):
             with pytest.raises(ValueError, match="MONGODB_URI is missing"):
                 MongoDBClient()
 
     def test_init_with_empty_uri_and_empty_config(self, mock_mongo_client):
         """Test initialization fails when URI is empty and config is empty."""
-        with patch('clients.mongodb.MONGODB_URI', ''):
+        with patch('clients.mongodb_client.MONGODB_URI', ''):
             with pytest.raises(ValueError, match="MONGODB_URI is missing"):
                 MongoDBClient()
 
     def test_init_with_explicit_none_uri_and_missing_config(self, mock_mongo_client):
         """Test initialization fails when URI is explicitly None and config is missing."""
-        with patch('clients.mongodb.MONGODB_URI', None):
+        with patch('clients.mongodb_client.MONGODB_URI', None):
             with pytest.raises(ValueError, match="MONGODB_URI is missing"):
                 MongoDBClient(uri=None)
 
@@ -86,7 +86,7 @@ class TestMongoDBClient:
         mock_result.inserted_id = mock_object_id
         mock_collection.insert_one.return_value = mock_result
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
             client = MongoDBClient()
             result = client.insert_article(sample_article)
             
@@ -107,7 +107,7 @@ class TestMongoDBClient:
         mock_result.inserted_id = mock_object_id
         mock_collection.insert_one.return_value = mock_result
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
             client = MongoDBClient()
             result = client.insert_article(article_without_headline)
             
@@ -123,21 +123,21 @@ class TestMongoDBClient:
         mock_result.inserted_id = mock_object_id
         mock_collection.insert_one.return_value = mock_result
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
             client = MongoDBClient()
             result = client.insert_article({})
             
             mock_collection.insert_one.assert_called_once_with({})
             assert result == str(mock_object_id)
 
-    @patch('clients.mongodb.logger')
+    @patch('clients.mongodb_client.logger')
     def test_logging_on_init(self, mock_logger, mock_mongo_client):
         """Test that initialization logs connection info."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
-            with patch('clients.mongodb.MONGODB_DATABASE_NAME', 'test_db'):
-                with patch('clients.mongodb.MONGODB_COLLECTION_NAME', 'test_collection'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
+            with patch('clients.mongodb_client.MONGODB_DATABASE_NAME', 'test_db'):
+                with patch('clients.mongodb_client.MONGODB_COLLECTION_NAME', 'test_collection'):
                     MongoDBClient()
                     
                     mock_logger.info.assert_called_once_with(
@@ -146,7 +146,7 @@ class TestMongoDBClient:
                         'test_collection'
                     )
 
-    @patch('clients.mongodb.logger')
+    @patch('clients.mongodb_client.logger')
     def test_logging_on_insert_article(self, mock_logger, mock_mongo_client, sample_article):
         """Test that insert_article logs the operation."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
@@ -156,7 +156,7 @@ class TestMongoDBClient:
         mock_result.inserted_id = mock_object_id
         mock_collection.insert_one.return_value = mock_result
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
             client = MongoDBClient()
             client.insert_article(sample_article)
             
@@ -167,9 +167,9 @@ class TestMongoDBClient:
         """Test that correct database and collection names are used."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
         
-        with patch('clients.mongodb.MONGODB_URI', 'mongodb://localhost:27017'):
-            with patch('clients.mongodb.MONGODB_DATABASE_NAME', 'events'):
-                with patch('clients.mongodb.MONGODB_COLLECTION_NAME', 'articles'):
+        with patch('clients.mongodb_client.MONGODB_URI', 'mongodb://localhost:27017'):
+            with patch('clients.mongodb_client.MONGODB_DATABASE_NAME', 'events'):
+                with patch('clients.mongodb_client.MONGODB_COLLECTION_NAME', 'articles'):
                     MongoDBClient()
                     
                     # Verify database and collection access

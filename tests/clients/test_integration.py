@@ -15,10 +15,10 @@ class TestClientIntegration:
     def test_research_to_storage_workflow(self):
         """Test complete workflow from research to storage."""
         # Mock all external dependencies
-        with patch('clients.perplexity.httpx.Client') as mock_httpx:
-            with patch('clients.openai.OpenAI') as mock_openai:
-                with patch('clients.mongodb.MongoClient') as mock_mongo:
-                    with patch('clients.pinecone.Pinecone') as mock_pinecone:
+        with patch('clients.perplexity_client.httpx.Client') as mock_httpx:
+            with patch('clients.openai_client.OpenAI') as mock_openai:
+                with patch('clients.mongodb_client.MongoClient') as mock_mongo:
+                    with patch('clients.pinecone_client.Pinecone') as mock_pinecone:
                         # Setup Perplexity mock
                         mock_http_client = Mock()
                         mock_response = Mock()
@@ -98,8 +98,8 @@ class TestClientIntegration:
 
     def test_complete_tts_workflow(self):
         """Test complete workflow including TTS generation and storage."""
-        with patch('clients.openai.OpenAI') as mock_openai:
-            with patch('clients.mongodb.MongoClient') as mock_mongo:
+        with patch('clients.openai_client.OpenAI') as mock_openai:
+            with patch('clients.mongodb_client.MongoClient') as mock_mongo:
                 with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
                     # Setup OpenAI mock for both chat and TTS
                     mock_openai_instance = Mock()
@@ -178,7 +178,7 @@ class TestClientIntegration:
 
     def test_openai_chat_and_tts_integration(self):
         """Test integration of OpenAI chat completion and TTS functionality."""
-        with patch('clients.openai.OpenAI') as mock_openai:
+        with patch('clients.openai_client.OpenAI') as mock_openai:
             mock_openai_instance = Mock()
             mock_openai.return_value = mock_openai_instance
             
@@ -196,7 +196,7 @@ class TestClientIntegration:
             mock_tts_response.content = b"converted_audio_data"
             mock_openai_instance.audio.speech.create.return_value = mock_tts_response
             
-            with patch('clients.openai.OPENAI_API_KEY', 'test-api-key'):
+            with patch('clients.openai_client.OPENAI_API_KEY', 'test-api-key'):
                 client = OpenAIClient()
                 
                 # 1. Generate analysis text
@@ -244,9 +244,9 @@ class TestClientIntegration:
 
     def test_research_to_tts_pipeline_integration(self):
         """Test integration from research service through TTS to storage."""
-        with patch('clients.perplexity.httpx.Client') as mock_httpx:
-            with patch('clients.openai.OpenAI') as mock_openai:
-                with patch('clients.mongodb.MongoClient') as mock_mongo:
+        with patch('clients.perplexity_client.httpx.Client') as mock_httpx:
+            with patch('clients.openai_client.OpenAI') as mock_openai:
+                with patch('clients.mongodb_client.MongoClient') as mock_mongo:
                     with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
                         # Setup Perplexity mock (research)
                         mock_http_client = Mock()
@@ -333,9 +333,9 @@ class TestClientIntegration:
 
     def test_similarity_search_workflow(self):
         """Test workflow for finding similar articles."""
-        with patch('clients.openai.OpenAI') as mock_openai:
-            with patch('clients.pinecone.Pinecone') as mock_pinecone:
-                with patch('clients.mongodb.MongoClient') as mock_mongo:
+        with patch('clients.openai_client.OpenAI') as mock_openai:
+            with patch('clients.pinecone_client.Pinecone') as mock_pinecone:
+                with patch('clients.mongodb_client.MongoClient') as mock_mongo:
                     # Setup mocks
                     mock_openai_instance = Mock()
                     mock_openai.return_value = mock_openai_instance
@@ -382,7 +382,7 @@ class TestClientIntegration:
     @pytest.mark.slow
     def test_error_handling_in_workflow(self):
         """Test error handling across the workflow."""
-        with patch('clients.perplexity.httpx.Client') as mock_httpx:
+        with patch('clients.perplexity_client.httpx.Client') as mock_httpx:
             # Setup failing HTTP request
             mock_http_client = Mock()
             mock_response = Mock()
@@ -399,8 +399,8 @@ class TestClientIntegration:
     @pytest.mark.slow 
     def test_tts_error_handling_integration(self):
         """Test error handling in TTS workflow integration."""
-        with patch('clients.openai.OpenAI') as mock_openai:
-            with patch('clients.mongodb.MongoClient') as mock_mongo:
+        with patch('clients.openai_client.OpenAI') as mock_openai:
+            with patch('clients.mongodb_client.MongoClient') as mock_mongo:
                 # Setup OpenAI mock to fail on TTS
                 mock_openai_instance = Mock()
                 mock_openai.return_value = mock_openai_instance

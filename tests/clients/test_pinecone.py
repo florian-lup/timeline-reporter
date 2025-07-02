@@ -12,8 +12,8 @@ class TestPineconeClient:
     @pytest.fixture
     def mock_pinecone(self):
         """Mock Pinecone and related components."""
-        with patch('clients.pinecone.Pinecone') as mock_pc_class:
-            with patch('clients.pinecone.ServerlessSpec') as mock_spec:
+        with patch('clients.pinecone_client.Pinecone') as mock_pc_class:
+            with patch('clients.pinecone_client.ServerlessSpec') as mock_spec:
                 mock_pc = Mock()
                 mock_index = Mock()
                 mock_pc_class.return_value = mock_pc
@@ -26,7 +26,7 @@ class TestPineconeClient:
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = ['timeline-events']
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
             client = PineconeClient()
             
             mock_pc_class.assert_called_once_with(api_key='test-api-key')
@@ -45,7 +45,7 @@ class TestPineconeClient:
 
     def test_init_with_none_api_key_and_missing_config(self, mock_pinecone):
         """Test initialization fails when API key is None and config is missing."""
-        with patch('clients.pinecone.PINECONE_API_KEY', None):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', None):
             with pytest.raises(ValueError, match="PINECONE_API_KEY is missing"):
                 PineconeClient()
 
@@ -54,8 +54,8 @@ class TestPineconeClient:
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = ['timeline-events']
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
-            with patch('clients.pinecone.PINECONE_INDEX_NAME', 'timeline-events'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
+            with patch('clients.pinecone_client.PINECONE_INDEX_NAME', 'timeline-events'):
                 PineconeClient()
                 
                 mock_pc.create_index.assert_not_called()
@@ -66,12 +66,12 @@ class TestPineconeClient:
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = []
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
-            with patch('clients.pinecone.PINECONE_INDEX_NAME', 'new-index'):
-                with patch('clients.pinecone.EMBEDDING_DIMENSIONS', 1536):
-                    with patch('clients.pinecone.METRIC', 'cosine'):
-                        with patch('clients.pinecone.CLOUD_PROVIDER', 'aws'):
-                            with patch('clients.pinecone.CLOUD_REGION', 'us-east-1'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
+            with patch('clients.pinecone_client.PINECONE_INDEX_NAME', 'new-index'):
+                with patch('clients.pinecone_client.EMBEDDING_DIMENSIONS', 1536):
+                    with patch('clients.pinecone_client.METRIC', 'cosine'):
+                        with patch('clients.pinecone_client.CLOUD_PROVIDER', 'aws'):
+                            with patch('clients.pinecone_client.CLOUD_REGION', 'us-east-1'):
                                 PineconeClient()
                                 
                                 mock_pc.create_index.assert_called_once()
@@ -100,8 +100,8 @@ class TestPineconeClient:
         mock_query_result.matches = [mock_match1, mock_match2, mock_match3]
         mock_index.query.return_value = mock_query_result
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
-            with patch('clients.pinecone.SIMILARITY_THRESHOLD', 0.8):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
+            with patch('clients.pinecone_client.SIMILARITY_THRESHOLD', 0.8):
                 client = PineconeClient()
                 result = client.similarity_search([0.1, 0.2, 0.3])
                 
@@ -117,7 +117,7 @@ class TestPineconeClient:
         mock_query_result.matches = []
         mock_index.query.return_value = mock_query_result
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
             client = PineconeClient()
             client.similarity_search([0.1, 0.2, 0.3], top_k=10)
             
@@ -132,7 +132,7 @@ class TestPineconeClient:
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = ['timeline-events']
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
             client = PineconeClient()
             client.upsert_vector("test-id", [0.1, 0.2, 0.3])
             
@@ -147,7 +147,7 @@ class TestPineconeClient:
         
         metadata = {"title": "Test Article", "date": "2024-01-01"}
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
             client = PineconeClient()
             client.upsert_vector("test-id", [0.1, 0.2, 0.3], metadata)
             
@@ -155,14 +155,14 @@ class TestPineconeClient:
                 ("test-id", [0.1, 0.2, 0.3], metadata)
             ])
 
-    @patch('clients.pinecone.logger')
+    @patch('clients.pinecone_client.logger')
     def test_logging_init(self, mock_logger, mock_pinecone):
         """Test that initialization logs properly."""
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = ['timeline-events']
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
-            with patch('clients.pinecone.PINECONE_INDEX_NAME', 'test-index'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
+            with patch('clients.pinecone_client.PINECONE_INDEX_NAME', 'test-index'):
                 PineconeClient()
                 
                 mock_logger.info.assert_any_call("Initializing Pinecone")
@@ -170,21 +170,21 @@ class TestPineconeClient:
                     "Pinecone ready: %s", 'test-index'
                 )
 
-    @patch('clients.pinecone.logger')
+    @patch('clients.pinecone_client.logger')
     def test_logging_create_index(self, mock_logger, mock_pinecone):
         """Test that index creation logs properly."""
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = []
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
-            with patch('clients.pinecone.PINECONE_INDEX_NAME', 'new-index'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
+            with patch('clients.pinecone_client.PINECONE_INDEX_NAME', 'new-index'):
                 PineconeClient()
                 
                 mock_logger.info.assert_any_call(
                     "Creating index: %s", 'new-index'
                 )
 
-    @patch('clients.pinecone.logger')
+    @patch('clients.pinecone_client.logger')
     def test_logging_similarity_search(self, mock_logger, mock_pinecone):
         """Test that similarity search logs properly."""
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
@@ -194,20 +194,20 @@ class TestPineconeClient:
         mock_query_result.matches = []
         mock_index.query.return_value = mock_query_result
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
             client = PineconeClient()
             client.similarity_search([0.1, 0.2, 0.3], top_k=10)
             
             # Debug logging was removed - no assertion needed
             pass
 
-    @patch('clients.pinecone.logger')
+    @patch('clients.pinecone_client.logger')
     def test_logging_upsert_vector(self, mock_logger, mock_pinecone):
         """Test that upsert logs properly."""
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = ['timeline-events']
         
-        with patch('clients.pinecone.PINECONE_API_KEY', 'test-api-key'):
+        with patch('clients.pinecone_client.PINECONE_API_KEY', 'test-api-key'):
             client = PineconeClient()
             client.upsert_vector("test-id", [0.1, 0.2, 0.3])
             
