@@ -9,19 +9,19 @@ This package provides the core pipeline services:
 - Storage: Saving articles to MongoDB
 """
 
-from .deduplication import deduplicate_events
-from .decision import decide_events
-from .discovery import discover_events
-from .research import research_events
-from .storage import store_articles
-from .tts import generate_broadcast_analysis
+from .event_deduplication import deduplicate_events
+from .event_selection import select_events
+from .event_discovery import discover_events
+from .article_research import research_articles
+from .article_insertion import insert_articles
+from .audio_generation import generate_audio
 
 __all__ = [
     # Core pipeline services
     "discover_events",
     "deduplicate_events",
-    "decide_events", 
-    "research_events",
-    "generate_broadcast_analysis",
-    "store_articles",
+    "select_events", 
+    "research_articles",
+    "insert_articles",
+    "generate_audio",
 ] 

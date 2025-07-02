@@ -9,7 +9,7 @@ from config.settings import DECISION_MODEL
 from utils import logger, Event
 
 
-def decide_events(events: List[Event], *, openai_client: OpenAIClient) -> List[Event]:
+def select_events(events: List[Event], *, openai_client: OpenAIClient) -> List[Event]:
     """Selects the most impactful events from deduplicated list.
     
     Uses AI to evaluate events based on impact, significance, and newsworthiness,

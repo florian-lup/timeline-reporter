@@ -10,7 +10,7 @@ from utils import logger, Article
 # Public API
 # ---------------------------------------------------------------------------
 
-def store_articles(articles: List[Article], *, mongodb_client: MongoDBClient) -> None:
+def insert_articles(articles: List[Article], *, mongodb_client: MongoDBClient) -> None:
     """Stores articles in MongoDB."""
 
     for article in articles:

@@ -4,7 +4,7 @@ import json
 import pytest
 from unittest.mock import Mock, patch
 
-from services import research_events
+from services import research_articles
 from utils import Event, Article
 
 
@@ -61,12 +61,12 @@ class TestResearchService:
         }
         ```"""
 
-    def test_research_events_success(self, mock_perplexity_client, sample_events, sample_research_responses):
+    def test_research_articles_success(self, mock_perplexity_client, sample_events, sample_research_responses):
         """Test successful research of events."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
-        with patch('services.research.RESEARCH_INSTRUCTIONS', 'Research this event: {event_summary}'):
-            articles = research_events(sample_events, perplexity_client=mock_perplexity_client)
+        with patch('services.article_research.RESEARCH_INSTRUCTIONS', 'Research this event: {event_summary}'):
+            articles = research_articles(sample_events, perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 2
         
@@ -81,12 +81,12 @@ class TestResearchService:
         # Verify Perplexity was called correctly
         assert mock_perplexity_client.research.call_count == 2
 
-    def test_research_events_prompt_formatting(self, mock_perplexity_client, sample_events, sample_research_responses):
+    def test_research_articles_prompt_formatting(self, mock_perplexity_client, sample_events, sample_research_responses):
         """Test that research prompts are properly formatted."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
-        with patch('services.research.RESEARCH_INSTRUCTIONS', 'Research event: {event_summary}'):
-            research_events(sample_events, perplexity_client=mock_perplexity_client)
+        with patch('services.article_research.RESEARCH_INSTRUCTIONS', 'Research event: {event_summary}'):
+            research_articles(sample_events, perplexity_client=mock_perplexity_client)
         
         # Verify prompts were formatted with event summaries
         call_args = mock_perplexity_client.research.call_args_list
@@ -95,11 +95,11 @@ class TestResearchService:
         assert "Research event: " + sample_events[0].summary == call_args[0][0][0]
         assert "Research event: " + sample_events[1].summary == call_args[1][0][0]
 
-    def test_research_events_with_markdown_fences(self, mock_perplexity_client, sample_events, malformed_research_response):
+    def test_research_articles_with_markdown_fences(self, mock_perplexity_client, sample_events, malformed_research_response):
         """Test research with markdown fence-wrapped JSON."""
         mock_perplexity_client.research.return_value = malformed_research_response
         
-        articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         assert articles[0].headline == "Breaking News Event"
@@ -107,12 +107,12 @@ class TestResearchService:
         assert articles[0].story == "Full story content"
         assert articles[0].sources == ["https://example.com"]
 
-    def test_research_events_malformed_json(self, mock_perplexity_client, sample_events):
+    def test_research_articles_malformed_json(self, mock_perplexity_client, sample_events):
         """Test research with malformed JSON response."""
         mock_perplexity_client.research.return_value = "invalid json content{"
         
-        with patch('services.research.logger') as mock_logger:
-            articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        with patch('services.article_research.logger') as mock_logger:
+            articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         # Should create article with fallback values
@@ -123,7 +123,7 @@ class TestResearchService:
         
         mock_logger.warning.assert_called_once()
 
-    def test_research_events_missing_fields(self, mock_perplexity_client, sample_events):
+    def test_research_articles_missing_fields(self, mock_perplexity_client, sample_events):
         """Test research with missing fields in response."""
         incomplete_response = json.dumps({
             "headline": "Only Headline",
@@ -131,7 +131,7 @@ class TestResearchService:
         })
         mock_perplexity_client.research.return_value = incomplete_response
         
-        articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         assert articles[0].headline == "Only Headline"
@@ -139,16 +139,16 @@ class TestResearchService:
         assert articles[0].story == ""       # Default empty
         assert articles[0].sources == []     # Default empty
 
-    def test_research_events_empty_list(self, mock_perplexity_client):
+    def test_research_articles_empty_list(self, mock_perplexity_client):
         """Test research with empty event list."""
-        with patch('services.research.logger') as mock_logger:
-            result = research_events([], perplexity_client=mock_perplexity_client)
+        with patch('services.article_research.logger') as mock_logger:
+            result = research_articles([], perplexity_client=mock_perplexity_client)
         
         assert result == []
         mock_perplexity_client.research.assert_not_called()
         mock_logger.info.assert_called_with("Generated %d articles", 0)
 
-    def test_research_events_unicode_content(self, mock_perplexity_client, sample_events):
+    def test_research_articles_unicode_content(self, mock_perplexity_client, sample_events):
         """Test research with unicode characters in response."""
         unicode_response = json.dumps({
             "headline": "Climate Summit 🌍 Results",
@@ -158,7 +158,7 @@ class TestResearchService:
         })
         mock_perplexity_client.research.return_value = unicode_response
         
-        articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         assert "🌍" in articles[0].headline
@@ -173,7 +173,7 @@ class TestResearchService:
         "Multi\nLine\nContent",  # Multiline
         "Special chars: !@#$%^&*()",  # Special characters
     ])
-    def test_research_events_various_field_values(self, mock_perplexity_client, sample_events, field_value):
+    def test_research_articles_various_field_values(self, mock_perplexity_client, sample_events, field_value):
         """Test research with various field values."""
         response = json.dumps({
             "headline": field_value,
@@ -183,7 +183,7 @@ class TestResearchService:
         })
         mock_perplexity_client.research.return_value = response
         
-        articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         assert articles[0].headline == field_value
@@ -191,12 +191,12 @@ class TestResearchService:
         assert articles[0].story == field_value
         assert articles[0].sources == [field_value]
 
-    @patch('services.research.logger')
+    @patch('services.article_research.logger')
     def test_logging_research(self, mock_logger, mock_perplexity_client, sample_events, sample_research_responses):
         """Test that research service logs properly."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
-        research_events(sample_events, perplexity_client=mock_perplexity_client)
+        research_articles(sample_events, perplexity_client=mock_perplexity_client)
         
         # Verify final count logging
         mock_logger.info.assert_called_with("Generated %d articles", 2)
@@ -205,11 +205,11 @@ class TestResearchService:
         debug_calls = [call for call in mock_logger.debug.call_args_list]
         assert len(debug_calls) == 0
 
-    def test_research_events_article_structure(self, mock_perplexity_client, sample_events, sample_research_responses):
+    def test_research_articles_article_structure(self, mock_perplexity_client, sample_events, sample_research_responses):
         """Test that generated articles have correct structure."""
         mock_perplexity_client.research.side_effect = sample_research_responses
         
-        articles = research_events(sample_events, perplexity_client=mock_perplexity_client)
+        articles = research_articles(sample_events, perplexity_client=mock_perplexity_client)
         
         for article in articles:
             # Verify all required fields are present
@@ -232,13 +232,13 @@ class TestResearchService:
             assert article.broadcast == b""
             assert article.reporter == ""
 
-    def test_research_events_perplexity_error_handling(self, mock_perplexity_client, sample_events):
+    def test_research_articles_perplexity_error_handling(self, mock_perplexity_client, sample_events):
         """Test error handling when Perplexity client fails."""
         mock_perplexity_client.research.side_effect = Exception("API Error")
         
         # Should propagate the exception
         with pytest.raises(Exception, match="API Error"):
-            research_events(sample_events, perplexity_client=mock_perplexity_client)
+            research_articles(sample_events, perplexity_client=mock_perplexity_client)
 
     def test_parse_article_from_response_edge_cases(self, mock_perplexity_client, sample_events):
         """Test edge cases in article parsing."""
@@ -251,7 +251,7 @@ class TestResearchService:
         })
         mock_perplexity_client.research.return_value = response_with_nulls
         
-        articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         # Article class constructor doesn't convert None to empty string automatically
@@ -261,7 +261,7 @@ class TestResearchService:
         assert articles[0].story == "Valid story"
         assert articles[0].sources is None    # None remains None
 
-    def test_research_events_large_response(self, mock_perplexity_client, sample_events):
+    def test_research_articles_large_response(self, mock_perplexity_client, sample_events):
         """Test research with very large response content."""
         large_story = "Content " * 10000  # Very large story
         large_response = json.dumps({
@@ -272,7 +272,7 @@ class TestResearchService:
         })
         mock_perplexity_client.research.return_value = large_response
         
-        articles = research_events([sample_events[0]], perplexity_client=mock_perplexity_client)
+        articles = research_articles([sample_events[0]], perplexity_client=mock_perplexity_client)
         
         assert len(articles) == 1
         assert len(articles[0].story) == len(large_story)

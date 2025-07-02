@@ -86,7 +86,7 @@ class TestDeduplicationService:
             []   # Third event: no duplicates
         ]
         
-        with patch('services.deduplication.logger') as mock_logger:
+        with patch('services.event_deduplication.logger') as mock_logger:
             result = deduplicate_events(
                 sample_events,
                 openai_client=mock_openai_client,
@@ -157,7 +157,7 @@ class TestDeduplicationService:
 
     def test_deduplicate_events_empty_list(self, mock_openai_client, mock_pinecone_client):
         """Test deduplication with empty event list."""
-        with patch('services.deduplication.logger') as mock_logger:
+        with patch('services.event_deduplication.logger') as mock_logger:
             result = deduplicate_events(
                 [],
                 openai_client=mock_openai_client,
@@ -195,7 +195,7 @@ class TestDeduplicationService:
             []   # No duplicates
         ]
         
-        with patch('services.deduplication.logger') as mock_logger:
+        with patch('services.event_deduplication.logger') as mock_logger:
             result = deduplicate_events(
                 sample_events,
                 openai_client=mock_openai_client,
@@ -238,7 +238,7 @@ class TestDeduplicationService:
         assert len(result) == 2
         assert sample_events[0] not in result
 
-    @patch('services.deduplication.logger')
+    @patch('services.event_deduplication.logger')
     def test_logging_deduplication(self, mock_logger, mock_openai_client, mock_pinecone_client, sample_events):
         """Test that deduplication logs properly."""
         mock_openai_client.embed_text.return_value = [0.1] * 1536

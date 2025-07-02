@@ -7,7 +7,7 @@ from config import RESEARCH_INSTRUCTIONS
 from utils import logger, Article, Event
 
 
-def research_events(events: List[Event], *, perplexity_client: PerplexityClient) -> List[Article]:
+def research_articles(events: List[Event], *, perplexity_client: PerplexityClient) -> List[Article]:
     """Calls Perplexity once per event to generate full articles."""
 
     articles: list[Article] = []

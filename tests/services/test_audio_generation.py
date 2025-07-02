@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from services import generate_broadcast_analysis
+from services import generate_audio
 from utils import Article
 
 
@@ -38,7 +38,7 @@ class TestTTSService:
             )
         ]
 
-    def test_generate_broadcast_analysis_success(self, mock_openai_client, sample_articles):
+    def test_generate_audio_success(self, mock_openai_client, sample_articles):
         """Test successful broadcast analysis generation."""
         # Setup mocks
         mock_openai_client.chat_completion.side_effect = [
@@ -50,9 +50,9 @@ class TestTTSService:
             b"tech_audio_data"
         ]
         
-        with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
-            with patch('services.tts.TTS_INSTRUCTIONS', 'Analyze: {headline} - {summary} - {story}'):
-                result = generate_broadcast_analysis(
+        with patch('services.audio_generation.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
+            with patch('services.audio_generation.TTS_INSTRUCTIONS', 'Analyze: {headline} - {summary} - {story}'):
+                result = generate_audio(
                     sample_articles,
                     openai_client=mock_openai_client
                 )
@@ -73,15 +73,15 @@ class TestTTSService:
         assert mock_openai_client.chat_completion.call_count == 2
         assert mock_openai_client.text_to_speech.call_count == 2
 
-    def test_generate_broadcast_analysis_error_handling(self, mock_openai_client, sample_articles):
+    def test_generate_audio_error_handling(self, mock_openai_client, sample_articles):
         """Test error handling in broadcast analysis generation."""
         # Chat completion succeeds, TTS fails
         mock_openai_client.chat_completion.return_value = "Analysis text"
         mock_openai_client.text_to_speech.side_effect = Exception("TTS failed")
         
-        with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
-            with patch('services.tts.logger') as mock_logger:
-                result = generate_broadcast_analysis(
+        with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
+            with patch('services.audio_generation.logger') as mock_logger:
+                result = generate_audio(
                     [sample_articles[0]],
                     openai_client=mock_openai_client
                 )
@@ -90,10 +90,10 @@ class TestTTSService:
         assert len(result) == 0
         mock_logger.error.assert_called_once()
 
-    def test_generate_broadcast_analysis_empty_list(self, mock_openai_client):
+    def test_generate_audio_empty_list(self, mock_openai_client):
         """Test TTS generation with empty article list."""
-        with patch('services.tts.logger') as mock_logger:
-            result = generate_broadcast_analysis(
+        with patch('services.audio_generation.logger') as mock_logger:
+            result = generate_audio(
                 [],
                 openai_client=mock_openai_client
             )
@@ -106,14 +106,14 @@ class TestTTSService:
             "Generated broadcasts: %d/%d articles processed", 0, 0
         )
 
-    def test_generate_broadcast_analysis_prompt_formatting(self, mock_openai_client, sample_articles):
+    def test_generate_audio_prompt_formatting(self, mock_openai_client, sample_articles):
         """Test that analysis prompts are properly formatted."""
         mock_openai_client.chat_completion.return_value = "Analysis"
         mock_openai_client.text_to_speech.return_value = b"audio"
         
-        with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
-            with patch('services.tts.TTS_INSTRUCTIONS', 'Analyze {headline} and {summary} with {story}'):
-                generate_broadcast_analysis(
+        with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
+            with patch('services.audio_generation.TTS_INSTRUCTIONS', 'Analyze {headline} and {summary} with {story}'):
+                generate_audio(
                     [sample_articles[0]],
                     openai_client=mock_openai_client
                 )
@@ -124,7 +124,7 @@ class TestTTSService:
         assert sample_articles[0].summary in call_args
         assert sample_articles[0].story in call_args
 
-    @patch('services.tts.logger')
+    @patch('services.audio_generation.logger')
     def test_logging_tts_service(self, mock_logger, mock_openai_client, sample_articles):
         """Test that TTS service logs properly."""
         # Mock OpenAI responses
@@ -132,8 +132,8 @@ class TestTTSService:
         mock_openai_client.text_to_speech.return_value = b"fake_audio_data"
         
         # Mock voice selection
-        with patch('services.tts.get_random_REPORTER_VOICE', return_value=('alloy', 'Alex')):
-            generate_broadcast_analysis(
+        with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('alloy', 'Alex')):
+            generate_audio(
                 sample_articles,
                 openai_client=mock_openai_client
             )

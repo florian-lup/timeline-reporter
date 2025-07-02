@@ -100,7 +100,7 @@ class TestClientIntegration:
         """Test complete workflow including TTS generation and storage."""
         with patch('clients.openai.OpenAI') as mock_openai:
             with patch('clients.mongodb.MongoClient') as mock_mongo:
-                with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
+                with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ash', 'Alex')):
                     # Setup OpenAI mock for both chat and TTS
                     mock_openai_instance = Mock()
                     mock_openai.return_value = mock_openai_instance
@@ -131,7 +131,7 @@ class TestClientIntegration:
                     mock_collection.insert_one.return_value = mock_result
                     
                     # Execute TTS workflow
-                    from services import generate_broadcast_analysis
+                    from services import generate_audio
                     
                     openai_client = OpenAIClient()
                     mongodb_client = MongoDBClient()
@@ -149,7 +149,7 @@ class TestClientIntegration:
                     ]
                     
                     # Run TTS service
-                    result_articles = generate_broadcast_analysis(
+                    result_articles = generate_audio(
                         test_articles,
                         openai_client=openai_client
                     )
@@ -247,7 +247,7 @@ class TestClientIntegration:
         with patch('clients.perplexity.httpx.Client') as mock_httpx:
             with patch('clients.openai.OpenAI') as mock_openai:
                 with patch('clients.mongodb.MongoClient') as mock_mongo:
-                    with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
+                    with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
                         # Setup Perplexity mock (research)
                         mock_http_client = Mock()
                         mock_response = Mock()
@@ -294,7 +294,7 @@ class TestClientIntegration:
                         mock_collection.insert_one.return_value = mock_result
                         
                         # Execute full pipeline
-                        from services import research_events, generate_broadcast_analysis
+                        from services import research_articles, generate_audio
                         from utils import Event
                         
                         perplexity_client = PerplexityClient()
@@ -303,10 +303,10 @@ class TestClientIntegration:
                         
                         # 1. Research phase
                         test_events = [Event(title="Breaking News", summary="Important event")]
-                        articles = research_events(test_events, perplexity_client=perplexity_client)
+                        articles = research_articles(test_events, perplexity_client=perplexity_client)
                         
                         # 2. TTS phase
-                        final_articles = generate_broadcast_analysis(
+                        final_articles = generate_audio(
                             articles,
                             openai_client=openai_client
                         )
@@ -425,7 +425,7 @@ class TestClientIntegration:
                 mock_mongo_instance.__getitem__ = Mock(return_value=mock_db)
                 mock_db.__getitem__ = Mock(return_value=mock_collection)
                 
-                from services import generate_broadcast_analysis
+                from services import generate_audio
                 
                 openai_client = OpenAIClient()
                 mongodb_client = MongoDBClient()
@@ -442,7 +442,7 @@ class TestClientIntegration:
                 ]
                 
                 # Should handle error gracefully and return empty list
-                result = generate_broadcast_analysis(
+                result = generate_audio(
                     test_articles,
                     openai_client=openai_client
                 )

@@ -8,7 +8,7 @@ from config.settings import CHAT_MODEL
 from utils import logger, Article, get_random_REPORTER_VOICE
 
 
-def generate_broadcast_analysis(
+def generate_audio(
     articles: List[Article], 
     *, 
     openai_client: OpenAIClient

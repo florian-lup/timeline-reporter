@@ -7,10 +7,10 @@ from unittest.mock import Mock, patch
 from services import (
     discover_events,
     deduplicate_events,
-    decide_events,
-    research_events,
-    generate_broadcast_analysis,
-    store_articles
+    select_events,
+    research_articles,
+    generate_audio,
+    insert_articles
 )
 from utils import Event, Article
 
@@ -102,8 +102,8 @@ class TestServicesIntegration:
         ]
         
         # Execute complete pipeline
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+            with patch('services.audio_generation.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('ballad', 'Blake')]):
                 
                 # 1. Discovery
                 events = discover_events(mock_clients['perplexity'])
@@ -116,25 +116,25 @@ class TestServicesIntegration:
                 )
                 
                 # 3. Decision (prioritize most impactful events)
-                prioritized_events = decide_events(
+                prioritized_events = select_events(
                     unique_events,
                     openai_client=mock_clients['openai']
                 )
                 
                 # 4. Research
-                articles = research_events(
+                articles = research_articles(
                     prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 
                 # 5. TTS Analysis & Broadcast Generation
-                broadcast_articles = generate_broadcast_analysis(
+                broadcast_articles = generate_audio(
                     articles,
                     openai_client=mock_clients['openai']
                 )
                 
                 # 6. Storage
-                store_articles(
+                insert_articles(
                     broadcast_articles,
                     mongodb_client=mock_clients['mongodb']
                 )
@@ -219,8 +219,8 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.side_effect = [b"audio1", b"audio3"]
         mock_clients['mongodb'].insert_article.side_effect = ["id1", "id3"]
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('nova', 'Nova')]):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+            with patch('services.audio_generation.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex'), ('nova', 'Nova')]):
                 
                 # Execute pipeline
                 events = discover_events(mock_clients['perplexity'])
@@ -229,21 +229,21 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                prioritized_events = decide_events(
+                prioritized_events = select_events(
                     unique_events,
                     openai_client=mock_clients['openai']
                 )
-                articles = research_events(
+                articles = research_articles(
                     prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
-                broadcast_articles = generate_broadcast_analysis(
+                broadcast_articles = generate_audio(
                     articles,
                     openai_client=mock_clients['openai']
                 )
                 
                 # Store the articles with broadcasts
-                store_articles(
+                insert_articles(
                     broadcast_articles,
                     mongodb_client=mock_clients['mongodb']
                 )
@@ -267,7 +267,7 @@ class TestServicesIntegration:
         """Test pipeline error handling when discovery fails."""
         mock_clients['perplexity'].deep_research.side_effect = Exception("Discovery API failed")
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             with pytest.raises(Exception, match="Discovery API failed"):
                 discover_events(mock_clients['perplexity'])
         
@@ -290,7 +290,7 @@ class TestServicesIntegration:
         # Research fails
         mock_clients['perplexity'].research.side_effect = Exception("Research API failed")
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_clients['perplexity'])
             unique_events = deduplicate_events(
                 events,
@@ -299,7 +299,7 @@ class TestServicesIntegration:
             )
             
             with pytest.raises(Exception, match="Research API failed"):
-                research_events(unique_events, perplexity_client=mock_clients['perplexity'])
+                research_articles(unique_events, perplexity_client=mock_clients['perplexity'])
         
         # Verify services up to failure point were called
         mock_clients['perplexity'].deep_research.assert_called_once()
@@ -349,8 +349,8 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.side_effect = [b"audio1"]
         mock_clients['mongodb'].insert_article.side_effect = ["id1"]
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')]):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+            with patch('services.audio_generation.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')]):
                 
                 events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
@@ -358,24 +358,24 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                prioritized_events = decide_events(
+                prioritized_events = select_events(
                     unique_events,
                     openai_client=mock_clients['openai']
                 )
-                articles = research_events(
+                articles = research_articles(
                     prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
                 
                 # TTS processing with partial failure
-                broadcast_articles = generate_broadcast_analysis(
+                broadcast_articles = generate_audio(
                     articles,
                     openai_client=mock_clients['openai']
                 )
                 
                 # Store successfully processed articles
                 if broadcast_articles:
-                    store_articles(
+                    insert_articles(
                         broadcast_articles,
                         mongodb_client=mock_clients['mongodb']
                     )
@@ -418,8 +418,8 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.return_value = b"final_audio_data"
         mock_clients['mongodb'].insert_article.return_value = "final_id"
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.tts.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+            with patch('services.audio_generation.get_random_REPORTER_VOICE', return_value=('ballad', 'Blake')):
                 
                 # Execute pipeline and track transformations
                 events = discover_events(mock_clients['perplexity'])
@@ -428,21 +428,21 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                prioritized_events = decide_events(
+                prioritized_events = select_events(
                     unique_events,
                     openai_client=mock_clients['openai']
                 )
-                articles = research_events(
+                articles = research_articles(
                     prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
-                final_articles = generate_broadcast_analysis(
+                final_articles = generate_audio(
                     articles,
                     openai_client=mock_clients['openai']
                 )
                 
                 # Store final articles
-                store_articles(
+                insert_articles(
                     final_articles,
                     mongodb_client=mock_clients['mongodb']
                 )
@@ -479,7 +479,7 @@ class TestServicesIntegration:
         # Discovery returns no events
         mock_clients['perplexity'].deep_research.return_value = "[]"
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_clients['perplexity'])
             
             unique_events = deduplicate_events(
@@ -488,12 +488,12 @@ class TestServicesIntegration:
                 pinecone_client=mock_clients['pinecone']
             )
             
-            articles = research_events(
+            articles = research_articles(
                 unique_events,
                 perplexity_client=mock_clients['perplexity']
             )
             
-            broadcast_articles = generate_broadcast_analysis(
+            broadcast_articles = generate_audio(
                 articles,
                 openai_client=mock_clients['openai']
             )
@@ -561,8 +561,8 @@ class TestServicesIntegration:
         mock_clients['openai'].text_to_speech.side_effect = [f"audio_{i}".encode() for i in range(5)]
         mock_clients['mongodb'].insert_article.side_effect = [f"id_{i}" for i in range(5)]
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.tts.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')] * 5):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+            with patch('services.audio_generation.get_random_REPORTER_VOICE', side_effect=[('ash', 'Alex')] * 5):
                 
                 events = discover_events(mock_clients['perplexity'])
                 unique_events = deduplicate_events(
@@ -570,22 +570,22 @@ class TestServicesIntegration:
                     openai_client=mock_clients['openai'],
                     pinecone_client=mock_clients['pinecone']
                 )
-                prioritized_events = decide_events(
+                prioritized_events = select_events(
                     unique_events,
                     openai_client=mock_clients['openai']
                 )
-                articles = research_events(
+                articles = research_articles(
                     prioritized_events,
                     perplexity_client=mock_clients['perplexity']
                 )
-                broadcast_articles = generate_broadcast_analysis(
+                broadcast_articles = generate_audio(
                     articles,
                     openai_client=mock_clients['openai']
                 )
                 
                 # Store articles if any were processed
                 if broadcast_articles:
-                    store_articles(
+                    insert_articles(
                         broadcast_articles,
                         mongodb_client=mock_clients['mongodb']
                     )

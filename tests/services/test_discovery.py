@@ -57,7 +57,7 @@ class TestDiscoveryService:
         """Test successful event discovery."""
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_perplexity_client)
         
         assert len(events) == 2
@@ -73,7 +73,7 @@ class TestDiscoveryService:
         """Test event discovery with markdown fence-wrapped JSON."""
         mock_perplexity_client.deep_research.return_value = sample_malformed_response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_perplexity_client)
         
         assert len(events) == 1
@@ -84,7 +84,7 @@ class TestDiscoveryService:
         """Test event discovery with empty JSON array."""
         mock_perplexity_client.deep_research.return_value = "[]"
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_perplexity_client)
         
         assert events == []
@@ -93,8 +93,8 @@ class TestDiscoveryService:
         """Test event discovery with malformed JSON."""
         mock_perplexity_client.deep_research.return_value = "invalid json{"
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
-            with patch('services.discovery.logger') as mock_logger:
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+            with patch('services.event_discovery.logger') as mock_logger:
                 events = discover_events(mock_perplexity_client)
         
         assert events == []
@@ -109,7 +109,7 @@ class TestDiscoveryService:
         ])
         mock_perplexity_client.deep_research.return_value = response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             # This should raise KeyError for missing fields
             with pytest.raises(KeyError):
                 discover_events(mock_perplexity_client)
@@ -131,18 +131,18 @@ class TestDiscoveryService:
             "Example format: [{\"title\": \"Event Title\", \"summary\": \"Brief description...\"}]"
         )
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_instructions):
             events = discover_events(mock_perplexity_client)
         
         # Should still work regardless of the topics
         assert len(events) == 2
 
-    @patch('services.discovery.logger')
+    @patch('services.event_discovery.logger')
     def test_logging_events_discovery(self, mock_logger, mock_perplexity_client, sample_discovery_response, test_discovery_instructions):
         """Test that event discovery logs properly."""
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             discover_events(mock_perplexity_client)
         
         # Debug logging was removed - no debug assertion needed
@@ -158,7 +158,7 @@ class TestDiscoveryService:
         ])
         mock_perplexity_client.deep_research.return_value = unicode_response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_perplexity_client)
         
         assert len(events) == 1
@@ -169,7 +169,7 @@ class TestDiscoveryService:
         """Test that prompt is properly formatted with topics and date."""
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             discover_events(mock_perplexity_client)
         
         # Verify the prompt was called with correct content
@@ -189,7 +189,7 @@ class TestDiscoveryService:
         ])
         mock_perplexity_client.deep_research.return_value = complex_response
         
-        with patch('services.discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
+        with patch('services.event_discovery.DISCOVERY_INSTRUCTIONS', test_discovery_instructions):
             events = discover_events(mock_perplexity_client)
         
         assert len(events) == 1

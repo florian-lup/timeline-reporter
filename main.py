@@ -11,11 +11,11 @@ from utils import logger  # noqa: F401 – configure logging first
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
 from services import (
     deduplicate_events,
-    decide_events,
+    select_events,
     discover_events,
-    research_events,
-    generate_broadcast_analysis,
-    store_articles,
+    research_articles,
+    generate_audio,
+    insert_articles,
 )
 
 
@@ -39,18 +39,18 @@ def run_pipeline() -> None:  # noqa: D401
     )
 
     # 3️⃣ Decision (new step: prioritize most impactful events)
-    prioritized_events = decide_events(unique_events, openai_client=openai_client)
+    prioritized_events = select_events(unique_events, openai_client=openai_client)
 
     # 4️⃣ Research
-    articles = research_events(prioritized_events, perplexity_client=perplexity_client)
+    articles = research_articles(prioritized_events, perplexity_client=perplexity_client)
 
     # 5️⃣ TTS Analysis & Broadcast Generation
-    articles_with_broadcast = generate_broadcast_analysis(
+    articles_with_broadcast = generate_audio(
         articles, openai_client=openai_client
     )
 
     # 6️⃣ Storage
-    store_articles(articles_with_broadcast, mongodb_client=mongodb_client)
+    insert_articles(articles_with_broadcast, mongodb_client=mongodb_client)
 
     logger.info("Pipeline complete: %d articles with broadcasts stored", len(articles_with_broadcast))
 
