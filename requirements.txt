@@ -9,3 +9,8 @@ pytest==8.4.1
 pytest-mock==3.14.1
 pytest-cov==6.2.1
 responses==0.25.7
+
+# Linting and formatting
+ruff==0.12.1
+black==25.1.0
+mypy==1.16.1
