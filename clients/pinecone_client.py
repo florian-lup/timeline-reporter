@@ -60,7 +60,10 @@ class PineconeClient:
         ]
 
     def upsert_vector(
-        self, vector_id: str, values: list[float], metadata: dict | None = None
+        self,
+        vector_id: str,
+        values: list[float],
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self._index.upsert([(vector_id, values, metadata or {})])
 

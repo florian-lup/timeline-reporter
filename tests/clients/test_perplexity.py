@@ -128,36 +128,29 @@ class TestPerplexityClient:
             patch("clients.perplexity_client.RESEARCH_MODEL", "test-model"),
             patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
         ):
-                    client = PerplexityClient()
-                    client.research("test prompt")
+            client = PerplexityClient()
+            client.research("test prompt")
 
-                    # Verify the POST call
-                    mock_client.post.assert_called_once()
-                    call_args = mock_client.post.call_args
+            # Verify the POST call
+            mock_client.post.assert_called_once()
+            call_args = mock_client.post.call_args
 
-                    # Check URL
-                    assert (
-                        call_args[0][0] == "https://api.perplexity.ai/chat/completions"
-                    )
+            # Check URL
+            assert call_args[0][0] == "https://api.perplexity.ai/chat/completions"
 
-                    # Check headers
-                    assert (
-                        call_args[1]["headers"]["Authorization"]
-                        == "Bearer test-api-key"
-                    )
-                    assert call_args[1]["headers"]["Content-Type"] == "application/json"
+            # Check headers
+            assert call_args[1]["headers"]["Authorization"] == "Bearer test-api-key"
+            assert call_args[1]["headers"]["Content-Type"] == "application/json"
 
-                    # Check payload structure
-                    payload = call_args[1]["json"]
-                    assert payload["model"] == "test-model"
-                    assert len(payload["messages"]) == 2
-                    assert payload["messages"][0]["role"] == "system"
-                    assert payload["messages"][1]["role"] == "user"
-                    assert payload["messages"][1]["content"] == "test prompt"
-                    assert (
-                        payload["web_search_options"]["search_context_size"] == "large"
-                    )
-                    assert payload["response_format"]["type"] == "json_schema"
+            # Check payload structure
+            payload = call_args[1]["json"]
+            assert payload["model"] == "test-model"
+            assert len(payload["messages"]) == 2
+            assert payload["messages"][0]["role"] == "system"
+            assert payload["messages"][1]["role"] == "user"
+            assert payload["messages"][1]["content"] == "test prompt"
+            assert payload["web_search_options"]["search_context_size"] == "large"
+            assert payload["response_format"]["type"] == "json_schema"
 
     def test_research_json_schema_structure(
         self, mock_httpx_client, sample_response_data

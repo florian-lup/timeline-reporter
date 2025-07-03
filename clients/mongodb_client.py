@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from pymongo import MongoClient
 
 from config import MONGODB_COLLECTION_NAME, MONGODB_DATABASE_NAME, MONGODB_URI
@@ -26,7 +28,7 @@ class MongoDBClient:
             raise ValueError(
                 "MONGODB_URI is missing, cannot initialise MongoDB client."
             )
-        self._client: MongoClient = MongoClient(uri)
+        self._client: MongoClient[dict[str, Any]] = MongoClient(uri)
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]
         logger.info(
@@ -36,7 +38,7 @@ class MongoDBClient:
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------
-    def insert_article(self, article: dict) -> str:
+    def insert_article(self, article: dict[str, Any]) -> str:
         """Inserts *article* dict and returns inserted document id as str."""
         result = self._collection.insert_one(article)
         return str(result.inserted_id)

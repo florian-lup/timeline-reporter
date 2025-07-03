@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from openai import OpenAI
 
@@ -67,7 +67,14 @@ class OpenAIClient:
         content: str = response.choices[0].message.content
         return content
 
-    def text_to_speech(self, text: str, voice: str) -> bytes:
+    def text_to_speech(
+        self,
+        text: str,
+        voice: (
+            Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+            | Literal["ash", "ballad", "coral", "sage", "verse"]
+        ),
+    ) -> bytes:
         """Convert text to speech using OpenAI's TTS model.
 
         Args:

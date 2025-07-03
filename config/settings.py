@@ -44,14 +44,16 @@ REPORTER_VOICE = {
     "ballad": "Blake",
     "coral": "Claire",
     "sage": "Sam",
-    "verse": "Victoria",
+    "verse": "Violet",
 }
 
 HOST_VOICE = {
-    "breeze": "Brian",  # API name -> Human name
-    "cove": "Catherine",
-    "ember": "Emma",
-    "juniper": "Jordan",
+    "alloy": "Brian",  # API name -> Human name
+    "echo": "Catherine",
+    "fable": "Emma",
+    "onyx": "Jordan",
+    "shimmer": "Victoria",
+    "nova": "Nora",
 }
 
 # ---------------------------------------------------------------------------

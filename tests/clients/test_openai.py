@@ -86,9 +86,7 @@ class TestOpenAIClient:
 
         with (
             patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"),
-            patch(
-                "clients.openai_client.EMBEDDING_MODEL", "text-embedding-3-small"
-            ),
+            patch("clients.openai_client.EMBEDDING_MODEL", "text-embedding-3-small"),
             patch("clients.openai_client.EMBEDDING_DIMENSIONS", 1536),
         ):
             client = OpenAIClient()
@@ -176,9 +174,7 @@ class TestOpenAIClient:
 
         with (
             patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"),
-            patch(
-                "clients.openai_client.EMBEDDING_MODEL", "text-embedding-3-small"
-            ),
+            patch("clients.openai_client.EMBEDDING_MODEL", "text-embedding-3-small"),
             patch("clients.openai_client.EMBEDDING_DIMENSIONS", 1536),
         ):
             client = OpenAIClient()

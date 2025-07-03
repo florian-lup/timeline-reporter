@@ -145,15 +145,13 @@ class TestMongoDBClient:
         with (
             patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
             patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "test_db"),
-            patch(
-                "clients.mongodb_client.MONGODB_COLLECTION_NAME", "test_collection"
-            ),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "test_collection"),
         ):
-                    MongoDBClient()
+            MongoDBClient()
 
-                    mock_logger.info.assert_called_once_with(
-                        "MongoDB connected: %s/%s", "test_db", "test_collection"
-                    )
+            mock_logger.info.assert_called_once_with(
+                "MongoDB connected: %s/%s", "test_db", "test_collection"
+            )
 
     @patch("clients.mongodb_client.logger")
     def test_logging_on_insert_article(
@@ -181,12 +179,10 @@ class TestMongoDBClient:
         with (
             patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
             patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "events"),
-            patch(
-                "clients.mongodb_client.MONGODB_COLLECTION_NAME", "articles"
-            ),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "articles"),
         ):
-                    MongoDBClient()
+            MongoDBClient()
 
-                    # Verify database and collection access
-                    mock_instance.__getitem__.assert_called_with("events")
-                    mock_db.__getitem__.assert_called_with("articles")
+            # Verify database and collection access
+            mock_instance.__getitem__.assert_called_with("events")
+            mock_db.__getitem__.assert_called_with("articles")

@@ -80,8 +80,7 @@ def sample_events():
         Event(
             title="Technology Breakthrough",
             summary=(
-                "Major advancement in artificial intelligence technology "
-                "announced."
+                "Major advancement in artificial intelligence technology " "announced."
             ),
         ),
         Event(

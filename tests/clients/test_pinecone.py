@@ -81,13 +81,13 @@ class TestPineconeClient:
             patch("clients.pinecone_client.CLOUD_PROVIDER", "aws"),
             patch("clients.pinecone_client.CLOUD_REGION", "us-east-1"),
         ):
-                                PineconeClient()
+            PineconeClient()
 
-                                mock_pc.create_index.assert_called_once()
-                                create_call = mock_pc.create_index.call_args
-                                assert create_call[1]["name"] == "new-index"
-                                assert create_call[1]["dimension"] == 1536
-                                assert create_call[1]["metric"] == "cosine"
+            mock_pc.create_index.assert_called_once()
+            create_call = mock_pc.create_index.call_args
+            assert create_call[1]["name"] == "new-index"
+            assert create_call[1]["dimension"] == 1536
+            assert create_call[1]["metric"] == "cosine"
 
     def test_similarity_search_success(self, mock_pinecone):
         """Test successful similarity search."""
@@ -174,10 +174,10 @@ class TestPineconeClient:
             patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
             patch("clients.pinecone_client.PINECONE_INDEX_NAME", "test-index"),
         ):
-                PineconeClient()
+            PineconeClient()
 
-                mock_logger.info.assert_any_call("Initializing Pinecone")
-                mock_logger.info.assert_any_call("Pinecone ready: %s", "test-index")
+            mock_logger.info.assert_any_call("Initializing Pinecone")
+            mock_logger.info.assert_any_call("Pinecone ready: %s", "test-index")
 
     @patch("clients.pinecone_client.logger")
     def test_logging_create_index(self, mock_logger, mock_pinecone):
