@@ -23,11 +23,17 @@ class TestResearchService:
         return [
             Event(
                 title="Climate Summit 2024",
-                summary="World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                summary=(
+                    "World leaders meet to discuss climate change solutions "
+                    "and carbon reduction targets."
+                ),
             ),
             Event(
                 title="Tech Innovation Expo",
-                summary="Major technology companies showcase AI and renewable energy innovations.",
+                summary=(
+                    "Major technology companies showcase AI and renewable "
+                    "energy innovations."
+                ),
             ),
         ]
 
@@ -38,8 +44,14 @@ class TestResearchService:
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals.",
-                    "story": "In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments.",
+                    "summary": (
+                        "World leaders at the 2024 Climate Summit agreed on "
+                        "unprecedented carbon reduction goals."
+                    ),
+                    "story": (
+                        "In a historic gathering, the 2024 Climate Summit "
+                        "concluded with ambitious commitments."
+                    ),
                     "sources": [
                         "https://example.com/climate-summit",
                         "https://example.com/carbon-targets",
@@ -49,8 +61,14 @@ class TestResearchService:
             json.dumps(
                 {
                     "headline": "AI Revolution Takes Center Stage at Tech Expo",
-                    "summary": "The annual Tech Innovation Expo revealed groundbreaking AI technologies.",
-                    "story": "This year's Tech Innovation Expo showcased revolutionary AI applications.",
+                    "summary": (
+                        "The annual Tech Innovation Expo revealed groundbreaking "
+                        "AI technologies."
+                    ),
+                    "story": (
+                        "This year's Tech Innovation Expo showcased revolutionary "
+                        "AI applications."
+                    ),
                     "sources": [
                         "https://example.com/tech-expo",
                         "https://example.com/ai-innovations",

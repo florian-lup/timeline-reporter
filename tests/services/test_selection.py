@@ -22,19 +22,31 @@ class TestDecisionService:
         return [
             Event(
                 title="Climate Summit 2024",
-                summary="World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                summary=(
+                    "World leaders meet to discuss climate change solutions "
+                    "and carbon reduction targets."
+                ),
             ),
             Event(
                 title="Earthquake in Pacific",
-                summary="A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
+                summary=(
+                    "A 6.5 magnitude earthquake struck the Pacific region "
+                    "with minimal damage reported."
+                ),
             ),
             Event(
                 title="Tech Conference Announced",
-                summary="Major technology companies announce new AI developments at annual conference.",
+                summary=(
+                    "Major technology companies announce new AI developments "
+                    "at annual conference."
+                ),
             ),
             Event(
                 title="Economic Policy Update",
-                summary="Government announces new economic policies affecting global markets.",
+                summary=(
+                    "Government announces new economic policies affecting "
+                    "global markets."
+                ),
             ),
             Event(
                 title="Space Mission Success",
@@ -177,10 +189,11 @@ class TestDecisionService:
 
         # Objects should be unchanged
         assert result[0].title == "Climate Summit 2024"
-        assert (
-            result[0].summary
-            == "World leaders meet to discuss climate change solutions and carbon reduction targets."
+        expected_summary = (
+            "World leaders meet to discuss climate change solutions "
+            "and carbon reduction targets."
         )
+        assert result[0].summary == expected_summary
 
     @patch("services.event_selection.logger")
     def test_logging_decision_service(
@@ -235,11 +248,12 @@ class TestDecisionService:
         self, mock_openai_client, sample_events
     ):
         """Test when AI selects the same event multiple times."""
-        mock_openai_client.chat_completion.return_value = "1, 1, 2, 1, 3"  # Duplicates
+        # Duplicates
+        mock_openai_client.chat_completion.return_value = "1, 1, 2, 1, 3"
 
         result = select_events(sample_events, openai_client=mock_openai_client)
 
-        # Should deduplicate automatically (since we're adding to a list, duplicates will appear)
+        # Should deduplicate automatically (duplicates will appear in list)
         # But in practice, same Event object added multiple times
         assert len(result) == 5  # All selections added, including duplicates
         assert result[0] == sample_events[0]  # First "1"

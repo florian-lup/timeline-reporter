@@ -10,7 +10,6 @@ from utils import Article, logger
 
 def insert_articles(articles: list[Article], *, mongodb_client: MongoDBClient) -> None:
     """Stores articles in MongoDB."""
-
     for article in articles:
         article_dict = article.__dict__.copy()
         inserted_id = mongodb_client.insert_article(article_dict)

@@ -31,6 +31,14 @@ class PerplexityClient:
     }
 
     def __init__(self, api_key: str | None = None) -> None:
+        """Initialize Perplexity client.
+
+        Args:
+            api_key: Perplexity API key. If None, uses PERPLEXITY_API_KEY from config.
+
+        Raises:
+            ValueError: If no API key is provided and PERPLEXITY_API_KEY is not set.
+        """
         if api_key is None:
             api_key = PERPLEXITY_API_KEY
         if not api_key:
@@ -74,7 +82,6 @@ class PerplexityClient:
         https://docs.perplexity.ai/guides/structured-outputs) to guarantee the
         model returns a valid JSON object matching the article schema.
         """
-
         logger.info("Research request with %s", RESEARCH_MODEL)
 
         payload = {
@@ -107,10 +114,13 @@ class PerplexityClient:
         return content
 
     def deep_research(self, prompt: str) -> str:
-        """Executes deep research using sonar-deep-research model with structured output.
+        """Executes deep research using sonar-deep-research model.
 
-        This method uses the sonar-deep-research model which includes reasoning tokens
-        wrapped in <think> tags. The response is parsed to extract only the JSON content.
+        Uses structured output for consistent JSON responses.
+
+        This method uses the sonar-deep-research model which includes
+        reasoning tokens wrapped in <think> tags. The response is parsed to
+        extract only the JSON content.
 
         Args:
             prompt: The research query/prompt

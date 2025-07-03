@@ -14,7 +14,6 @@ def select_events(events: list[Event], *, openai_client: OpenAIClient) -> list[E
     Uses AI to evaluate events based on impact, significance, and newsworthiness,
     returning only the top priority stories that warrant comprehensive research.
     """
-
     if not events:
         logger.info("No events to evaluate")
         return []
@@ -30,7 +29,10 @@ def select_events(events: list[Event], *, openai_client: OpenAIClient) -> list[E
     )
 
     # Create decision prompt
-    full_prompt = f"{DECISION_SYSTEM_PROMPT}\n\n{DECISION_INSTRUCTIONS.format(events=events_text)}"
+    full_prompt = (
+        f"{DECISION_SYSTEM_PROMPT}\n\n"
+        f"{DECISION_INSTRUCTIONS.format(events=events_text)}"
+    )
 
     # Get AI decision on most impactful events using decision model
     response_text = openai_client.chat_completion(
@@ -59,7 +61,6 @@ def _filter_events_by_indices(
     response_text: str, original_events: list[Event]
 ) -> list[Event]:
     """Filters original events based on selected indices from AI response."""
-
     # Extract numbers from response (handles formats like "1, 3, 5" or "2 4 7" etc.)
     numbers = re.findall(r"\b(\d+)\b", response_text)
 

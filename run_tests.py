@@ -52,7 +52,7 @@ def run_tests(
         cmd.append("-q")
 
     print(f"Running command: {' '.join(cmd)}")
-    return subprocess.run(cmd)
+    return subprocess.run(cmd, check=False)
 
 
 def main() -> None:

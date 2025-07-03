@@ -16,10 +16,12 @@ class TestClientIntegration:
     def test_research_to_storage_workflow(self):
         """Test complete workflow from research to storage."""
         # Mock all external dependencies
-        with patch("clients.perplexity_client.httpx.Client") as mock_httpx:
-            with patch("clients.openai_client.OpenAI") as mock_openai:
-                with patch("clients.mongodb_client.MongoClient") as mock_mongo:
-                    with patch("clients.pinecone_client.Pinecone") as mock_pinecone:
+        with (
+            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
+            patch("clients.openai_client.OpenAI") as mock_openai,
+            patch("clients.mongodb_client.MongoClient") as mock_mongo,
+            patch("clients.pinecone_client.Pinecone") as mock_pinecone,
+        ):
                         # Setup Perplexity mock
                         mock_http_client = Mock()
                         mock_response = Mock()
@@ -65,9 +67,9 @@ class TestClientIntegration:
                         # Setup Pinecone mock
                         mock_pinecone_instance = Mock()
                         mock_pinecone.return_value = mock_pinecone_instance
-                        mock_pinecone_instance.list_indexes.return_value.names.return_value = [
-                            "timeline-events"
-                        ]
+                        mock_indexes = mock_pinecone_instance.list_indexes.return_value
+                        mock_names = mock_indexes.names
+                        mock_names.return_value = ["timeline-events"]
                         mock_index = Mock()
                         mock_pinecone_instance.Index.return_value = mock_index
 
@@ -108,12 +110,14 @@ class TestClientIntegration:
 
     def test_complete_tts_workflow(self):
         """Test complete workflow including TTS generation and storage."""
-        with patch("clients.openai_client.OpenAI") as mock_openai:
-            with patch("clients.mongodb_client.MongoClient") as mock_mongo:
-                with patch(
-                    "services.audio_generation.get_random_REPORTER_VOICE",
-                    return_value=("ash", "Alex"),
-                ):
+        with (
+            patch("clients.openai_client.OpenAI") as mock_openai,
+            patch("clients.mongodb_client.MongoClient") as mock_mongo,
+            patch(
+                "services.audio_generation.get_random_REPORTER_VOICE",
+                return_value=("ash", "Alex"),
+            ),
+        ):
                     # Setup OpenAI mock for both chat and TTS
                     mock_openai_instance = Mock()
                     mock_openai.return_value = mock_openai_instance
@@ -122,7 +126,10 @@ class TestClientIntegration:
                     mock_chat_response = Mock()
                     mock_choice = Mock()
                     mock_message = Mock()
-                    mock_message.content = "This is an engaging analysis of the AI breakthrough for broadcast presentation."
+                    mock_message.content = (
+                        "This is an engaging analysis of the AI breakthrough "
+                        "for broadcast presentation."
+                    )
                     mock_choice.message = mock_message
                     mock_chat_response.choices = [mock_choice]
                     mock_openai_instance.chat.completions.create.return_value = (
@@ -157,8 +164,14 @@ class TestClientIntegration:
                     test_articles = [
                         Article(
                             headline="AI Breakthrough in 2024",
-                            summary="Revolutionary AI model shows unprecedented capabilities",
-                            story="Detailed story about the groundbreaking AI development...",
+                            summary=(
+                                "Revolutionary AI model shows unprecedented "
+                                "capabilities"
+                            ),
+                            story=(
+                                "Detailed story about the groundbreaking AI "
+                                "development..."
+                            ),
                             sources=["https://example.com/ai-news"],
                             broadcast=b"",  # Placeholder
                             reporter="",  # Placeholder
@@ -175,10 +188,8 @@ class TestClientIntegration:
                     processed_article = result_articles[0]
 
                     # Check TTS output
-                    assert (
-                        processed_article.broadcast
-                        == b"fake_mp3_audio_data_for_broadcast"
-                    )
+                    expected_data = b"fake_mp3_audio_data_for_broadcast"
+                    assert processed_article.broadcast == expected_data
                     assert processed_article.reporter == "Alex"
                     assert processed_article.headline == "AI Breakthrough in 2024"
 
@@ -189,10 +200,11 @@ class TestClientIntegration:
                     # Verify TTS parameters
                     tts_call = mock_openai_instance.audio.speech.create.call_args
                     assert tts_call[1]["voice"] == "ash"
-                    assert (
-                        tts_call[1]["input"]
-                        == "This is an engaging analysis of the AI breakthrough for broadcast presentation."
+                    expected_input = (
+                        "This is an engaging analysis of the AI breakthrough "
+                        "for broadcast presentation."
                     )
+                    assert tts_call[1]["input"] == expected_input
                     assert tts_call[1]["response_format"] == "mp3"
 
                     # Note: Storage is handled separately in the new architecture
@@ -232,7 +244,8 @@ class TestClientIntegration:
                 audio_data = client.text_to_speech(analysis_text, "alloy")
 
                 # Verify integration
-                assert analysis_text == "Generated analysis text for TTS conversion"
+                expected_text = "Generated analysis text for TTS conversion"
+                assert analysis_text == expected_text
                 assert audio_data == b"converted_audio_data"
 
                 # Verify method calls
@@ -244,7 +257,7 @@ class TestClientIntegration:
                 assert tts_call[1]["input"] == analysis_text
 
     def test_article_model_with_required_fields(self):
-        """Test Article model integration with required broadcast and reporter fields."""
+        """Test Article model integration with required broadcast and reporter."""
         # Test creating Article with all required fields
         article = Article(
             headline="Test Headline",
@@ -270,7 +283,8 @@ class TestClientIntegration:
             "reporter",
             "date",
         }
-        assert set(article_dict.keys()) == expected_keys
+        actual_keys = set(article_dict.keys())
+        assert actual_keys == expected_keys
 
         # Test that all fields are present (no None values)
         for key, value in article_dict.items():
@@ -278,13 +292,15 @@ class TestClientIntegration:
 
     def test_research_to_tts_pipeline_integration(self):
         """Test integration from research service through TTS to storage."""
-        with patch("clients.perplexity_client.httpx.Client") as mock_httpx:
-            with patch("clients.openai_client.OpenAI") as mock_openai:
-                with patch("clients.mongodb_client.MongoClient") as mock_mongo:
-                    with patch(
-                        "services.audio_generation.get_random_REPORTER_VOICE",
-                        return_value=("ballad", "Blake"),
-                    ):
+        with (
+            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
+            patch("clients.openai_client.OpenAI") as mock_openai,
+            patch("clients.mongodb_client.MongoClient") as mock_mongo,
+            patch(
+                "services.audio_generation.get_random_REPORTER_VOICE",
+                return_value=("ballad", "Blake"),
+            ),
+        ):
                         # Setup Perplexity mock (research)
                         mock_http_client = Mock()
                         mock_response = Mock()
@@ -376,16 +392,21 @@ class TestClientIntegration:
                         assert final_article.reporter == "Blake"
 
                         # Verify all services were called
-                        mock_http_client.post.assert_called_once()  # Perplexity research
-                        mock_openai_instance.chat.completions.create.assert_called_once()  # Analysis generation
-                        mock_openai_instance.audio.speech.create.assert_called_once()  # TTS conversion
+                        # Perplexity research
+                        mock_http_client.post.assert_called_once()
+                        # Analysis generation
+                        mock_openai_instance.chat.completions.create.assert_called_once()
+                        # TTS conversion
+                        mock_openai_instance.audio.speech.create.assert_called_once()
                         # Note: Storage handled separately in the new architecture
 
     def test_similarity_search_workflow(self):
         """Test workflow for finding similar articles."""
-        with patch("clients.openai_client.OpenAI") as mock_openai:
-            with patch("clients.pinecone_client.Pinecone") as mock_pinecone:
-                with patch("clients.mongodb_client.MongoClient"):
+        with (
+            patch("clients.openai_client.OpenAI") as mock_openai,
+            patch("clients.pinecone_client.Pinecone") as mock_pinecone,
+            patch("clients.mongodb_client.MongoClient"),
+        ):
                     # Setup mocks
                     mock_openai_instance = Mock()
                     mock_openai.return_value = mock_openai_instance
@@ -400,9 +421,8 @@ class TestClientIntegration:
 
                     mock_pinecone_instance = Mock()
                     mock_pinecone.return_value = mock_pinecone_instance
-                    mock_pinecone_instance.list_indexes.return_value.names.return_value = [
-                        "timeline-events"
-                    ]
+                    mock_names = mock_pinecone_instance.list_indexes.return_value.names
+                    mock_names.return_value = ["timeline-events"]
                     mock_index = Mock()
                     mock_pinecone_instance.Index.return_value = mock_index
 
@@ -453,8 +473,10 @@ class TestClientIntegration:
     @pytest.mark.slow
     def test_tts_error_handling_integration(self):
         """Test error handling in TTS workflow integration."""
-        with patch("clients.openai_client.OpenAI") as mock_openai:
-            with patch("clients.mongodb_client.MongoClient") as mock_mongo:
+        with (
+            patch("clients.openai_client.OpenAI") as mock_openai,
+            patch("clients.mongodb_client.MongoClient") as mock_mongo,
+        ):
                 # Setup OpenAI mock to fail on TTS
                 mock_openai_instance = Mock()
                 mock_openai.return_value = mock_openai_instance

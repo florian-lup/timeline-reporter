@@ -19,6 +19,14 @@ class OpenAIClient:
     """Lightweight wrapper around the OpenAI Python SDK."""
 
     def __init__(self, api_key: str | None = None) -> None:
+        """Initialize OpenAI client.
+
+        Args:
+            api_key: OpenAI API key. If None, uses OPENAI_API_KEY from config.
+
+        Raises:
+            ValueError: If no API key is provided and OPENAI_API_KEY is not set.
+        """
         if api_key is None:
             api_key = OPENAI_API_KEY
         if not api_key:

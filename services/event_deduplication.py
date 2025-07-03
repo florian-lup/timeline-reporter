@@ -19,7 +19,6 @@ def deduplicate_events(
     Each *event*'s summary is embedded and compared against existing vectors in
     Pinecone. Anything with a similarity ≥ threshold is dropped.
     """
-
     unique_events: list[Event] = []
 
     for idx, event in enumerate(events):

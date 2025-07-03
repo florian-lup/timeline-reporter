@@ -18,8 +18,10 @@ _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 
 
 def discover_events(perplexity_client: PerplexityClient) -> list[Event]:
-    """Discovers events for multiple topics in a single API call and returns the combined list."""
+    """Discovers events for multiple topics in a single API call.
 
+    Returns the combined list of events.
+    """
     response_text = perplexity_client.deep_research(DISCOVERY_INSTRUCTIONS)
     events = _parse_events_from_response(response_text)
 

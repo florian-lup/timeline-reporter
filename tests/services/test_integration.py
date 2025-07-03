@@ -24,10 +24,13 @@ class TestServicesIntegration:
     def test_discovery_instructions(self):
         """Test-specific discovery instructions with fixed date."""
         return (
-            "Identify significant news about climate, environment and natural disasters, and major geopolitical events from today 2024-01-15. "
-            "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience. "
-            "Return your findings as a JSON array of events, where each event has 'title' and 'summary' fields. "
-            'Example format: [{"title": "Event Title", "summary": "Brief description..."}]'
+            "Identify significant news about climate, environment and natural "
+            "disasters, and major geopolitical events from today 2024-01-15. "
+            "Focus on major global developments, breaking news, and important "
+            "updates that would be of interest to a general audience. "
+            "Return your findings as a JSON array of events, where each event "
+            "has 'title' and 'summary' fields. Example format: "
+            '[{"title": "Event Title", "summary": "Brief description..."}]'
         )
 
     @pytest.fixture
@@ -54,11 +57,17 @@ class TestServicesIntegration:
             [
                 {
                     "title": "Climate Summit 2024",
-                    "summary": "World leaders gather to discuss urgent climate action plans.",
+                    "summary": (
+                        "World leaders gather to discuss urgent climate "
+                        "action plans."
+                    ),
                 },
                 {
                     "title": "AI Breakthrough Announced",
-                    "summary": "Revolutionary AI technology promises to transform healthcare.",
+                    "summary": (
+                        "Revolutionary AI technology promises to transform "
+                        "healthcare."
+                    ),
                 },
             ]
         )
@@ -81,8 +90,15 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals.",
-                    "story": "In a historic gathering of over 150 world leaders, the Climate Summit concluded with ambitious environmental commitments.",
+                    "summary": (
+                        "World leaders at the 2024 Climate Summit agreed on "
+                        "unprecedented carbon reduction goals."
+                    ),
+                    "story": (
+                        "In a historic gathering of over 150 world leaders, "
+                        "the Climate Summit concluded with ambitious "
+                        "environmental commitments."
+                    ),
                     "sources": [
                         "https://example.com/climate-summit",
                         "https://example.com/climate-targets",
@@ -92,8 +108,14 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "headline": "AI Revolution in Healthcare Diagnostics",
-                    "summary": "Breakthrough AI technology achieves 99% accuracy in medical diagnoses.",
-                    "story": "Researchers have developed an revolutionary AI system that can diagnose diseases with unprecedented accuracy.",
+                    "summary": (
+                        "Breakthrough AI technology achieves 99% accuracy in "
+                        "medical diagnoses."
+                    ),
+                    "story": (
+                        "Researchers have developed an revolutionary AI system "
+                        "that can diagnose diseases with unprecedented accuracy."
+                    ),
                     "sources": [
                         "https://example.com/ai-healthcare",
                         "https://example.com/medical-ai",
@@ -478,7 +500,9 @@ class TestServicesIntegration:
             {
                 "headline": "Transformed Headline",
                 "summary": "Transformed summary with more detail",
-                "story": "Full story with comprehensive details about the original event",
+                "story": (
+                    "Full story with comprehensive details about the original event"
+                ),
                 "sources": [
                     "https://example.com/source1",
                     "https://example.com/source2",
@@ -633,7 +657,7 @@ class TestServicesIntegration:
                     "sources": [f"https://example.com/{i}"],
                 }
             )
-            for i in range(5)  # First 5 events selected by decision service
+            for i in range(5)  # First 5 events selected by decision
         ]
         mock_clients["perplexity"].research.side_effect = research_responses
 

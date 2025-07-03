@@ -69,21 +69,30 @@ class TestPerplexityClient:
 
     def test_init_with_none_api_key_and_missing_config(self):
         """Test initialization fails when API key is None and config is missing."""
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", None):
-            with pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"):
-                PerplexityClient()
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", None),
+            pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"),
+        ):
+            PerplexityClient()
 
     def test_init_with_empty_api_key_and_empty_config(self):
         """Test initialization fails when API key is empty and config is empty."""
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", ""):
-            with pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"):
-                PerplexityClient()
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", ""),
+            pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"),
+        ):
+            PerplexityClient()
 
     def test_init_with_explicit_none_api_key_and_missing_config(self):
-        """Test initialization fails when API key is explicitly None and config is missing."""
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", None):
-            with pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"):
-                PerplexityClient(api_key=None)
+        """Test initialization fails when API key is explicitly None.
+
+        Should fail when config is missing.
+        """
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", None),
+            pytest.raises(ValueError, match="PERPLEXITY_API_KEY is missing"),
+        ):
+            PerplexityClient(api_key=None)
 
     def test_research_success(self, mock_httpx_client, sample_response_data):
         """Test successful research call."""
@@ -114,9 +123,11 @@ class TestPerplexityClient:
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
 
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            with patch("clients.perplexity_client.RESEARCH_MODEL", "test-model"):
-                with patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"):
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
+            patch("clients.perplexity_client.RESEARCH_MODEL", "test-model"),
+            patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
+        ):
                     client = PerplexityClient()
                     client.research("test prompt")
 
@@ -322,7 +333,8 @@ class TestPerplexityClient:
 
         # Mock response with <think> tags as per documentation
         raw_response = """<think>
-I need to find recent events about climate and geopolitical developments. Let me search for current information.
+I need to find recent events about climate and geopolitical developments.
+Let me search for current information.
 </think>
 [
   {
@@ -331,7 +343,7 @@ I need to find recent events about climate and geopolitical developments. Let me
   },
   {
     "title": "Geopolitical Tensions Rise",
-    "summary": "Recent diplomatic developments show increasing tensions in Eastern Europe."
+    "summary": "Recent diplomatic developments show increasing tensions."
   }
 ]"""
 
@@ -354,7 +366,7 @@ I need to find recent events about climate and geopolitical developments. Let me
   },
   {
     "title": "Geopolitical Tensions Rise",
-    "summary": "Recent diplomatic developments show increasing tensions in Eastern Europe."
+    "summary": "Recent diplomatic developments show increasing tensions."
   }
 ]"""
             assert result == expected_json
@@ -367,29 +379,31 @@ I need to find recent events about climate and geopolitical developments. Let me
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
 
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            with patch(
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
+            patch(
                 "clients.perplexity_client.DEEP_RESEARCH_MODEL", "sonar-deep-research"
-            ):
-                with patch("clients.perplexity_client.REASONING_EFFORT", "medium"):
-                    client = PerplexityClient()
-                    client.deep_research("test prompt")
+            ),
+            patch("clients.perplexity_client.REASONING_EFFORT", "medium"),
+        ):
+            client = PerplexityClient()
+            client.deep_research("test prompt")
 
-                    # Verify the POST call
-                    mock_client.post.assert_called_once()
-                    call_args = mock_client.post.call_args
+            # Verify the POST call
+            mock_client.post.assert_called_once()
+            call_args = mock_client.post.call_args
 
-                    # Check payload structure
-                    payload = call_args[1]["json"]
-                    assert payload["model"] == "sonar-deep-research"
-                    assert payload["reasoning_effort"] == "medium"
-                    assert len(payload["messages"]) == 2
-                    assert payload["messages"][0]["role"] == "system"
-                    assert payload["messages"][1]["role"] == "user"
-                    assert payload["messages"][1]["content"] == "test prompt"
-                    assert payload["response_format"]["type"] == "json_schema"
-                    assert "web_search_options" in payload
-                    assert "search_context_size" in payload["web_search_options"]
+            # Check payload structure
+            payload = call_args[1]["json"]
+            assert payload["model"] == "sonar-deep-research"
+            assert payload["reasoning_effort"] == "medium"
+            assert len(payload["messages"]) == 2
+            assert payload["messages"][0]["role"] == "system"
+            assert payload["messages"][1]["role"] == "user"
+            assert payload["messages"][1]["content"] == "test prompt"
+            assert payload["response_format"]["type"] == "json_schema"
+            assert "web_search_options" in payload
+            assert "search_context_size" in payload["web_search_options"]
 
     def test_deep_research_discovery_schema(self, mock_httpx_client):
         """Test that deep research uses the correct discovery JSON schema."""
@@ -460,7 +474,8 @@ I need to find recent events about climate and geopolitical developments. Let me
                 client = PerplexityClient()
                 client.deep_research("test prompt")
 
-                # Verify Client was initialized with timeout=180 (longer for deep research)
+                # Verify Client was initialized with timeout=180
+                # (longer for deep research)
                 mock_client_class.assert_called_with(timeout=180)
 
     @patch("clients.perplexity_client.logger")
@@ -481,7 +496,10 @@ I need to find recent events about climate and geopolitical developments. Let me
             )
 
     def test_extract_json_from_reasoning_response_with_think(self):
-        """Test the _extract_json_from_reasoning_response method with <think> tags."""
+        """Test the _extract_json_from_reasoning_response method.
+
+        Should work with <think> tags.
+        """
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
 
@@ -495,7 +513,10 @@ This is reasoning content that should be removed.
             assert result == '{"result": "extracted json"}'
 
     def test_extract_json_from_reasoning_response_without_think(self):
-        """Test the _extract_json_from_reasoning_response method without <think> tags."""
+        """Test the _extract_json_from_reasoning_response method.
+
+        Should work without <think> tags.
+        """
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
 
@@ -522,10 +543,11 @@ This is reasoning content that should be removed.
             system_message = payload["messages"][0]["content"]
 
             # Should contain discovery-specific instructions
-            assert (
-                "expert research assistant specializing in identifying significant current events"
-                in system_message
+            expected_text = (
+                "expert research assistant specializing in "
+                "identifying significant current events"
             )
+            assert expected_text in system_message
             assert "factual" in system_message
             assert "reputable sources" in system_message
 
@@ -537,13 +559,15 @@ This is reasoning content that should be removed.
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
 
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            with patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"):
-                client = PerplexityClient()
-                client.deep_research("test prompt")
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
+            patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
+        ):
+            client = PerplexityClient()
+            client.deep_research("test prompt")
 
-                payload = mock_client.post.call_args[1]["json"]
-                web_search_options = payload["web_search_options"]
+            payload = mock_client.post.call_args[1]["json"]
+            web_search_options = payload["web_search_options"]
 
-                # Verify search context size is included and uses configured value
-                assert web_search_options["search_context_size"] == "large"
+            # Verify search context size is included and uses configured value
+            assert web_search_options["search_context_size"] == "large"

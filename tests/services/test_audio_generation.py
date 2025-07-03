@@ -23,7 +23,11 @@ class TestTTSService:
             Article(
                 headline="Climate Summit Reaches Agreement",
                 summary="World leaders agree on ambitious climate targets for 2030.",
-                story="In a historic moment, global leaders at the Climate Summit have reached a consensus on reducing carbon emissions by 50% by 2030.",
+                story=(
+                    "In a historic moment, global leaders at the Climate Summit "
+                    "have reached a consensus on reducing carbon emissions by "
+                    "50% by 2030."
+                ),
                 sources=["https://example.com/climate", "https://example.com/summit"],
                 broadcast=b"",  # Placeholder
                 reporter="",  # Placeholder
@@ -31,7 +35,11 @@ class TestTTSService:
             Article(
                 headline="Tech Innovation Breakthrough",
                 summary="New AI technology promises to revolutionize healthcare.",
-                story="Researchers have developed an AI system capable of diagnosing diseases with 99% accuracy, marking a significant breakthrough in medical technology.",
+                story=(
+                    "Researchers have developed an AI system capable of "
+                    "diagnosing diseases with 99% accuracy, marking a "
+                    "significant breakthrough in medical technology."
+                ),
                 sources=["https://example.com/tech", "https://example.com/ai"],
                 broadcast=b"",
                 reporter="",

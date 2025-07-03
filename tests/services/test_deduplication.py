@@ -27,15 +27,24 @@ class TestDeduplicationService:
         return [
             Event(
                 title="Climate Summit 2024",
-                summary="World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                summary=(
+                    "World leaders meet to discuss climate change solutions and "
+                    "carbon reduction targets."
+                ),
             ),
             Event(
                 title="Earthquake in Pacific",
-                summary="A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
+                summary=(
+                    "A 6.5 magnitude earthquake struck the Pacific region with "
+                    "minimal damage reported."
+                ),
             ),
             Event(
                 title="Tech Conference Announced",
-                summary="Major technology companies announce new AI developments at annual conference.",
+                summary=(
+                    "Major technology companies announce new AI developments at "
+                    "annual conference."
+                ),
             ),
         ]
 

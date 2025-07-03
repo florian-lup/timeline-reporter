@@ -24,11 +24,17 @@ class TestDiscoveryService:
             [
                 {
                     "title": "Climate Summit Announced",
-                    "summary": "World leaders gather to discuss urgent climate action plans for the next decade.",
+                    "summary": (
+                        "World leaders gather to discuss urgent climate action plans "
+                        "for the next decade."
+                    ),
                 },
                 {
                     "title": "Earthquake Hits Pacific Region",
-                    "summary": "A magnitude 6.5 earthquake struck the Pacific region, causing minimal damage but raising tsunami concerns.",
+                    "summary": (
+                        "A magnitude 6.5 earthquake struck the Pacific region, "
+                        "causing minimal damage but raising tsunami concerns."
+                    ),
                 },
             ]
         )
@@ -49,10 +55,13 @@ class TestDiscoveryService:
     def test_discovery_instructions(self):
         """Test-specific discovery instructions with fixed date."""
         return (
-            "Identify significant news about climate, environment and natural disasters, and major geopolitical events from today 2024-01-15. "
-            "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience. "
-            "Return your findings as a JSON array of events, where each event has 'title' and 'summary' fields. "
-            'Example format: [{"title": "Event Title", "summary": "Brief description..."}]'
+            "Identify significant news about climate, environment and natural "
+            "disasters, and major geopolitical events from today 2024-01-15. "
+            "Focus on major global developments, breaking news, and important "
+            "updates that would be of interest to a general audience. "
+            "Return your findings as a JSON array of events, where each event "
+            "has 'title' and 'summary' fields. Example format: "
+            '[{"title": "Event Title", "summary": "Brief description..."}]'
         )
 
     def test_discover_events_success(
@@ -73,9 +82,9 @@ class TestDiscoveryService:
         assert len(events) == 2
         assert isinstance(events[0], Event)
         assert events[0].title == "Climate Summit Announced"
-        assert (
-            events[0].summary
-            == "World leaders gather to discuss urgent climate action plans for the next decade."
+        assert events[0].summary == (
+            "World leaders gather to discuss urgent climate action plans "
+            "for the next decade."
         )
         assert events[1].title == "Earthquake Hits Pacific Region"
 
@@ -148,13 +157,15 @@ class TestDiscoveryService:
         )
         mock_perplexity_client.deep_research.return_value = response
 
-        with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
-            test_discovery_instructions,
+        with (
+            patch(
+                "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+                test_discovery_instructions,
+            ),
+            pytest.raises(KeyError),
         ):
             # This should raise KeyError for missing fields
-            with pytest.raises(KeyError):
-                discover_events(mock_perplexity_client)
+            discover_events(mock_perplexity_client)
 
     @pytest.mark.parametrize(
         "topics_override",
@@ -167,11 +178,23 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
         # Create test instructions with different topics
+        focus_text = (
+            "Focus on major global developments, breaking news, and important "
+            "updates that would be of interest to a general audience."
+        )
+        format_text = (
+            'Example format: [{"title": "Event Title", '
+            '"summary": "Brief description..."}]'
+        )
+        fields_text = (
+            "Return your findings as a JSON array of events, where each event "
+            "has 'title' and 'summary' fields."
+        )
         test_instructions = (
             f"Identify significant news about {topics_override} from today 2024-01-15. "
-            "Focus on major global developments, breaking news, and important updates that would be of interest to a general audience. "
-            "Return your findings as a JSON array of events, where each event has 'title' and 'summary' fields. "
-            'Example format: [{"title": "Event Title", "summary": "Brief description..."}]'
+            f"{focus_text} "
+            f"{fields_text} "
+            f"{format_text}"
         )
 
         with patch(
@@ -210,7 +233,10 @@ class TestDiscoveryService:
             [
                 {
                     "title": "Climate Action 🌍 Summit",
-                    "summary": "Leaders discuss émissions reduction and sustainable développement goals.",
+                    "summary": (
+                        "Leaders discuss émissions reduction and sustainable "
+                        "développement goals."
+                    ),
                 }
             ]
         )
@@ -246,10 +272,10 @@ class TestDiscoveryService:
             test_discovery_instructions
         )
         call_args = mock_perplexity_client.deep_research.call_args[0][0]
-        assert (
+        expected_topics = (
             "climate, environment and natural disasters, and major geopolitical events"
-            in call_args
         )
+        assert expected_topics in call_args
         assert "2024-01-15" in call_args
 
     def test_parse_events_from_response_edge_cases(

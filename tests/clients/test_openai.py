@@ -40,15 +40,19 @@ class TestOpenAIClient:
 
     def test_init_with_none_api_key_and_missing_config(self, mock_openai_client):
         """Test initialization fails when API key is None and config is missing."""
-        with patch("clients.openai_client.OPENAI_API_KEY", None):
-            with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
-                OpenAIClient()
+        with (
+            patch("clients.openai_client.OPENAI_API_KEY", None),
+            pytest.raises(ValueError, match="OPENAI_API_KEY is missing"),
+        ):
+            OpenAIClient()
 
     def test_init_with_empty_api_key_and_empty_config(self, mock_openai_client):
         """Test initialization fails when API key is empty and config is empty."""
-        with patch("clients.openai_client.OPENAI_API_KEY", ""):
-            with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
-                OpenAIClient()
+        with (
+            patch("clients.openai_client.OPENAI_API_KEY", ""),
+            pytest.raises(ValueError, match="OPENAI_API_KEY is missing"),
+        ):
+            OpenAIClient()
 
     def test_embed_text_success(self, mock_openai_client):
         """Test successful text embedding."""
@@ -80,19 +84,21 @@ class TestOpenAIClient:
 
         mock_instance.embeddings.create.return_value = mock_response
 
-        with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-            with patch(
+        with (
+            patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"),
+            patch(
                 "clients.openai_client.EMBEDDING_MODEL", "text-embedding-3-small"
-            ):
-                with patch("clients.openai_client.EMBEDDING_DIMENSIONS", 1536):
-                    client = OpenAIClient()
-                    client.embed_text("test text")
+            ),
+            patch("clients.openai_client.EMBEDDING_DIMENSIONS", 1536),
+        ):
+            client = OpenAIClient()
+            client.embed_text("test text")
 
-                    mock_instance.embeddings.create.assert_called_once_with(
-                        input="test text",
-                        model="text-embedding-3-small",
-                        dimensions=1536,
-                    )
+            mock_instance.embeddings.create.assert_called_once_with(
+                input="test text",
+                model="text-embedding-3-small",
+                dimensions=1536,
+            )
 
     @pytest.mark.parametrize(
         "text_input,expected_length",
@@ -151,9 +157,11 @@ class TestOpenAIClient:
 
     def test_init_fails_without_api_key(self, mock_openai_client):
         """Test initialization fails when API key is missing."""
-        with patch("clients.openai_client.OPENAI_API_KEY", None):
-            with pytest.raises(ValueError, match="OPENAI_API_KEY is missing"):
-                OpenAIClient()
+        with (
+            patch("clients.openai_client.OPENAI_API_KEY", None),
+            pytest.raises(ValueError, match="OPENAI_API_KEY is missing"),
+        ):
+            OpenAIClient()
 
     def test_embed_text_parameters(self, mock_openai_client):
         """Test that embed_text uses correct parameters."""
@@ -166,19 +174,21 @@ class TestOpenAIClient:
 
         mock_instance.embeddings.create.return_value = mock_response
 
-        with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-            with patch(
+        with (
+            patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"),
+            patch(
                 "clients.openai_client.EMBEDDING_MODEL", "text-embedding-3-small"
-            ):
-                with patch("clients.openai_client.EMBEDDING_DIMENSIONS", 1536):
-                    client = OpenAIClient()
-                    client.embed_text("test text")
+            ),
+            patch("clients.openai_client.EMBEDDING_DIMENSIONS", 1536),
+        ):
+            client = OpenAIClient()
+            client.embed_text("test text")
 
-                    mock_instance.embeddings.create.assert_called_once_with(
-                        input="test text",
-                        model="text-embedding-3-small",
-                        dimensions=1536,
-                    )
+            mock_instance.embeddings.create.assert_called_once_with(
+                input="test text",
+                model="text-embedding-3-small",
+                dimensions=1536,
+            )
 
     @patch("clients.openai_client.logger")
     def test_logging(self, mock_logger, mock_openai_client):
@@ -336,17 +346,19 @@ class TestOpenAIClient:
 
         mock_instance.audio.speech.create.return_value = mock_response
 
-        with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-            with patch("clients.openai_client.TTS_MODEL", "gpt-4o-mini-tts"):
-                client = OpenAIClient()
-                client.text_to_speech("Hello world", "ash")
+        with (
+            patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"),
+            patch("clients.openai_client.TTS_MODEL", "gpt-4o-mini-tts"),
+        ):
+            client = OpenAIClient()
+            client.text_to_speech("Hello world", "ash")
 
-                mock_instance.audio.speech.create.assert_called_once_with(
-                    model="gpt-4o-mini-tts",
-                    voice="ash",
-                    input="Hello world",
-                    response_format="mp3",
-                )
+            mock_instance.audio.speech.create.assert_called_once_with(
+                model="gpt-4o-mini-tts",
+                voice="ash",
+                input="Hello world",
+                response_format="mp3",
+            )
 
     @pytest.mark.parametrize(
         "text,voice",

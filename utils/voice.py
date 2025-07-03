@@ -7,9 +7,8 @@ import random
 from config import HOST_VOICE, REPORTER_VOICE
 
 
-def get_random_REPORTER_VOICE() -> tuple[str, str]:
-    """
-    Get a random TTS voice.
+def get_random_reporter_voice() -> tuple[str, str]:
+    """Get a random TTS voice.
 
     Returns:
         tuple[str, str]: A tuple containing (api_name, human_name)
@@ -19,9 +18,8 @@ def get_random_REPORTER_VOICE() -> tuple[str, str]:
     return api_name, human_name
 
 
-def get_random_HOST_VOICE() -> tuple[str, str]:
-    """
-    Get a random reporter voice.
+def get_random_host_voice() -> tuple[str, str]:
+    """Get a random reporter voice.
 
     Returns:
         tuple[str, str]: A tuple containing (api_name, human_name)
@@ -31,9 +29,8 @@ def get_random_HOST_VOICE() -> tuple[str, str]:
     return api_name, human_name
 
 
-def get_random_REPORTER_VOICE_api_name() -> str:
-    """
-    Get a random TTS voice API name only.
+def get_random_reporter_voice_api_name() -> str:
+    """Get a random TTS voice API name only.
 
     Returns:
         str: The API name for the voice (e.g., "ash")
@@ -41,9 +38,8 @@ def get_random_REPORTER_VOICE_api_name() -> str:
     return random.choice(list(REPORTER_VOICE.keys()))
 
 
-def get_random_HOST_VOICE_api_name() -> str:
-    """
-    Get a random reporter voice API name only.
+def get_random_host_voice_api_name() -> str:
+    """Get a random reporter voice API name only.
 
     Returns:
         str: The API name for the voice (e.g., "breeze")
@@ -51,9 +47,8 @@ def get_random_HOST_VOICE_api_name() -> str:
     return random.choice(list(HOST_VOICE.keys()))
 
 
-def get_random_REPORTER_VOICE_human_name() -> str:
-    """
-    Get a random TTS voice human name only.
+def get_random_reporter_voice_human_name() -> str:
+    """Get a random TTS voice human name only.
 
     Returns:
         str: The human name for the voice (e.g., "Alex")
@@ -62,9 +57,8 @@ def get_random_REPORTER_VOICE_human_name() -> str:
     return REPORTER_VOICE[api_name]
 
 
-def get_random_HOST_VOICE_human_name() -> str:
-    """
-    Get a random reporter voice human name only.
+def get_random_host_voice_human_name() -> str:
+    """Get a random reporter voice human name only.
 
     Returns:
         str: The human name for the voice (e.g., "Brian")

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import re
+
 from clients import PerplexityClient
 from config import RESEARCH_INSTRUCTIONS
 from utils import Article, Event, logger
@@ -9,7 +12,6 @@ def research_articles(
     events: list[Event], *, perplexity_client: PerplexityClient
 ) -> list[Article]:
     """Calls Perplexity once per event to generate full articles."""
-
     articles: list[Article] = []
 
     for event in events:
@@ -27,9 +29,6 @@ def research_articles(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-import json
-import re
 
 _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 

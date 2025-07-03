@@ -22,7 +22,15 @@ from utils import logger
 class PineconeClient:
     """Encapsulates Pinecone connection and operations used in the pipeline."""
 
-    def __init__(self, api_key: str | None = None, *, environment: str | None = None):
+    def __init__(self, api_key: str | None = None):
+        """Initialize Pinecone client.
+
+        Args:
+            api_key: Pinecone API key. If None, uses PINECONE_API_KEY from config.
+
+        Raises:
+            ValueError: If no API key is provided and PINECONE_API_KEY is not set.
+        """
         if api_key is None:
             api_key = PINECONE_API_KEY
         if not api_key:

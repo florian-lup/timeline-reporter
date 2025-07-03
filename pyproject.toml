@@ -38,55 +38,166 @@ Repository = "https://github.com/yourusername/timeline-reporter"
 timeline-reporter = "main:main"
 
 [tool.ruff]
-# Set the maximum line length to 88 (Black's default)
+# Basic configuration
 line-length = 88
 target-version = "py313"
+fix = true
+show-fixes = true
+output-format = "grouped"
 
-# Exclude directories
-exclude = [
+# File discovery
+extend-exclude = [
+    "__pycache__",
     ".git",
     ".venv",
     "venv",
-    "__pycache__",
     "htmlcov",
     ".pytest_cache",
+    "*.egg-info",
 ]
 
 [tool.ruff.lint]
-# Enable specific rule sets
+# Rule selection - comprehensive but practical
 select = [
+    # Pycodestyle
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
+    
+    # Pyflakes
     "F",   # pyflakes
+    
+    # Import sorting
     "I",   # isort
+    
+    # Code quality
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
-    "N",   # pep8-naming
-    "S",   # flake8-bandit (security)
-    "T20", # flake8-print
-    "RET", # flake8-return
     "SIM", # flake8-simplify
+    "RET", # flake8-return
     "ARG", # flake8-unused-arguments
+    
+    # Naming conventions
+    "N",   # pep8-naming
+    
+    # Security
+    "S",   # flake8-bandit (security)
+    
+    # Performance
+    "PERF", # perflint
+    
+    # Error handling
+    "B9",  # flake8-bugbear opinionated
+    
+    # Documentation
+    "D",   # pydocstyle
+    
+    # Complexity
+    "PLR", # pylint refactor
+    "PLW", # pylint warning
+    "PLE", # pylint error
+    
+    # Modern Python features
+    "PTH", # flake8-use-pathlib
+    "FBT", # flake8-boolean-trap
+    
+    # Debugging
+    "T20", # flake8-print
+    
+    # Type checking
+    "TC", # flake8-type-checking
 ]
 
-# Ignore specific rules
+# Ignore specific rules with justification
 ignore = [
-    "S101",    # Use of assert detected (allow in tests)
-    "T201",    # print statements (useful for debugging)
+    # Assertions and debugging
+    "S101",    # Use of assert detected (legitimate in tests and debug code)
+    "T201",    # print statements (useful for debugging and logging)
+    
+    # Function arguments
     "B008",    # Do not perform function calls in argument defaults
+    "FBT001",  # Boolean positional arg in function definition
+    "FBT002",  # Boolean default arg in function definition
+    
+    # Security exceptions for this project
     "S311",    # Standard pseudo-random generators (fine for voice selection)
     "S603",    # subprocess call (needed for our lint script)
+    "S607",    # Starting a process with a partial executable path
+    
+    # Documentation (can be strict, adjust as needed)
+    "D100",    # Missing docstring in public module
+    "D101",    # Missing docstring in public class
+    "D102",    # Missing docstring in public method
+    "D103",    # Missing docstring in public function
+    "D104",    # Missing docstring in public package
+    "D105",    # Missing docstring in magic method
+    
+    # Complexity (adjust thresholds as needed)
+    "PLR0913", # Too many arguments to function call
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
+    
+    # Type checking (can be noisy in some contexts)
+    "TC001",  # Move import into type-checking block
+    "TC002",  # Move import into type-checking block
+    "TC003",  # Move import into type-checking block
 ]
 
+# Specific ignores per file type
 [tool.ruff.lint.per-file-ignores]
-# Allow print statements and assert in test files
-"tests/**/*.py" = ["T201", "S101", "ARG"]
-"test_*.py" = ["T201", "S101", "ARG"]
+# Test files - more lenient
+"tests/**/*.py" = [
+    "T201",    # print statements
+    "S101",    # assert statements
+    "ARG",     # unused arguments
+    "PLR2004", # magic values
+    "S105",    # hardcoded passwords (test data)
+    "S106",    # hardcoded passwords (test data)
+    "D",       # documentation not required
+]
+"test_*.py" = [
+    "T201", "S101", "ARG", "PLR2004", "S105", "S106", "D"
+]
+
+# Configuration files
+"conftest.py" = ["D"]
+"**/conftest.py" = ["D"]
+
+# Scripts and utilities
+"lint.py" = ["T201", "S603", "S607"]
+"run_tests.py" = ["T201"]
 
 [tool.ruff.lint.isort]
-# Configure import sorting
+# Import organization
 known-first-party = ["clients", "config", "services", "utils"]
+section-order = [
+    "future",
+    "standard-library", 
+    "third-party",
+    "first-party",
+    "local-folder"
+]
+combine-as-imports = true
+split-on-trailing-comma = true
+force-wrap-aliases = true
+
+[tool.ruff.lint.pydocstyle]
+# Documentation style
+convention = "google"
+
+[tool.ruff.lint.pylint]
+# Complexity thresholds
+max-args = 8
+max-branches = 15
+max-returns = 8
+max-statements = 60
+
+[tool.ruff.format]
+# Formatting (Ruff's Black-compatible formatter)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.black]
 line-length = 88
@@ -103,19 +214,43 @@ extend-exclude = '''
 '''
 
 [tool.mypy]
+# Python version and basic settings
 python_version = "3.13"
-warn_return_any = true
-warn_unused_configs = true
+show_error_codes = true
+show_column_numbers = true
+pretty = true
+
+# Import discovery
+namespace_packages = true
+explicit_package_bases = true
+
+# Untyped definitions
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 disallow_untyped_decorators = true
+
+# Optional handling
 no_implicit_optional = true
+strict_optional = true
+
+# Warnings
+warn_return_any = true
+warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
+
+# Error reporting
+show_error_context = true
+color_output = true
+
+# Miscellaneous strictness
 strict_equality = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
 
 # Ignore missing imports for third-party libraries without stubs
 [[tool.mypy.overrides]]
@@ -131,4 +266,5 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
-disallow_incomplete_defs = false 
+disallow_incomplete_defs = false
+disallow_untyped_calls = false

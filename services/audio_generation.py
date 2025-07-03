@@ -3,14 +3,13 @@ from __future__ import annotations
 from clients import OpenAIClient
 from config import TTS_INSTRUCTIONS
 from config.settings import CHAT_MODEL
-from utils import Article, get_random_REPORTER_VOICE, logger
+from utils import Article, get_random_reporter_voice, logger
 
 
 def generate_audio(
     articles: list[Article], *, openai_client: OpenAIClient
 ) -> list[Article]:
-    """
-    Generate TTS analysis for articles with broadcast and reporter fields.
+    """Generate TTS analysis for articles with broadcast and reporter fields.
 
     This service:
     1. Takes research articles as input
@@ -41,7 +40,7 @@ def generate_audio(
             )
 
             # Get random reporter voice
-            voice_api_name, voice_human_name = get_random_REPORTER_VOICE()
+            voice_api_name, voice_human_name = get_random_reporter_voice()
             logger.info("Selected reporter: %s (%s)", voice_human_name, voice_api_name)
 
             # Convert analysis to speech using TTS_MODEL
@@ -71,8 +70,9 @@ def generate_audio(
             logger.error("Failed to process article '%s': %s", article.headline, str(e))
             # Since broadcast and reporter are now required fields, we cannot create
             # an Article without them. In case of failure, we skip this article.
-            # In a production environment, you might want to implement fallback logic
-            # such as generating a default TTS message or retrying with different parameters.
+            # In a production environment, you might want to implement fallback
+            # logic such as generating a default TTS message or retrying with
+            # different parameters.
             continue
 
     logger.info(

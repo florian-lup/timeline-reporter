@@ -12,6 +12,14 @@ class MongoDBClient:
     """Wrapper around `pymongo.MongoClient` scoped to the project database."""
 
     def __init__(self, uri: str | None = None):
+        """Initialize MongoDB client.
+
+        Args:
+            uri: MongoDB connection URI. If None, uses MONGODB_URI from config.
+
+        Raises:
+            ValueError: If no URI is provided and MONGODB_URI is not set.
+        """
         if uri is None:
             uri = MONGODB_URI
         if not uri:

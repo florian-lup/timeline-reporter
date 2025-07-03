@@ -66,7 +66,9 @@ REASONING_EFFORT: str = "low"
 # Discovery
 # ---------------------------------------------------------------------------
 DISCOVERY_TOPICS: str = (
-    "climate, environment, natural disasters, major political and geopolitical events, global econnomy, technology,science, space and major sporting achievements"
+    "climate, environment, natural disasters, major political and geopolitical "
+    "events, global econnomy, technology, science, space and major sporting "
+    "achievements"
 )
 
 # ---------------------------------------------------------------------------

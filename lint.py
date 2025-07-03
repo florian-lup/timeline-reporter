@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Linting and formatting script for the timeline-reporter project.
+"""Linting and formatting script for the timeline-reporter project.
 
 Usage:
     python lint.py [command]
@@ -23,6 +22,9 @@ Examples:
 import subprocess
 import sys
 
+# Constants
+MIN_ARGS_REQUIRED = 2
+
 
 def run_command(cmd: list[str], description: str) -> int:
     """Run a command and print the result."""
@@ -30,7 +32,7 @@ def run_command(cmd: list[str], description: str) -> int:
     print(f"Running: {' '.join(cmd)}")
     print("-" * 50)
 
-    result = subprocess.run(cmd, capture_output=False)
+    result = subprocess.run(cmd, check=False, capture_output=False)
 
     if result.returncode == 0:
         print(f"✅ {description} - PASSED")
@@ -66,7 +68,7 @@ def run_mypy() -> int:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
+    if len(sys.argv) < MIN_ARGS_REQUIRED:
         print(__doc__)
         return 1
 

@@ -2,7 +2,8 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, prioritizes, researches, creates TTS broadcasts and stores articles
+    python -m main  # discovers, deduplicates, prioritizes, researches,
+                    # creates TTS broadcasts and stores articles
 """
 
 from __future__ import annotations
@@ -21,7 +22,6 @@ from utils import logger  # noqa: F401 – configure logging first
 
 def run_pipeline() -> None:  # noqa: D401
     """Run the 6-step AI reporter pipeline."""
-
     logger.info("Starting pipeline")
 
     # Initialise clients

@@ -43,7 +43,10 @@ def sample_article_data():
     return {
         "headline": "Test Article Headline",
         "summary": "This is a test article summary with relevant information.",
-        "story": "This is the full story content with detailed information about the topic.",
+        "story": (
+            "This is the full story content with detailed information "
+            "about the topic."
+        ),
         "sources": [
             "https://example.com/source1",
             "https://example.com/source2",
@@ -55,7 +58,10 @@ def sample_article_data():
 @pytest.fixture
 def sample_research_prompt():
     """Sample research prompt for testing."""
-    return "Research the latest developments in artificial intelligence and machine learning"
+    return (
+        "Research the latest developments in artificial intelligence "
+        "and machine learning"
+    )
 
 
 @pytest.fixture
@@ -73,7 +79,10 @@ def sample_events():
     return [
         Event(
             title="Technology Breakthrough",
-            summary="Major advancement in artificial intelligence technology announced.",
+            summary=(
+                "Major advancement in artificial intelligence technology "
+                "announced."
+            ),
         ),
         Event(
             title="Climate Change Update",
@@ -191,7 +200,10 @@ def sample_discovery_response():
         [
             {
                 "title": "AI Breakthrough in Healthcare",
-                "summary": "Revolutionary AI system shows 99% accuracy in medical diagnosis.",
+                "summary": (
+                    "Revolutionary AI system shows 99% accuracy in "
+                    "medical diagnosis."
+                ),
             },
             {
                 "title": "Climate Summit Reaches Agreement",
@@ -207,8 +219,18 @@ def sample_research_response():
     return json.dumps(
         {
             "headline": "Breakthrough AI System Transforms Medical Diagnosis",
-            "summary": "A revolutionary artificial intelligence system has achieved unprecedented accuracy in medical diagnosis, potentially transforming healthcare delivery.",
-            "story": "Researchers at leading medical institutions have developed an AI system that demonstrates 99% accuracy in diagnosing a wide range of medical conditions. The system uses advanced machine learning algorithms trained on millions of medical records and diagnostic images.",
+            "summary": (
+                "A revolutionary artificial intelligence system has achieved "
+                "unprecedented accuracy in medical diagnosis, potentially "
+                "transforming healthcare delivery."
+            ),
+            "story": (
+                "Researchers at leading medical institutions have developed an "
+                "AI system that demonstrates 99% accuracy in diagnosing a wide "
+                "range of medical conditions. The system uses advanced machine "
+                "learning algorithms trained on millions of medical records and "
+                "diagnostic images."
+            ),
             "sources": [
                 "https://example.com/medical-ai-breakthrough",
                 "https://example.com/healthcare-technology-news",
