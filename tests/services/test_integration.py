@@ -149,7 +149,7 @@ class TestServicesIntegration:
                 test_discovery_instructions,
             ),
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 side_effect=[("ash", "Alex"), ("ballad", "Blake")],
             ),
         ):
@@ -281,7 +281,7 @@ class TestServicesIntegration:
                 test_discovery_instructions,
             ),
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 side_effect=[("ash", "Alex"), ("nova", "Nova")],
             ),
         ):
@@ -439,7 +439,7 @@ class TestServicesIntegration:
                 test_discovery_instructions,
             ),
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 side_effect=[("ash", "Alex")],
             ),
         ):
@@ -521,7 +521,7 @@ class TestServicesIntegration:
                 test_discovery_instructions,
             ),
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 return_value=("ballad", "Blake"),
             ),
         ):
@@ -675,7 +675,7 @@ class TestServicesIntegration:
                 test_discovery_instructions,
             ),
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 side_effect=[("ash", "Alex")] * 5,
             ),
         ):

@@ -11,12 +11,12 @@ from .date import get_today_formatted
 from .logger import logger
 from .models import Article, Event
 from .voice import (
-    get_random_HOST_VOICE,
-    get_random_HOST_VOICE_api_name,
-    get_random_HOST_VOICE_human_name,
-    get_random_REPORTER_VOICE,
-    get_random_REPORTER_VOICE_api_name,
-    get_random_REPORTER_VOICE_human_name,
+    get_random_host_voice,
+    get_random_host_voice_api_name,
+    get_random_host_voice_human_name,
+    get_random_reporter_voice,
+    get_random_reporter_voice_api_name,
+    get_random_reporter_voice_human_name,
 )
 
 __all__ = [
@@ -28,10 +28,10 @@ __all__ = [
     "Event",
     "Article",
     # Voice utilities
-    "get_random_REPORTER_VOICE",
-    "get_random_HOST_VOICE",
-    "get_random_REPORTER_VOICE_api_name",
-    "get_random_HOST_VOICE_api_name",
-    "get_random_REPORTER_VOICE_human_name",
-    "get_random_HOST_VOICE_human_name",
+    "get_random_reporter_voice",
+    "get_random_host_voice",
+    "get_random_reporter_voice_api_name",
+    "get_random_host_voice_api_name",
+    "get_random_reporter_voice_human_name",
+    "get_random_host_voice_human_name",
 ]

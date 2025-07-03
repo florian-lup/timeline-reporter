@@ -60,7 +60,7 @@ class TestTTSService:
 
         with (
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 side_effect=[("ash", "Alex"), ("ballad", "Blake")],
             ),
             patch(
@@ -94,7 +94,7 @@ class TestTTSService:
 
         with (
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 return_value=("ash", "Alex"),
             ),
             patch("services.audio_generation.logger") as mock_logger,
@@ -129,7 +129,7 @@ class TestTTSService:
 
         with (
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 return_value=("ash", "Alex"),
             ),
             patch(
@@ -156,7 +156,7 @@ class TestTTSService:
 
         # Mock voice selection
         with patch(
-            "services.audio_generation.get_random_REPORTER_VOICE",
+            "services.audio_generation.get_random_reporter_voice",
             return_value=("alloy", "Alex"),
         ):
             generate_audio(sample_articles, openai_client=mock_openai_client)

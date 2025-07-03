@@ -114,7 +114,7 @@ class TestClientIntegration:
             patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 return_value=("ash", "Alex"),
             ),
         ):
@@ -297,7 +297,7 @@ class TestClientIntegration:
             patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
             patch(
-                "services.audio_generation.get_random_REPORTER_VOICE",
+                "services.audio_generation.get_random_reporter_voice",
                 return_value=("ballad", "Blake"),
             ),
         ):
