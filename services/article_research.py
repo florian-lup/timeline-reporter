@@ -52,10 +52,10 @@ def _parse_article_from_response(response_text: str) -> Article:
         }
 
     return Article(
-        headline=data.get("headline", ""),
-        summary=data.get("summary", ""),
-        story=data.get("story", ""),
-        sources=data.get("sources", []),
+        headline=data.get("headline", "") or "",
+        summary=data.get("summary", "") or "",
+        story=data.get("story", "") or "",
+        sources=data.get("sources", []) or [],
         broadcast=b"",  # Placeholder - will be populated by TTS service
         reporter="",  # Placeholder - will be populated by TTS service
     )
