@@ -44,7 +44,6 @@ REPORTER_VOICE = {
     "ballad": "Blake",
     "coral": "Claire",
     "sage": "Sam",
-    "verse": "Violet",
 }
 
 HOST_VOICE = {

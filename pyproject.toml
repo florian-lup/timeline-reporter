@@ -1,40 +1,40 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "timeline-reporter"
 version = "0.1.0"
 description = "AI-powered news reporter"
 readme = "README.md"
-license = { text = "Proprietary" }
-requires-python = ">=3.13"
-
-dependencies = [
-    "python-dotenv==1.1.1",
-    "openai==1.93.0",
-    "pymongo==4.13.2",
-    "pinecone==7.3.0",
-    "httpx==0.28.1",
+license = "Proprietary"
+authors = ["Florian Lup <contact@florianlup.com>"]
+repository = "https://github.com/yourusername/timeline-reporter"
+packages = [
+    {include = "clients"},
+    {include = "config"},
+    {include = "services"},
+    {include = "utils"},
 ]
 
-[project.optional-dependencies]
-test = [
-    "pytest==8.4.1",
-    "pytest-mock==3.14.1",
-    "pytest-cov==6.2.1",
-    "responses==0.25.7",
-]
-dev = [
-    "ruff==0.12.1",
-    "black==25.1.0",
-    "mypy==1.16.1",
-]
+[tool.poetry.dependencies]
+python = "^3.13"
+python-dotenv = "^1.1.1"
+openai = "^1.93.3"
+pymongo = "^4.13.2"
+pinecone = "^7.3.0"
+httpx = "^0.28.1"
 
-[project.urls]
-Repository = "https://github.com/yourusername/timeline-reporter"
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.2"
+black = "^25.1.0"
+mypy = "^1.16.1"
+pytest = "^8.4.1"
+pytest-mock = "^3.14.1"
+pytest-cov = "^6.2.1"
+responses = "^0.25.7"
 
-[project.scripts]
+[tool.poetry.scripts]
 timeline-reporter = "main:main"
 
 [tool.ruff]

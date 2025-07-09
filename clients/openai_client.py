@@ -72,7 +72,7 @@ class OpenAIClient:
         text: str,
         voice: (
             Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
-            | Literal["ash", "ballad", "coral", "sage", "verse"]
+            | Literal["ash", "ballad", "coral", "sage"]
         ),
     ) -> bytes:
         """Convert text to speech using OpenAI's TTS model.

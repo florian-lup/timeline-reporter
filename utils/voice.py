@@ -8,7 +8,7 @@ from typing import Literal, cast
 from config import HOST_VOICE, REPORTER_VOICE
 
 # Type aliases for the valid voice names
-ReporterVoice = Literal["ash", "ballad", "coral", "sage", "verse"]
+ReporterVoice = Literal["ash", "ballad", "coral", "sage"]
 HostVoice = Literal["alloy", "echo", "fable", "onyx", "shimmer"]
 
 

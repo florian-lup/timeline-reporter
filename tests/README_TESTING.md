@@ -20,7 +20,7 @@ The test suite follows Python best practices and includes:
 Install testing dependencies:
 
 ```bash
-pip install -r requirements.txt
+poetry install --with dev
 ```
 
 ### Basic Usage
@@ -200,7 +200,7 @@ The test suite is designed for CI/CD:
 ### Common Issues
 
 1. **Import errors**: Ensure you're in the project root
-2. **Missing dependencies**: Run `pip install -r requirements.txt`
+2. **Missing dependencies**: Run `poetry install --with dev`
 3. **Environment variables**: Tests use mocked values automatically
 
 ### Debug Mode
