@@ -21,6 +21,10 @@ class TestClientIntegration:
             patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
             patch("clients.pinecone_client.Pinecone") as mock_pinecone,
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
+            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
+            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-key"),
         ):
             # Setup Perplexity mock
             mock_http_client = Mock()
@@ -111,6 +115,8 @@ class TestClientIntegration:
                 "services.audio_generation.get_random_reporter_voice",
                 return_value=("ash", "Alex"),
             ),
+            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
+            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
         ):
             # Setup OpenAI mock for both chat and TTS
             mock_openai_instance = Mock()
@@ -284,6 +290,9 @@ class TestClientIntegration:
                 "services.audio_generation.get_random_reporter_voice",
                 return_value=("ballad", "Blake"),
             ),
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
+            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
+            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
         ):
             # Setup Perplexity mock (research)
             mock_http_client = Mock()
@@ -380,6 +389,9 @@ class TestClientIntegration:
             patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.pinecone_client.Pinecone") as mock_pinecone,
             patch("clients.mongodb_client.MongoClient"),
+            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-key"),
+            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
         ):
             # Setup mocks
             mock_openai_instance = Mock()
@@ -428,7 +440,10 @@ class TestClientIntegration:
     @pytest.mark.slow
     def test_error_handling_in_workflow(self):
         """Test error handling across the workflow."""
-        with patch("clients.perplexity_client.httpx.Client") as mock_httpx:
+        with (
+            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
+        ):
             # Setup failing HTTP request
             mock_http_client = Mock()
             mock_response = Mock()
@@ -448,6 +463,8 @@ class TestClientIntegration:
         with (
             patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
+            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
+            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
         ):
             # Setup OpenAI mock to fail on TTS
             mock_openai_instance = Mock()
