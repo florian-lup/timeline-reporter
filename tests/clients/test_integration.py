@@ -156,12 +156,8 @@ class TestClientIntegration:
             test_articles = [
                 Article(
                     headline="AI Breakthrough in 2024",
-                    summary=(
-                        "Revolutionary AI model shows unprecedented " "capabilities"
-                    ),
-                    story=(
-                        "Detailed story about the groundbreaking AI " "development..."
-                    ),
+                    summary=("Revolutionary AI model shows unprecedented capabilities"),
+                    story=("Detailed story about the groundbreaking AI development..."),
                     sources=["https://example.com/ai-news"],
                     broadcast=b"",  # Placeholder
                     reporter="",  # Placeholder

@@ -44,8 +44,7 @@ def sample_article_data():
         "headline": "Test Article Headline",
         "summary": "This is a test article summary with relevant information.",
         "story": (
-            "This is the full story content with detailed information "
-            "about the topic."
+            "This is the full story content with detailed information about the topic."
         ),
         "sources": [
             "https://example.com/source1",
@@ -80,7 +79,7 @@ def sample_events():
         Event(
             title="Technology Breakthrough",
             summary=(
-                "Major advancement in artificial intelligence technology " "announced."
+                "Major advancement in artificial intelligence technology announced."
             ),
         ),
         Event(
@@ -200,8 +199,7 @@ def sample_discovery_response():
             {
                 "title": "AI Breakthrough in Healthcare",
                 "summary": (
-                    "Revolutionary AI system shows 99% accuracy in "
-                    "medical diagnosis."
+                    "Revolutionary AI system shows 99% accuracy in medical diagnosis."
                 ),
             },
             {

@@ -23,7 +23,7 @@ def select_events(events: list[Event], *, openai_client: OpenAIClient) -> list[E
     # Format events for evaluation with numbers
     events_text = "\n".join(
         [
-            f"{i+1}. Title: {event.title}\n   Summary: {event.summary}\n"
+            f"{i + 1}. Title: {event.title}\n   Summary: {event.summary}\n"
             for i, event in enumerate(events)
         ]
     )

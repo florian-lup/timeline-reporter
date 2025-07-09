@@ -58,15 +58,13 @@ class TestServicesIntegration:
                 {
                     "title": "Climate Summit 2024",
                     "summary": (
-                        "World leaders gather to discuss urgent climate "
-                        "action plans."
+                        "World leaders gather to discuss urgent climate action plans."
                     ),
                 },
                 {
                     "title": "AI Breakthrough Announced",
                     "summary": (
-                        "Revolutionary AI technology promises to transform "
-                        "healthcare."
+                        "Revolutionary AI technology promises to transform healthcare."
                     ),
                 },
             ]
@@ -76,14 +74,14 @@ class TestServicesIntegration:
         # 2. Deduplication Service Mocks
         embeddings = [[0.1] * 1536, [0.2] * 1536]  # Two different embeddings
         mock_clients["openai"].embed_text.side_effect = embeddings
-        mock_clients["pinecone"].similarity_search.return_value = (
-            []
-        )  # No duplicates found
+        mock_clients[
+            "pinecone"
+        ].similarity_search.return_value = []  # No duplicates found
 
         # 3. Decision Service Mocks
-        mock_clients["openai"].chat_completion.return_value = (
-            "1, 2"  # Select both events
-        )
+        mock_clients[
+            "openai"
+        ].chat_completion.return_value = "1, 2"  # Select both events
 
         # 4. Research Service Mocks
         research_responses = [
@@ -153,7 +151,6 @@ class TestServicesIntegration:
                 side_effect=[("ash", "Alex"), ("ballad", "Blake")],
             ),
         ):
-
             # 1. Discovery
             events = discover_events(mock_clients["perplexity"])
 
@@ -285,7 +282,6 @@ class TestServicesIntegration:
                 side_effect=[("ash", "Alex"), ("nova", "Nova")],
             ),
         ):
-
             # Execute pipeline
             events = discover_events(mock_clients["perplexity"])
             unique_events = deduplicate_events(
@@ -443,7 +439,6 @@ class TestServicesIntegration:
                 side_effect=[("ash", "Alex")],
             ),
         ):
-
             events = discover_events(mock_clients["perplexity"])
             unique_events = deduplicate_events(
                 events,
@@ -525,7 +520,6 @@ class TestServicesIntegration:
                 return_value=("ballad", "Blake"),
             ),
         ):
-
             # Execute pipeline and track transformations
             events = discover_events(mock_clients["perplexity"])
             unique_events = deduplicate_events(
@@ -679,7 +673,6 @@ class TestServicesIntegration:
                 side_effect=[("ash", "Alex")] * 5,
             ),
         ):
-
             events = discover_events(mock_clients["perplexity"])
             unique_events = deduplicate_events(
                 events,
