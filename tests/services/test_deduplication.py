@@ -294,7 +294,7 @@ class TestDeduplicationService:
             [0.1] * 1536,
             Exception("Embedding failed"),
         ]
-        mock_pinecone_client.similarity_search.return_value = []  # No matches for first event
+        mock_pinecone_client.similarity_search.return_value = []  # No matches
 
         # Should propagate the exception
         with pytest.raises(Exception, match="Embedding failed"):
