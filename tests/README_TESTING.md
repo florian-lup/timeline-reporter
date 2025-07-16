@@ -103,7 +103,7 @@ Test individual client components:
 
 Test business logic services:
 
-- **Discovery**: Event discovery from news sources
+- **Discovery**: Lead discovery from news sources
 - **Deduplication**: Filtering duplicate events using embeddings
 - **Research**: Converting events to full stories
 - **Storage**: Persisting stories to database
@@ -135,7 +135,7 @@ Shared fixtures in `conftest.py`:
 Services integration tests demonstrate:
 
 - **Complete workflow**: Discovery → Deduplication → Research → Storage
-- **Data transformation**: Events become Stories
+- **Data transformation**: Leads become Stories
 - **Error propagation**: How failures cascade through the pipeline
 - **Performance**: Large-scale processing with 10+ events
 

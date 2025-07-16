@@ -24,12 +24,12 @@ class TestServicesIntegration:
         """Test-specific discovery instructions with fixed date."""
         return (
             "Identify significant news about climate, environment and natural "
-            "disasters, and major geopolitical events from today 2024-01-15. "
-            "Focus on major global developments, breaking news, and important "
-            "updates that would be of interest to a general audience. "
-            "Return your findings as a JSON array of events, where each event "
-            "has a 'context' field. Example format: "
-            '[{"context": "Event description with comprehensive details..."}]'
+            "disasters, and major geopolitical leads from today 2024-01-15. "
+            "Follow these guidelines: Focus on current, breaking news; Include "
+            "global conflicts, policy changes, natural disasters, and tech "
+            "Return your findings as a JSON array of leads, where each lead "
+            "includes comprehensive context and details. Format: "
+            '[{"context": "Lead description with comprehensive details..."}]'
         )
 
     @pytest.fixture
@@ -90,30 +90,30 @@ class TestServicesIntegration:
             test_discovery_instructions,
         ):
             # Execute complete pipeline
-            events = discover_leads(mock_clients["perplexity"])
-            unique_events = deduplicate_leads(
-                events,
+            leads = discover_leads(mock_clients["perplexity"])
+            unique_leads = deduplicate_leads(
+                leads,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = curate_leads(
-                unique_events, openai_client=mock_clients["openai"]
+            prioritized_leads = curate_leads(
+                unique_leads, openai_client=mock_clients["openai"]
             )
             stories = research_story(
-                prioritized_events, perplexity_client=mock_clients["perplexity"]
+                prioritized_leads, perplexity_client=mock_clients["perplexity"]
             )
             persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
         # Verify pipeline flow
-        assert len(events) == 2
-        assert len(unique_events) == 2  # No duplicates removed
-        assert len(prioritized_events) == 2  # Decision selected both events
+        assert len(leads) == 2
+        assert len(unique_leads) == 2  # No duplicates removed
+        assert len(prioritized_leads) == 2  # Decision selected both leads
         assert len(stories) == 2
 
         # Verify data flow through pipeline
-        # Events from discovery
-        assert "Climate Summit 2024" in events[0].context
-        assert "AI Breakthrough Announced" in events[1].context
+        # Leads from discovery
+        assert "Climate Summit 2024" in leads[0].context
+        assert "AI Breakthrough Announced" in leads[1].context
 
         # Stories from research
         assert (
@@ -123,35 +123,35 @@ class TestServicesIntegration:
 
         # Verify clients were called appropriately
         mock_clients["perplexity"].deep_research.assert_called_once()
-        assert mock_clients["openai"].embed_text.call_count == 2  # One per event
-        assert mock_clients["perplexity"].research.call_count == 2  # One per article
+        assert mock_clients["openai"].embed_text.call_count == 2  # One per lead
+        assert mock_clients["perplexity"].research.call_count == 2  # One per story
         assert mock_clients["mongodb"].insert_story.call_count == 2
 
     @pytest.mark.integration  
     def test_pipeline_with_deduplication(
         self, mock_clients, test_discovery_instructions
     ):
-        """Test pipeline behavior when deduplication removes events."""
+        """Test pipeline behavior when deduplication removes leads."""
         # Modify similarity search to simulate duplicates - provide enough responses
         mock_clients["pinecone"].similarity_search.side_effect = [
-            [("existing-1", 0.95)],  # First event is duplicate
-            [],  # Second event is unique
-            [],  # Third event is unique
-            [],  # Fourth event is unique
-            [],  # Fifth event is unique
+            [("existing-1", 0.95)],  # First lead is duplicate
+            [],  # Second lead is unique
+            [],  # Third lead is unique
+            [],  # Fourth lead is unique
+            [],  # Fifth lead is unique
         ]
 
-        # Set up discovery with duplicate events
+        # Set up discovery with duplicate leads
         discovery_json = json.dumps([
-            {"context": "Event 1: First event description"},
-            {"context": "Event 2: Second event description"},
-            {"context": "Event 3: Similar to Event 1"},
-            {"context": "Event 4: Fourth event description"},
-            {"context": "Event 5: Fifth event description"},
+            {"context": "Lead 1: First lead description"},
+            {"context": "Lead 2: Second lead description"},
+            {"context": "Lead 3: Similar to Lead 1"},
+            {"context": "Lead 4: Fourth lead description"},
+            {"context": "Lead 5: Fifth lead description"},
         ])
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
-        # Set up decision response - events 1, 2, 4 from the remaining 4 unique events
+        # Set up decision response - leads 1, 2, 4 from the remaining 4 unique leads
         mock_clients["openai"].chat_completion.return_value = "1, 2, 4"
 
         with patch(
@@ -159,25 +159,25 @@ class TestServicesIntegration:
             test_discovery_instructions,
         ):
             # Execute pipeline
-            events = discover_leads(mock_clients["perplexity"])
-            unique_events = deduplicate_leads(
-                events,
+            leads = discover_leads(mock_clients["perplexity"])
+            unique_leads = deduplicate_leads(
+                leads,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = curate_leads(
-                unique_events, openai_client=mock_clients["openai"]
+            prioritized_leads = curate_leads(
+                unique_leads, openai_client=mock_clients["openai"]
             )
 
         # Verify deduplication worked
-        assert len(events) == 5  # Original count
-        assert len(unique_events) == 4  # One duplicate removed
-        assert len(prioritized_events) == 3  # Decision selected 3/4 events
+        assert len(leads) == 5  # Original count
+        assert len(unique_leads) == 4  # One duplicate removed
+        assert len(prioritized_leads) == 3  # Decision selected 3/4 leads
 
-        # Verify selected stories correspond to selected events
-        assert "Event 2" in prioritized_events[0].context  # Index 1 -> Event 2 (since Event 1 was duplicate)
-        assert "Event 3" in prioritized_events[1].context  # Index 2 -> Event 3  
-        assert "Event 5" in prioritized_events[2].context  # Index 4 -> Event 5
+        # Verify selected stories correspond to selected leads
+        assert "Lead 2" in prioritized_leads[0].context  # Index 1 -> Lead 2 (since Lead 1 was duplicate)
+        assert "Lead 3" in prioritized_leads[1].context  # Index 2 -> Lead 3  
+        assert "Lead 5" in prioritized_leads[2].context  # Index 4 -> Lead 5
 
     def test_pipeline_data_transformation(
         self, mock_clients, test_discovery_instructions
@@ -186,7 +186,7 @@ class TestServicesIntegration:
         
         # Mock simple discovery response
         discovery_json = json.dumps([
-            {"context": "Original Event: Original summary"}
+            {"context": "Original Lead: Original summary"}
         ])
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
@@ -194,13 +194,13 @@ class TestServicesIntegration:
         research_json = json.dumps({
             "headline": "Transformed Headline",
             "summary": "Enhanced summary",
-            "body": "Detailed article body",
+            "body": "Detailed story body",
             "sources": ["https://source1.com", "https://source2.com"]
         })
         mock_clients["perplexity"].research.return_value = research_json
         mock_clients["perplexity"].research.side_effect = None  # Reset side_effect
 
-        # Set up decision response for single event
+        # Set up decision response for single lead
         mock_clients["openai"].chat_completion.return_value = "1"
 
         with patch(
@@ -208,17 +208,17 @@ class TestServicesIntegration:
             test_discovery_instructions,
         ):
             # Execute pipeline and track transformations
-            events = discover_leads(mock_clients["perplexity"])
-            unique_events = deduplicate_leads(
-                events,
+            leads = discover_leads(mock_clients["perplexity"])
+            unique_leads = deduplicate_leads(
+                leads,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = curate_leads(
-                unique_events, openai_client=mock_clients["openai"]
+            prioritized_leads = curate_leads(
+                unique_leads, openai_client=mock_clients["openai"]
             )
             stories = research_story(
-                prioritized_events, perplexity_client=mock_clients["perplexity"]
+                prioritized_leads, perplexity_client=mock_clients["perplexity"]
             )
 
             # Store final stories
@@ -226,19 +226,19 @@ class TestServicesIntegration:
 
         # Verify data transformations
         # Lead -> Lead (deduplication preserves structure)
-        assert isinstance(events[0], Lead)
-        assert isinstance(unique_events[0], Lead)
-        assert events[0].context == unique_events[0].context
+        assert isinstance(leads[0], Lead)
+        assert isinstance(unique_leads[0], Lead)
+        assert leads[0].context == unique_leads[0].context
 
         # Lead -> Lead (decision preserves structure, filters by impact)
-        assert isinstance(prioritized_events[0], Lead)
-        assert prioritized_events[0].context == unique_events[0].context
+        assert isinstance(prioritized_leads[0], Lead)
+        assert prioritized_leads[0].context == unique_leads[0].context
 
         # Lead -> Story (research transforms and enhances)
         assert isinstance(stories[0], Story)
         assert stories[0].headline == "Transformed Headline"
         assert (
-            stories[0].summary != prioritized_events[0].context
+            stories[0].summary != prioritized_leads[0].context
         )  # Enhanced by research
         assert len(stories[0].sources) == 2
 
@@ -246,7 +246,7 @@ class TestServicesIntegration:
         """Test pipeline performance with larger data volume."""
         
         # Create large discovery response
-        discovery_data = [{"context": f"Event {i}: Summary {i}"} for i in range(1, 11)]
+        discovery_data = [{"context": f"Lead {i}: Summary {i}"} for i in range(1, 11)]
         discovery_json = json.dumps(discovery_data)
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
@@ -256,7 +256,7 @@ class TestServicesIntegration:
         # Override research responses for 5 stories
         research_responses = [
             json.dumps({
-                "headline": f"Article {i}",
+                "headline": f"Story {i}",
                 "summary": f"Summary {i}",
                 "body": f"Body {i}",
                 "sources": [f"https://source{i}.com"]
@@ -269,27 +269,27 @@ class TestServicesIntegration:
             test_discovery_instructions,
         ):
             # Execute pipeline
-            events = discover_leads(mock_clients["perplexity"])
-            unique_events = deduplicate_leads(
-                events,
+            leads = discover_leads(mock_clients["perplexity"])
+            unique_leads = deduplicate_leads(
+                leads,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = curate_leads(
-                unique_events, openai_client=mock_clients["openai"]
+            prioritized_leads = curate_leads(
+                unique_leads, openai_client=mock_clients["openai"]
             )
             stories = research_story(
-                prioritized_events, perplexity_client=mock_clients["perplexity"]
+                prioritized_leads, perplexity_client=mock_clients["perplexity"]
             )
 
         # Verify scalability
-        assert len(events) == 10
-        assert len(unique_events) == 10  # No duplicates
-        assert len(prioritized_events) == 5  # Decision selected 5
+        assert len(leads) == 10
+        assert len(unique_leads) == 10  # No duplicates
+        assert len(prioritized_leads) == 5  # Decision selected 5
         assert len(stories) == 5
 
-        # Verify embeddings were created for all events
+        # Verify embeddings were created for all leads
         assert mock_clients["openai"].embed_text.call_count == 10
         
-        # Verify research was called for all selected events
+        # Verify research was called for all selected leads
         assert mock_clients["perplexity"].research.call_count == 5

@@ -154,7 +154,7 @@ class TestPineconeClient:
         mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
         mock_pc.list_indexes.return_value.names.return_value = ["timeline-events"]
 
-        metadata = {"title": "Test Article", "date": "2024-01-01"}
+        metadata = {"title": "Test Story", "date": "2024-01-01"}
 
         with patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"):
             client = PineconeClient()

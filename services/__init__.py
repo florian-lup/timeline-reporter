@@ -1,10 +1,10 @@
 """Services package for the timeline reporter project.
 
 This package provides the core pipeline services:
-- Discovery: Finding current events
-- Deduplication: Removing similar events
-- Decision: Prioritizing most impactful events
-- Research: Creating full stories from events
+- Discovery: Finding current leads
+- Deduplication: Removing similar leads
+- Decision: Prioritizing most impactful leads
+- Research: Creating full stories from leads
 - Storage: Saving stories to MongoDB
 """
 

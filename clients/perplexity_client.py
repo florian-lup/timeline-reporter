@@ -47,7 +47,7 @@ class PerplexityClient:
             )
         self._headers = {**self._DEFAULT_HEADERS, "Authorization": f"Bearer {api_key}"}
 
-    # JSON schema for Article structured output as per docs
+    # JSON schema for Story structured output as per docs
     _ARTICLE_JSON_SCHEMA = {
         "type": "object",
         "properties": {
@@ -80,7 +80,7 @@ class PerplexityClient:
 
         Utilises Perplexity's `response_format` parameter (see official guide:
         https://docs.perplexity.ai/guides/structured-outputs) to guarantee the
-        model returns a valid JSON object matching the article schema.
+        model returns a valid JSON object matching the story schema.
         """
         logger.info("Research request with %s", RESEARCH_MODEL)
 

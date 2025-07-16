@@ -58,8 +58,8 @@ def mock_perplexity_client():
     # Mock research response
     research_response = json.dumps({
         "headline": "Breaking News Story",
-        "summary": "Important event summary",
-        "body": "Full article body with detailed information.",
+        "summary": "Important lead summary",
+        "body": "Full story body with detailed information.",
         "sources": ["https://example.com/source1", "https://example.com/source2"]
     })
     mock_client.research.return_value = research_response

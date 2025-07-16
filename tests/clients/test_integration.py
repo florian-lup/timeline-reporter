@@ -51,11 +51,11 @@ class TestClientIntegration:
             pinecone_client = PineconeClient()
 
             # 1. Generate embedding
-            test_text = "This is a test event for embedding"
+            test_text = "This is a test lead for embedding"
             embedding = openai_client.embed_text(test_text)
 
             # 2. Store in Pinecone
-            pinecone_client.upsert_vector("test-event-123", embedding, {"content": test_text})
+            pinecone_client.upsert_vector("test-lead-123", embedding, {"content": test_text})
 
             # 3. Search for similar events
             search_results = pinecone_client.similarity_search(embedding)
@@ -79,7 +79,7 @@ class TestClientIntegration:
             mock_http_client = Mock()
             mock_response = Mock()
             research_data = {
-                "headline": "Test Research Article",
+                "headline": "Test Research Story",
                 "summary": "This is a test research summary",
                 "body": "This is the full test research story...",
                 "sources": ["https://example.com/source1", "https://example.com/source2"],
@@ -93,7 +93,7 @@ class TestClientIntegration:
 
             # Test research
             perplexity_client = PerplexityClient()
-            research_prompt = "Research this event: Breaking news about technology"
+            research_prompt = "Research this lead: Breaking news about technology"
             result = perplexity_client.research(research_prompt)
 
             # Verify API call
@@ -103,7 +103,7 @@ class TestClientIntegration:
 
             # Verify result parsing
             result_data = json.loads(result)
-            assert result_data["headline"] == "Test Research Article"
+            assert result_data["headline"] == "Test Research Story"
             assert len(result_data["sources"]) == 2
 
     def test_mongodb_story_storage_integration(self):
@@ -183,7 +183,7 @@ class TestClientIntegration:
             mock_response = Mock()
             story_data = {
                 "headline": "Breaking News",
-                "summary": "Important event summary",
+                "summary": "Important lead summary",
                 "body": "Full story details...",
                 "sources": ["https://source.com"],
             }
@@ -213,9 +213,9 @@ class TestClientIntegration:
             mongodb_client = MongoDBClient()
 
             # 1. Research phase
-            test_events = [Lead(context="Breaking News: Important event")]
+            test_leads = [Lead(context="Breaking News: Important lead")]
             stories = research_story(
-                test_events, perplexity_client=perplexity_client
+                test_leads, perplexity_client=perplexity_client
             )
 
             # 2. Storage phase
@@ -228,7 +228,7 @@ class TestClientIntegration:
 
             # Check research data is preserved
             assert final_story.headline == "Breaking News"
-            assert final_story.summary == "Important event summary"
+            assert final_story.summary == "Important lead summary"
             assert final_story.body == "Full story details..."
             assert final_story.sources == ["https://source.com"]
 
@@ -262,8 +262,8 @@ class TestClientIntegration:
             mock_index = Mock()
             mock_index.query.return_value = Mock(
                 matches=[
-                    Mock(id="similar-event-1", score=0.9),
-                    Mock(id="similar-event-2", score=0.8),
+                    Mock(id="similar-lead-1", score=0.9),
+                    Mock(id="similar-lead-2", score=0.8),
                 ]
             )
             mock_pinecone_instance.Index.return_value = mock_index
@@ -283,7 +283,7 @@ class TestClientIntegration:
 
             # Verify workflow
             assert len(similar_events) == 2
-            assert similar_events[0][0] == "similar-event-1"  # ID is first element
+            assert similar_events[0][0] == "similar-lead-1"  # ID is first element
             assert similar_events[0][1] == 0.9  # Score is second element
 
     def test_client_error_handling_integration(self):

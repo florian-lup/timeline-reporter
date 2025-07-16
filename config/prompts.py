@@ -15,17 +15,21 @@ DISCOVERY_SYSTEM_PROMPT = (
     "You are an expert research assistant specializing in identifying "
     "significant current events. Focus on finding factual, newsworthy "
     "developments from reputable sources. Provide comprehensive summaries "
-    "that capture the key details and implications of each event."
+    "that capture the key details and implications of each lead."
+    "\n\nStructure your response as a JSON array where each "
+    "lead has a 'context' field containing a comprehensive paragraph "
+    "summarizing the lead's significance and key details. Format: "
+    '[{"context": "Comprehensive paragraph describing the lead, its significance, and key details..."}]'
 )
 
 DISCOVERY_INSTRUCTIONS = (
     f"Identify significant news about {DISCOVERY_TOPICS} from today "
     f"{get_today_formatted()}. Focus on major global developments, breaking "
     "news, and important updates that would be of interest to a general "
-    "audience. Return your findings as a JSON array of events, where each "
-    "event has a 'context' field containing a comprehensive paragraph "
+    "audience. Return your findings as a JSON array of leads, where each "
+    "lead has a 'context' field containing a comprehensive paragraph "
     "explaining the lead with all key details and implications. Example format: "
-    '[{"context": "Comprehensive paragraph describing the event, its significance, and key details..."}]'
+    '[{"context": "Comprehensive paragraph describing the lead, its significance, and key details..."}]'
 )
 
 # ---------------------------------------------------------------------------
@@ -58,7 +62,7 @@ DECISION_INSTRUCTIONS = (
 )
 
 # ---------------------------------------------------------------------------
-# Research & Article Generation Prompts
+# Research & Story Generation Prompts
 # ---------------------------------------------------------------------------
 
 RESEARCH_SYSTEM_PROMPT = (
@@ -68,15 +72,20 @@ RESEARCH_SYSTEM_PROMPT = (
 )
 
 RESEARCH_INSTRUCTIONS = (
-    "Using the information provided below, craft a well-structured news "
-    "article.\n\nEvent:\n{event_summary}\nDate: {event_date}\n\n"
-    "Create a comprehensive news article with:\n"
+    "You are a professional journalist tasked with researching and writing a "
+    "comprehensive news story based on a lead. Research the lead thoroughly "
+    "and write an in-depth, well-sourced story. Focus on accuracy, context, "
+    "and providing a complete picture of the situation. Write the story in a "
+    "clear, engaging style suitable for a general news audience. Include all "
+    "relevant background information and explain the significance of the "
+    "story.\n\nLead:\n{lead_summary}\nDate: {lead_date}\n\n"
+    "Create a comprehensive news story with:\n"
     "- A compelling headline (max 20 words)\n"
     "- A concise summary (80-120 words) highlighting key points\n"
     "- A detailed story (400-600 words) with context, implications, and "
     "analysis\n- Include relevant source URLs for verification\n"
     "- Ensure the reporting reflects the timeliness and relevance of the "
-    "{event_date} date"
+    "{lead_date} date"
 )
 
 # ---------------------------------------------------------------------------

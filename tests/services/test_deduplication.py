@@ -127,9 +127,9 @@ class TestDeduplicationService:
         # Setup mocks
         mock_openai_client.embed_text.side_effect = sample_embeddings
         mock_pinecone_client.similarity_search.side_effect = [
-            [],  # First event - no duplicates
-            [("existing-id", 0.95)],  # Second event - duplicate found
-            [],  # Third event - no duplicates
+            [],  # First lead - no duplicates
+            [("existing-id", 0.95)],  # Second lead - duplicate found
+            [],  # Third lead - no duplicates
         ]
 
         # Call function

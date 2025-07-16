@@ -43,7 +43,7 @@ class TestDiscoveryService:
     def test_discover_leads_success(
         self, mock_perplexity_client, sample_discovery_response
     ):
-        """Test successful event discovery."""
+        """Test successful lead discovery."""
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
         leads = discover_leads(mock_perplexity_client)
@@ -103,7 +103,7 @@ class TestDiscoveryService:
     def test_discover_leads_logging(
         self, mock_logger, mock_perplexity_client, sample_discovery_response
     ):
-        """Test that discovery logs event count."""
+        """Test that discovery logs lead count."""
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
         discover_leads(mock_perplexity_client)
@@ -182,7 +182,7 @@ class TestDiscoveryService:
         response_multiple_fences = '''
         Some text here
         ```json
-        [{"context": "Event 1: Summary 1"}]
+        [{"context": "Lead 1: Summary 1"}]
         ```
         More text
         ```
@@ -194,4 +194,4 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert leads[0].context == "Event 1: Summary 1"
+        assert leads[0].context == "Lead 1: Summary 1"

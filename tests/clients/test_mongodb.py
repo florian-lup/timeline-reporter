@@ -28,11 +28,11 @@ class TestMongoDBClient:
             yield mock_client, mock_instance, mock_db, mock_collection
 
     @pytest.fixture
-    def sample_article(self):
-        """Sample article data for testing."""
+    def sample_story(self):
+        """Sample story data for testing."""
         return {
-            "headline": "Test Article",
-            "summary": "This is a test article",
+            "headline": "Test Story",
+            "summary": "This is a test story",
             "body": "Full story content here",
             "sources": ["https://example.com"],
         }
@@ -83,8 +83,8 @@ class TestMongoDBClient:
         ):
             MongoDBClient(uri=None)
 
-    def test_insert_story_success(self, mock_mongo_client, sample_article):
-        """Test successful article insertion."""
+    def test_insert_story_success(self, mock_mongo_client, sample_story):
+        """Test successful story insertion."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
         # Mock the insert_one result
@@ -95,17 +95,17 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            result = client.insert_story(sample_article)
+            result = client.insert_story(sample_story)
 
-            mock_collection.insert_one.assert_called_once_with(sample_article)
+            mock_collection.insert_one.assert_called_once_with(sample_story)
             assert result == str(mock_object_id)
 
     def test_insert_story_with_missing_headline(self, mock_mongo_client):
-        """Test article insertion with missing headline (should still work)."""
+        """Test story insertion with missing headline (should still work)."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
-        article_without_headline = {
-            "summary": "This is a test article",
+        story_without_headline = {
+            "summary": "This is a test story",
             "body": "Full story content here",
         }
 
@@ -116,13 +116,13 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            result = client.insert_story(article_without_headline)
+            result = client.insert_story(story_without_headline)
 
-            mock_collection.insert_one.assert_called_once_with(article_without_headline)
+            mock_collection.insert_one.assert_called_once_with(story_without_headline)
             assert result == str(mock_object_id)
 
     def test_insert_story_empty_dict(self, mock_mongo_client):
-        """Test insertion of empty article dictionary."""
+        """Test insertion of empty story dictionary."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
         mock_result = Mock()
@@ -155,7 +155,7 @@ class TestMongoDBClient:
 
     @patch("clients.mongodb_client.logger")
     def test_logging_on_insert_story(
-        self, mock_logger, mock_mongo_client, sample_article
+        self, mock_logger, mock_mongo_client, sample_story
     ):
         """Test that insert_story logs the operation."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
@@ -167,7 +167,7 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            client.insert_story(sample_article)
+            client.insert_story(sample_story)
 
             # Debug logging was removed - no assertion needed
             pass
