@@ -18,13 +18,13 @@ _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 # ---------------------------------------------------------------------------
 
 
-def discover_events(perplexity_client: PerplexityClient) -> list[Lead]:
+def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
     """Discovers events for multiple topics in a single API call.
 
     Returns the combined list of events.
     """
     response_text = perplexity_client.deep_research(DISCOVERY_INSTRUCTIONS)
-    events = _parse_events_from_response(response_text)
+    events = _parse_leads_from_response(response_text)
 
     logger.info("Discovered %d events", len(events))
     return events
@@ -35,7 +35,7 @@ def discover_events(perplexity_client: PerplexityClient) -> list[Lead]:
 # ---------------------------------------------------------------------------
 
 
-def _parse_events_from_response(response_text: str) -> list[Lead]:
+def _parse_leads_from_response(response_text: str) -> list[Lead]:
     """Extracts JSON from the model response and maps to Event objects."""
     # Some models wrap JSON in markdown triple-backticks; strip them if needed.
     match = _FENCE_REGEX.search(response_text)

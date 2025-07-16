@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from services import discover_events
+from services import discover_leads
 from models import Lead
 
 
@@ -64,7 +64,7 @@ class TestDiscoveryService:
             '[{"title": "Event Title", "summary": "Brief description..."}]'
         )
 
-    def test_discover_events_success(
+    def test_discover_leads_success(
         self,
         mock_perplexity_client,
         sample_discovery_response,
@@ -74,10 +74,10 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         assert len(events) == 2
         assert isinstance(events[0], Lead)
@@ -93,7 +93,7 @@ class TestDiscoveryService:
             test_discovery_instructions
         )
 
-    def test_discover_events_with_markdown_fences(
+    def test_discover_leads_with_markdown_fences(
         self,
         mock_perplexity_client,
         sample_malformed_response,
@@ -103,30 +103,30 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = sample_malformed_response
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         assert len(events) == 1
         assert events[0].title == "Climate Summit Announced"
         assert events[0].summary == "World leaders gather to discuss climate action."
 
-    def test_discover_events_empty_response(
+    def test_discover_leads_empty_response(
         self, mock_perplexity_client, test_discovery_instructions
     ):
         """Test event discovery with empty JSON array."""
         mock_perplexity_client.deep_research.return_value = "[]"
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         assert events == []
 
-    def test_discover_events_malformed_json(
+    def test_discover_leads_malformed_json(
         self, mock_perplexity_client, test_discovery_instructions
     ):
         """Test event discovery with malformed JSON."""
@@ -134,17 +134,17 @@ class TestDiscoveryService:
 
         with (
             patch(
-                "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+                "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
                 test_discovery_instructions,
             ),
-            patch("services.event_discovery.logger") as mock_logger,
+            patch("services.lead_discovery.logger") as mock_logger,
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         assert events == []
         mock_logger.warning.assert_called()
 
-    def test_discover_events_missing_fields(
+    def test_discover_leads_missing_fields(
         self, mock_perplexity_client, test_discovery_instructions
     ):
         """Test event discovery with missing required fields."""
@@ -159,19 +159,19 @@ class TestDiscoveryService:
 
         with (
             patch(
-                "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+                "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
                 test_discovery_instructions,
             ),
             pytest.raises(KeyError),
         ):
             # This should raise KeyError for missing fields
-            discover_events(mock_perplexity_client)
+            discover_leads(mock_perplexity_client)
 
     @pytest.mark.parametrize(
         "topics_override",
         ["technology and AI", "sports and entertainment", "economics and finance"],
     )
-    def test_discover_events_with_different_topics(
+    def test_discover_leads_with_different_topics(
         self, mock_perplexity_client, sample_discovery_response, topics_override
     ):
         """Test event discovery maintains flexibility for topic changes."""
@@ -198,14 +198,14 @@ class TestDiscoveryService:
         )
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS", test_instructions
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS", test_instructions
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         # Should still work regardless of the topics
         assert len(events) == 2
 
-    @patch("services.event_discovery.logger")
+    @patch("services.lead_discovery.logger")
     def test_logging_events_discovery(
         self,
         mock_logger,
@@ -217,15 +217,15 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            discover_events(mock_perplexity_client)
+            discover_leads(mock_perplexity_client)
 
         # Debug logging was removed - no debug assertion needed
         pass
 
-    def test_discover_events_with_unicode_content(
+    def test_discover_leads_with_unicode_content(
         self, mock_perplexity_client, test_discovery_instructions
     ):
         """Test event discovery with unicode characters."""
@@ -243,16 +243,16 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = unicode_response
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         assert len(events) == 1
         assert "🌍" in events[0].title
         assert "émissions" in events[0].summary
 
-    def test_discover_events_prompt_formatting(
+    def test_discover_leads_prompt_formatting(
         self,
         mock_perplexity_client,
         sample_discovery_response,
@@ -262,10 +262,10 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            discover_events(mock_perplexity_client)
+            discover_leads(mock_perplexity_client)
 
         # Verify the prompt was called with correct content
         mock_perplexity_client.deep_research.assert_called_once_with(
@@ -278,7 +278,7 @@ class TestDiscoveryService:
         assert expected_topics in call_args
         assert "2024-01-15" in call_args
 
-    def test_parse_events_from_response_edge_cases(
+    def test_parse_leads_from_response_edge_cases(
         self, mock_perplexity_client, test_discovery_instructions
     ):
         """Test edge cases in event parsing."""
@@ -294,10 +294,10 @@ class TestDiscoveryService:
         mock_perplexity_client.deep_research.return_value = complex_response
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_perplexity_client)
+            events = discover_leads(mock_perplexity_client)
 
         assert len(events) == 1
         assert events[0].title == "  Spaced Title  "  # Preserves original formatting

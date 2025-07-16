@@ -10,15 +10,15 @@ This package provides the core pipeline services:
 
 from .article_insertion import insert_articles
 from .article_research import research_articles
-from .event_deduplication import deduplicate_events
-from .event_discovery import discover_events
-from .event_selection import select_events
+from .lead_deduplication import deduplicate_leads
+from .lead_discovery import discover_leads
+from .lead_curation import curate_leads
 
 __all__ = [
     # Core pipeline services
-    "discover_events",
-    "deduplicate_events",
-    "select_events",
+    "discover_leads",
+    "deduplicate_leads",
+    "curate_leads",
     "research_articles",
     "insert_articles",
 ]

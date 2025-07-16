@@ -6,11 +6,11 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import (
-    deduplicate_events,
-    discover_events,
+    deduplicate_leads,
+    discover_leads,
     insert_articles,
     research_articles,
-    select_events,
+    curate_leads,
 )
 from models import Lead, Story
 
@@ -96,21 +96,21 @@ class TestServicesIntegration:
 
         # Execute complete pipeline
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
             # 1. Discovery
-            events = discover_events(mock_clients["perplexity"])
+            events = discover_leads(mock_clients["perplexity"])
 
             # 2. Deduplication
-            unique_events = deduplicate_events(
+            unique_events = deduplicate_leads(
                 events,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
 
             # 3. Decision (prioritize most impactful events)
-            prioritized_events = select_events(
+            prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
 
@@ -198,17 +198,17 @@ class TestServicesIntegration:
         mock_clients["mongodb"].insert_article.side_effect = ["id1", "id2"]
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
             # Execute pipeline
-            events = discover_events(mock_clients["perplexity"])
-            unique_events = deduplicate_events(
+            events = discover_leads(mock_clients["perplexity"])
+            unique_events = deduplicate_leads(
                 events,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = select_events(
+            prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
             articles = research_articles(
@@ -224,7 +224,7 @@ class TestServicesIntegration:
         assert len(prioritized_events) == 2  # Decision kept both remaining events
         assert len(articles) == 2
 
-    def test_pipeline_with_event_selection(
+    def test_pipeline_with_lead_curation(
         self, mock_clients, test_discovery_instructions
     ):
         """Test pipeline when decision service filters events."""
@@ -262,16 +262,16 @@ class TestServicesIntegration:
         mock_clients["mongodb"].insert_article.side_effect = ["id1", "id3", "id5"]
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_clients["perplexity"])
-            unique_events = deduplicate_events(
+            events = discover_leads(mock_clients["perplexity"])
+            unique_events = deduplicate_leads(
                 events,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = select_events(
+            prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
             articles = research_articles(
@@ -328,17 +328,17 @@ class TestServicesIntegration:
         mock_clients["mongodb"].insert_article.return_value = "final_id"
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
             # Execute pipeline and track transformations
-            events = discover_events(mock_clients["perplexity"])
-            unique_events = deduplicate_events(
+            events = discover_leads(mock_clients["perplexity"])
+            unique_events = deduplicate_leads(
                 events,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = select_events(
+            prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
             articles = research_articles(
@@ -372,12 +372,12 @@ class TestServicesIntegration:
         mock_clients["perplexity"].deep_research.return_value = "[]"
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_clients["perplexity"])
+            events = discover_leads(mock_clients["perplexity"])
 
-            unique_events = deduplicate_events(
+            unique_events = deduplicate_leads(
                 events,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
@@ -441,16 +441,16 @@ class TestServicesIntegration:
         ]
 
         with patch(
-            "services.event_discovery.DISCOVERY_INSTRUCTIONS",
+            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
         ):
-            events = discover_events(mock_clients["perplexity"])
-            unique_events = deduplicate_events(
+            events = discover_leads(mock_clients["perplexity"])
+            unique_events = deduplicate_leads(
                 events,
                 openai_client=mock_clients["openai"],
                 pinecone_client=mock_clients["pinecone"],
             )
-            prioritized_events = select_events(
+            prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
             articles = research_articles(

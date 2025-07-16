@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from services import deduplicate_events
+from services import deduplicate_leads
 from models import Lead
 
 
@@ -57,7 +57,7 @@ class TestDeduplicationService:
             [0.7, 0.8, 0.9] * 512,
         ]
 
-    def test_deduplicate_events_no_duplicates(
+    def test_deduplicate_leads_no_duplicates(
         self, mock_openai_client, mock_pinecone_client, sample_events, sample_embeddings
     ):
         """Test deduplication when no duplicates exist."""
@@ -65,7 +65,7 @@ class TestDeduplicationService:
         mock_openai_client.embed_text.side_effect = sample_embeddings
         mock_pinecone_client.similarity_search.return_value = []  # No matches found
 
-        result = deduplicate_events(
+        result = deduplicate_leads(
             sample_events,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
@@ -84,7 +84,7 @@ class TestDeduplicationService:
         # Verify vectors were upserted for all events
         assert mock_pinecone_client.upsert_vector.call_count == 3
 
-    def test_deduplicate_events_with_duplicates(
+    def test_deduplicate_leads_with_duplicates(
         self, mock_openai_client, mock_pinecone_client, sample_events, sample_embeddings
     ):
         """Test deduplication when duplicates exist."""
@@ -96,8 +96,8 @@ class TestDeduplicationService:
             [],  # Third event: no duplicates
         ]
 
-        with patch("services.event_deduplication.logger") as mock_logger:
-            result = deduplicate_events(
+        with patch("services.lead_deduplication.logger") as mock_logger:
+            result = deduplicate_leads(
                 sample_events,
                 openai_client=mock_openai_client,
                 pinecone_client=mock_pinecone_client,
@@ -116,14 +116,14 @@ class TestDeduplicationService:
         # Only 2 vectors should be upserted (not the duplicate)
         assert mock_pinecone_client.upsert_vector.call_count == 2
 
-    def test_deduplicate_events_embedding_content(
+    def test_deduplicate_leads_embedding_content(
         self, mock_openai_client, mock_pinecone_client, sample_events
     ):
         """Test that embeddings use correct text content."""
         mock_openai_client.embed_text.return_value = [0.1] * 1536
         mock_pinecone_client.similarity_search.return_value = []
 
-        deduplicate_events(
+        deduplicate_leads(
             sample_events,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
@@ -141,14 +141,14 @@ class TestDeduplicationService:
         assert embedding_calls[1][0][0] == expected_text_1
         assert embedding_calls[2][0][0] == expected_text_2
 
-    def test_deduplicate_events_vector_metadata(
+    def test_deduplicate_leads_vector_metadata(
         self, mock_openai_client, mock_pinecone_client, sample_events
     ):
         """Test that vectors are upserted with correct metadata."""
         mock_openai_client.embed_text.return_value = [0.1] * 1536
         mock_pinecone_client.similarity_search.return_value = []
 
-        deduplicate_events(
+        deduplicate_leads(
             sample_events,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
@@ -167,12 +167,12 @@ class TestDeduplicationService:
             assert metadata["title"] == sample_events[i].title
             assert metadata["summary"] == sample_events[i].summary
 
-    def test_deduplicate_events_empty_list(
+    def test_deduplicate_leads_empty_list(
         self, mock_openai_client, mock_pinecone_client
     ):
         """Test deduplication with empty event list."""
-        with patch("services.event_deduplication.logger") as mock_logger:
-            result = deduplicate_events(
+        with patch("services.lead_deduplication.logger") as mock_logger:
+            result = deduplicate_leads(
                 [],
                 openai_client=mock_openai_client,
                 pinecone_client=mock_pinecone_client,
@@ -187,7 +187,7 @@ class TestDeduplicationService:
             "Deduplication complete: %d unique events", 0
         )
 
-    def test_deduplicate_events_single_event(
+    def test_deduplicate_leads_single_event(
         self, mock_openai_client, mock_pinecone_client
     ):
         """Test deduplication with single event."""
@@ -195,7 +195,7 @@ class TestDeduplicationService:
         mock_openai_client.embed_text.return_value = [0.5] * 1536
         mock_pinecone_client.similarity_search.return_value = []
 
-        result = deduplicate_events(
+        result = deduplicate_leads(
             single_event,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
@@ -204,7 +204,7 @@ class TestDeduplicationService:
         assert len(result) == 1
         assert result[0] == single_event[0]
 
-    def test_deduplicate_events_multiple_matches(
+    def test_deduplicate_leads_multiple_matches(
         self, mock_openai_client, mock_pinecone_client, sample_events
     ):
         """Test deduplication when event matches multiple existing events."""
@@ -219,8 +219,8 @@ class TestDeduplicationService:
             [],  # No duplicates
         ]
 
-        with patch("services.event_deduplication.logger") as mock_logger:
-            result = deduplicate_events(
+        with patch("services.lead_deduplication.logger") as mock_logger:
+            result = deduplicate_leads(
                 sample_events,
                 openai_client=mock_openai_client,
                 pinecone_client=mock_pinecone_client,
@@ -246,7 +246,7 @@ class TestDeduplicationService:
             [("match-1", 0.99)],  # Very high similarity
         ],
     )
-    def test_deduplicate_events_various_similarity_scores(
+    def test_deduplicate_leads_various_similarity_scores(
         self, mock_openai_client, mock_pinecone_client, sample_events, similarity_scores
     ):
         """Test deduplication with various similarity scores."""
@@ -257,7 +257,7 @@ class TestDeduplicationService:
             [],  # Third event no matches
         ]
 
-        result = deduplicate_events(
+        result = deduplicate_leads(
             sample_events,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
@@ -267,7 +267,7 @@ class TestDeduplicationService:
         assert len(result) == 2
         assert sample_events[0] not in result
 
-    @patch("services.event_deduplication.logger")
+    @patch("services.lead_deduplication.logger")
     def test_logging_deduplication(
         self, mock_logger, mock_openai_client, mock_pinecone_client, sample_events
     ):
@@ -275,7 +275,7 @@ class TestDeduplicationService:
         mock_openai_client.embed_text.return_value = [0.1] * 1536
         mock_pinecone_client.similarity_search.return_value = []
 
-        deduplicate_events(
+        deduplicate_leads(
             sample_events,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
@@ -285,7 +285,7 @@ class TestDeduplicationService:
             "Deduplication complete: %d unique events", 3
         )
 
-    def test_deduplicate_events_embedding_error_handling(
+    def test_deduplicate_leads_embedding_error_handling(
         self, mock_openai_client, mock_pinecone_client, sample_events
     ):
         """Test error handling when embedding fails."""
@@ -298,13 +298,13 @@ class TestDeduplicationService:
 
         # Should propagate the exception
         with pytest.raises(Exception, match="Embedding failed"):
-            deduplicate_events(
+            deduplicate_leads(
                 sample_events,
                 openai_client=mock_openai_client,
                 pinecone_client=mock_pinecone_client,
             )
 
-    def test_deduplicate_events_search_error_handling(
+    def test_deduplicate_leads_search_error_handling(
         self, mock_openai_client, mock_pinecone_client, sample_events
     ):
         """Test error handling when similarity search fails."""
@@ -313,7 +313,7 @@ class TestDeduplicationService:
 
         # Should propagate the exception
         with pytest.raises(Exception, match="Search failed"):
-            deduplicate_events(
+            deduplicate_leads(
                 sample_events,
                 openai_client=mock_openai_client,
                 pinecone_client=mock_pinecone_client,

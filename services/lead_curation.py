@@ -9,7 +9,7 @@ from models import Lead
 from utils import logger
 
 
-def select_events(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
+def curate_leads(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful events from deduplicated list.
 
     Uses AI to evaluate events based on impact, significance, and newsworthiness,
@@ -42,7 +42,7 @@ def select_events(events: list[Lead], *, openai_client: OpenAIClient) -> list[Le
     )
 
     # Parse the selected event indices and filter original events
-    selected_events = _filter_events_by_indices(response_text, events)
+    selected_events = _filter_leads_by_indices(response_text, events)
 
     logger.info("Selected %d priority events", len(selected_events))
 
@@ -58,7 +58,7 @@ def select_events(events: list[Lead], *, openai_client: OpenAIClient) -> list[Le
 # ---------------------------------------------------------------------------
 
 
-def _filter_events_by_indices(
+def _filter_leads_by_indices(
     response_text: str, original_events: list[Lead]
 ) -> list[Lead]:
     """Filters original events based on selected indices from AI response."""

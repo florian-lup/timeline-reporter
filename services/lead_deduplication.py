@@ -9,7 +9,7 @@ from utils import logger
 # ---------------------------------------------------------------------------
 
 
-def deduplicate_events(
+def deduplicate_leads(
     events: list[Lead],
     *,
     openai_client: OpenAIClient,

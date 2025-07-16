@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
 from services import (
-    deduplicate_events,
-    discover_events,
+    deduplicate_leads,
+    discover_leads,
     insert_articles,
     research_articles,
-    select_events,
+    curate_leads,
 )
 from utils import logger  # noqa: F401 – configure logging first
 
@@ -29,15 +29,15 @@ def run_pipeline() -> None:  # noqa: D401
     mongodb_client = MongoDBClient()
 
     # 1️⃣ Discovery
-    events = discover_events(perplexity_client)
+    events = discover_leads(perplexity_client)
 
     # 2️⃣ Deduplication
-    unique_events = deduplicate_events(
+    unique_events = deduplicate_leads(
         events, openai_client=openai_client, pinecone_client=pinecone_client
     )
 
     # 3️⃣ Decision (new step: prioritize most impactful events)
-    prioritized_events = select_events(unique_events, openai_client=openai_client)
+    prioritized_events = curate_leads(unique_events, openai_client=openai_client)
 
     # 4️⃣ Research
     articles = research_articles(
