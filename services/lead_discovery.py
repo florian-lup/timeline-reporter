@@ -24,10 +24,10 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
     Returns the combined list of events.
     """
     response_text = perplexity_client.deep_research(DISCOVERY_INSTRUCTIONS)
-    events = _parse_leads_from_response(response_text)
+    leads = _parse_leads_from_response(response_text)
 
-    logger.info("Discovered %d events", len(events))
-    return events
+    logger.info("Discovered %d leads", len(leads))
+    return leads
 
 
 # ---------------------------------------------------------------------------
@@ -36,7 +36,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 
 
 def _parse_leads_from_response(response_text: str) -> list[Lead]:
-    """Extracts JSON from the model response and maps to Event objects."""
+    """Extracts JSON from the model response and maps to Lead objects."""
     # Some models wrap JSON in markdown triple-backticks; strip them if needed.
     match = _FENCE_REGEX.search(response_text)
     json_blob = match.group(1) if match else response_text
@@ -52,7 +52,7 @@ def _parse_leads_from_response(response_text: str) -> list[Lead]:
         logger.warning("Expected JSON array, got %s", type(data))
         return []
 
-    events: list[Lead] = [
+    leads: list[Lead] = [
         Lead(context=item["context"]) for item in data
     ]
-    return events
+    return leads

@@ -29,19 +29,19 @@ def run_pipeline() -> None:  # noqa: D401
     mongodb_client = MongoDBClient()
 
     # 1️⃣ Discovery
-    events = discover_leads(perplexity_client)
+    leads = discover_leads(perplexity_client)
 
     # 2️⃣ Deduplication
-    unique_events = deduplicate_leads(
-        events, openai_client=openai_client, pinecone_client=pinecone_client
+    unique_leads = deduplicate_leads(
+        leads, openai_client=openai_client, pinecone_client=pinecone_client
     )
 
-    # 3️⃣ Decision (new step: prioritize most impactful events)
-    prioritized_events = curate_leads(unique_events, openai_client=openai_client)
+    # 3️⃣ Decision (new step: prioritize most impactful leads)
+    prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
 
     # 4️⃣ Research
     articles = research_articles(
-        prioritized_events, perplexity_client=perplexity_client
+        prioritized_leads, perplexity_client=perplexity_client
     )
 
     # 5️⃣ Storage

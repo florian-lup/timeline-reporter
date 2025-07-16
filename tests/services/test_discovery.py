@@ -31,7 +31,7 @@ class TestDiscoveryService:
         ])
 
     @pytest.fixture
-    def sample_events_with_fences(self):
+    def sample_leads_with_fences(self):
         """Sample response wrapped in markdown fences."""
         response_data = [
             {
@@ -46,12 +46,12 @@ class TestDiscoveryService:
         """Test successful event discovery."""
         mock_perplexity_client.deep_research.return_value = sample_discovery_response
 
-        events = discover_leads(mock_perplexity_client)
+        leads = discover_leads(mock_perplexity_client)
 
-        assert len(events) == 2
-        assert "Climate Summit Announced" in events[0].context
-        assert "World leaders gather" in events[0].context
-        assert "Earthquake Hits Pacific Region" in events[1].context
+        assert len(leads) == 2
+        assert "Climate Summit Announced" in leads[0].context
+        assert "World leaders gather" in leads[0].context
+        assert "Earthquake Hits Pacific Region" in leads[1].context
 
         # Verify Perplexity client was called
         mock_perplexity_client.deep_research.assert_called_once()
@@ -60,30 +60,30 @@ class TestDiscoveryService:
         """Test discovery with empty response."""
         mock_perplexity_client.deep_research.return_value = "[]"
 
-        events = discover_leads(mock_perplexity_client)
+        leads = discover_leads(mock_perplexity_client)
 
-        assert events == []
+        assert leads == []
 
     def test_discover_leads_malformed_json(self, mock_perplexity_client):
         """Test discovery with malformed JSON."""
         mock_perplexity_client.deep_research.return_value = '{"invalid": json}'
 
         with patch("services.lead_discovery.logger") as mock_logger:
-            events = discover_leads(mock_perplexity_client)
+            leads = discover_leads(mock_perplexity_client)
 
-        assert events == []
+        assert leads == []
         mock_logger.warning.assert_called()
 
     def test_discover_leads_json_with_fences(
-        self, mock_perplexity_client, sample_events_with_fences
+        self, mock_perplexity_client, sample_leads_with_fences
     ):
         """Test discovery with JSON wrapped in markdown fences."""
-        mock_perplexity_client.deep_research.return_value = sample_events_with_fences
+        mock_perplexity_client.deep_research.return_value = sample_leads_with_fences
 
-        events = discover_leads(mock_perplexity_client)
+        leads = discover_leads(mock_perplexity_client)
 
-        assert len(events) == 1
-        assert "Climate Summit Announced" in events[0].context
+        assert len(leads) == 1
+        assert "Climate Summit Announced" in leads[0].context
 
     def test_discover_leads_non_list_response(self, mock_perplexity_client):
         """Test discovery when response is not a list."""
@@ -92,9 +92,9 @@ class TestDiscoveryService:
         })
 
         with patch("services.lead_discovery.logger") as mock_logger:
-            events = discover_leads(mock_perplexity_client)
+            leads = discover_leads(mock_perplexity_client)
 
-        assert events == []
+        assert leads == []
         mock_logger.warning.assert_called_with(
             "Expected JSON array, got %s", dict
         )
@@ -108,7 +108,7 @@ class TestDiscoveryService:
 
         discover_leads(mock_perplexity_client)
 
-        mock_logger.info.assert_called_with("Discovered %d events", 2)
+        mock_logger.info.assert_called_with("Discovered %d leads", 2)
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
         """Test that discovery preserves original formatting in context."""
@@ -119,10 +119,10 @@ class TestDiscoveryService:
         ])
         mock_perplexity_client.deep_research.return_value = response_with_formatting
 
-        events = discover_leads(mock_perplexity_client)
+        leads = discover_leads(mock_perplexity_client)
 
-        assert len(events) == 1
-        assert events[0].context == "  Spaced Title  : Summary with\nnewlines and extra   spaces"  # Preserves original formatting
+        assert len(leads) == 1
+        assert leads[0].context == "  Spaced Title  : Summary with\nnewlines and extra   spaces"  # Preserves original formatting
 
     def test_discover_leads_unicode_handling(self, mock_perplexity_client):
         """Test discovery with Unicode characters."""
@@ -133,11 +133,11 @@ class TestDiscoveryService:
         ])
         mock_perplexity_client.deep_research.return_value = unicode_response
 
-        events = discover_leads(mock_perplexity_client)
+        leads = discover_leads(mock_perplexity_client)
 
-        assert len(events) == 1
-        assert "🌍" in events[0].context
-        assert "émissions" in events[0].context
+        assert len(leads) == 1
+        assert "🌍" in leads[0].context
+        assert "émissions" in leads[0].context
 
     def test_discover_leads_client_error_propagation(self, mock_perplexity_client):
         """Test that client errors are properly propagated."""
@@ -173,9 +173,9 @@ class TestDiscoveryService:
             {"context": ""}
         ])
         
-        events = _parse_leads_from_response(response_empty_strings)
-        assert len(events) == 1
-        assert events[0].context == ""
+        leads = _parse_leads_from_response(response_empty_strings)
+        assert len(leads) == 1
+        assert leads[0].context == ""
 
     def test_fence_regex_multiple_fences(self, mock_perplexity_client):
         """Test handling of multiple markdown fences."""
@@ -191,7 +191,7 @@ class TestDiscoveryService:
         '''
         mock_perplexity_client.deep_research.return_value = response_multiple_fences
 
-        events = discover_leads(mock_perplexity_client)
+        leads = discover_leads(mock_perplexity_client)
 
-        assert len(events) == 1
-        assert events[0].context == "Event 1: Summary 1"
+        assert len(leads) == 1
+        assert leads[0].context == "Event 1: Summary 1"

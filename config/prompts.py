@@ -41,8 +41,8 @@ DECISION_SYSTEM_PROMPT = (
 )
 
 DECISION_INSTRUCTIONS = (
-    "Below are deduplicated news events discovered today. Your task is to "
-    "select the most impactful stories.\n\nEvents to evaluate:\n{events}\n\n"
+    "Below are deduplicated news leads discovered today. Your task is to "
+    "select the most impactful stories.\n\nLeads to evaluate:\n{leads}\n\n"
     "Evaluation criteria (in order of importance):\n"
     "1. Global impact and significance\n"
     "2. Potential long-term consequences\n"

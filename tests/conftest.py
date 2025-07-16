@@ -76,16 +76,16 @@ def mock_mongodb_client():
 
 
 @pytest.fixture
-def sample_event():
-    """Sample Event object for testing."""
+def sample_lead():
+    """Sample Lead object for testing."""
     return Lead(
-        context="Sample Event Title: This is a sample event summary for testing purposes.",
+        context="Sample Lead Title: This is a sample lead summary for testing purposes.",
     )
 
 
 @pytest.fixture
-def sample_events():
-    """Sample list of Event objects for testing."""
+def sample_leads():
+    """Sample list of Lead objects for testing."""
     return [
         Lead(
             context="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",

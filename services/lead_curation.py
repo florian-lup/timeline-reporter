@@ -9,49 +9,49 @@ from models import Lead
 from utils import logger
 
 
-def curate_leads(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
-    """Selects the most impactful events from deduplicated list.
+def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
+    """Selects the most impactful leads from deduplicated list.
 
-    Uses AI to evaluate events based on impact, significance, and newsworthiness,
+    Uses AI to evaluate leads based on impact, significance, and newsworthiness,
     returning only the top priority stories that warrant comprehensive research.
     """
-    if not events:
-        logger.info("No events to evaluate")
+    if not leads:
+        logger.info("No leads to evaluate")
         return []
 
-    logger.info("Evaluating %d events for priority", len(events))
+    logger.info("Evaluating %d leads for priority", len(leads))
 
-    # Format events for evaluation with numbers
-    events_text = "\n".join(
+    # Format leads for evaluation with numbers
+    leads_text = "\n".join(
         [
-            f"{i + 1}. {event.context}\n"
-            for i, event in enumerate(events)
+            f"{i + 1}. {lead.context}\n"
+            for i, lead in enumerate(leads)
         ]
     )
 
     # Create decision prompt
     full_prompt = (
         f"{DECISION_SYSTEM_PROMPT}\n\n"
-        f"{DECISION_INSTRUCTIONS.format(events=events_text)}"
+        f"{DECISION_INSTRUCTIONS.format(leads=leads_text)}"
     )
 
-    # Get AI decision on most impactful events using decision model
+    # Get AI decision on most impactful leads using decision model
     response_text = openai_client.chat_completion(
         full_prompt,
         model=DECISION_MODEL,
     )
 
-    # Parse the selected event indices and filter original events
-    selected_events = _filter_leads_by_indices(response_text, events)
+    # Parse the selected lead indices and filter original leads
+    selected_leads = _filter_leads_by_indices(response_text, leads)
 
-    logger.info("Selected %d priority events", len(selected_events))
+    logger.info("Selected %d priority leads", len(selected_leads))
 
-    # Log the selected events for transparency
-    for i, event in enumerate(selected_events, 1):
-        context_preview = event.context[:50] + "..." if len(event.context) > 50 else event.context
+    # Log the selected leads for transparency
+    for i, lead in enumerate(selected_leads, 1):
+        context_preview = lead.context[:50] + "..." if len(lead.context) > 50 else lead.context
         logger.info("Priority %d: %s", i, context_preview)
 
-    return selected_events
+    return selected_leads
 
 
 # ---------------------------------------------------------------------------
@@ -60,17 +60,17 @@ def curate_leads(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lea
 
 
 def _filter_leads_by_indices(
-    response_text: str, original_events: list[Lead]
+    response_text: str, original_leads: list[Lead]
 ) -> list[Lead]:
-    """Filters original events based on selected indices from AI response."""
+    """Filters original leads based on selected indices from AI response."""
     # Extract numbers from response (handles formats like "1, 3, 5" or "2 4 7" etc.)
     numbers = re.findall(r"\b(\d+)\b", response_text)
 
     if not numbers:
         logger.warning("No valid numbers in response, using fallback")
-        return original_events[:3]
+        return original_leads[:3]
 
-    selected_events = []
+    selected_leads = []
 
     for num_str in numbers:
         try:
@@ -78,12 +78,12 @@ def _filter_leads_by_indices(
             index = int(num_str) - 1
 
             # Check if index is valid
-            if 0 <= index < len(original_events):
-                event = original_events[index]
-                selected_events.append(event)
+            if 0 <= index < len(original_leads):
+                lead = original_leads[index]
+                selected_leads.append(lead)
             else:
                 logger.warning(
-                    "Invalid event number %s (max: %d)", num_str, len(original_events)
+                    "Invalid lead number %s (max: %d)", num_str, len(original_leads)
                 )
 
         except ValueError:
@@ -91,8 +91,8 @@ def _filter_leads_by_indices(
             continue
 
     # Ensure we don't return empty list due to parsing issues
-    if not selected_events and original_events:
+    if not selected_leads and original_leads:
         logger.warning("No valid selections, using top 3 fallback")
-        return original_events[:3]
+        return original_leads[:3]
 
-    return selected_events
+    return selected_leads
