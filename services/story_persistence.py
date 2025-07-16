@@ -9,7 +9,7 @@ from utils import logger
 # ---------------------------------------------------------------------------
 
 
-def insert_articles(articles: list[Story], *, mongodb_client: MongoDBClient) -> None:
+def persist_articles(articles: list[Story], *, mongodb_client: MongoDBClient) -> None:
     """Stores articles in MongoDB."""
     for article in articles:
         article_dict = article.__dict__.copy()

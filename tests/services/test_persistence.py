@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from services import insert_articles
+from services import persist_articles
 from models import Story
 
 
@@ -34,15 +34,15 @@ class TestStorageService:
             ),
         ]
 
-    def test_insert_articles_success(self, mock_mongodb_client, sample_articles):
+    def test_persist_articles_success(self, mock_mongodb_client, sample_articles):
         """Test successful article storage."""
         mock_mongodb_client.insert_article.side_effect = [
             "60a1b2c3d4e5f6789",
             "60a1b2c3d4e5f6790",
         ]
 
-        with patch("services.article_insertion.logger") as mock_logger:
-            insert_articles(sample_articles, mongodb_client=mock_mongodb_client)
+        with patch("services.story_persistence.logger") as mock_logger:
+            persist_articles(sample_articles, mongodb_client=mock_mongodb_client)
 
         # Verify MongoDB calls
         assert mock_mongodb_client.insert_article.call_count == 2
@@ -73,15 +73,15 @@ class TestStorageService:
             "Stored article: '%s' (id=%s)", "Tech Innovation News", "60a1b2c3d4e5f6790"
         )
 
-    def test_insert_articles_empty_list(self, mock_mongodb_client):
+    def test_persist_articles_empty_list(self, mock_mongodb_client):
         """Test storage with empty article list."""
-        with patch("services.article_insertion.logger") as mock_logger:
-            insert_articles([], mongodb_client=mock_mongodb_client)
+        with patch("services.story_persistence.logger") as mock_logger:
+            persist_articles([], mongodb_client=mock_mongodb_client)
 
         mock_mongodb_client.insert_article.assert_not_called()
         mock_logger.info.assert_not_called()
 
-    def test_insert_articles_single_article(self, mock_mongodb_client):
+    def test_persist_articles_single_article(self, mock_mongodb_client):
         """Test storage with single article."""
         single_article = [
             Story(
@@ -94,19 +94,19 @@ class TestStorageService:
 
         mock_mongodb_client.insert_article.return_value = "60a1b2c3d4e5f6789"
 
-        insert_articles(single_article, mongodb_client=mock_mongodb_client)
+        persist_articles(single_article, mongodb_client=mock_mongodb_client)
 
         mock_mongodb_client.insert_article.assert_called_once()
         call_args = mock_mongodb_client.insert_article.call_args[0][0]
         assert call_args["headline"] == "Single Article"
 
-    def test_insert_articles_article_dict_conversion(
+    def test_persist_articles_article_dict_conversion(
         self, mock_mongodb_client, sample_articles
     ):
         """Test that articles are properly converted to dictionaries."""
         mock_mongodb_client.insert_article.side_effect = ["id1", "id2"]
 
-        insert_articles(sample_articles, mongodb_client=mock_mongodb_client)
+        persist_articles(sample_articles, mongodb_client=mock_mongodb_client)
 
         # Verify article conversion
         call_args = mock_mongodb_client.insert_article.call_args_list
@@ -120,7 +120,7 @@ class TestStorageService:
             assert article_dict["body"] == original_article.body
             assert article_dict["sources"] == original_article.sources
 
-    def test_insert_articles_mongodb_error_handling(
+    def test_persist_articles_mongodb_error_handling(
         self, mock_mongodb_client, sample_articles
     ):
         """Test error handling when MongoDB insertion fails."""
@@ -128,9 +128,9 @@ class TestStorageService:
 
         # Should propagate the exception
         with pytest.raises(Exception, match="Database error"):
-            insert_articles(sample_articles, mongodb_client=mock_mongodb_client)
+            persist_articles(sample_articles, mongodb_client=mock_mongodb_client)
 
-    def test_insert_articles_with_unicode_content(self, mock_mongodb_client):
+    def test_persist_articles_with_unicode_content(self, mock_mongodb_client):
         """Test storage with unicode characters."""
         unicode_article = [
             Story(
@@ -143,14 +143,14 @@ class TestStorageService:
 
         mock_mongodb_client.insert_article.return_value = "unicode_id"
 
-        insert_articles(unicode_article, mongodb_client=mock_mongodb_client)
+        persist_articles(unicode_article, mongodb_client=mock_mongodb_client)
 
         call_args = mock_mongodb_client.insert_article.call_args[0][0]
         assert "🌍" in call_args["headline"]
         assert "émissions" in call_args["summary"]
         assert "København" in call_args["body"]
 
-    def test_insert_articles_large_batch(self, mock_mongodb_client):
+    def test_persist_articles_large_batch(self, mock_mongodb_client):
         """Test storage with large number of articles."""
         large_batch = [
             Story(
@@ -166,7 +166,7 @@ class TestStorageService:
             f"id{i}" for i in range(100)
         ]
 
-        insert_articles(large_batch, mongodb_client=mock_mongodb_client)
+        persist_articles(large_batch, mongodb_client=mock_mongodb_client)
 
         # Verify all articles were processed
         assert mock_mongodb_client.insert_article.call_count == 100

@@ -10,7 +10,7 @@ from utils import logger
 from utils.date import get_today_formatted
 
 
-def research_articles(
+def research_story(
     leads: list[Lead], *, perplexity_client: PerplexityClient
 ) -> list[Story]:
     """Calls Perplexity once per lead to generate full articles."""
@@ -21,7 +21,7 @@ def research_articles(
             event_summary=lead.context, event_date=lead.date
         )
         response_text = perplexity_client.research(prompt)
-        article = _parse_article_from_response(response_text)
+        article = _parse_story_from_response(response_text)
         articles.append(article)
 
     logger.info("Generated %d articles", len(articles))
@@ -33,7 +33,7 @@ def research_articles(
 # ---------------------------------------------------------------------------
 
 
-def _parse_article_from_response(response_text: str) -> Story:
+def _parse_story_from_response(response_text: str) -> Story:
     """Parse JSON from Perplexity and return a Story object."""
     # Some models wrap JSON in markdown triple-backticks; strip them if needed.
     fence_regex = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)

@@ -8,8 +8,8 @@ This package provides the core pipeline services:
 - Storage: Saving articles to MongoDB
 """
 
-from .article_insertion import insert_articles
-from .article_research import research_articles
+from .story_persistence import persist_articles
+from .story_research import research_story
 from .lead_deduplication import deduplicate_leads
 from .lead_discovery import discover_leads
 from .lead_curation import curate_leads
@@ -19,6 +19,6 @@ __all__ = [
     "discover_leads",
     "deduplicate_leads",
     "curate_leads",
-    "research_articles",
-    "insert_articles",
+    "research_story",
+    "persist_articles",
 ]

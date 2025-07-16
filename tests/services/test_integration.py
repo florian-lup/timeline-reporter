@@ -8,8 +8,8 @@ import pytest
 from services import (
     deduplicate_leads,
     discover_leads,
-    insert_articles,
-    research_articles,
+    persist_articles,
+    research_story,
     curate_leads,
 )
 from models import Lead, Story
@@ -99,10 +99,10 @@ class TestServicesIntegration:
             prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
-            articles = research_articles(
+            articles = research_story(
                 prioritized_events, perplexity_client=mock_clients["perplexity"]
             )
-            insert_articles(articles, mongodb_client=mock_clients["mongodb"])
+            persist_articles(articles, mongodb_client=mock_clients["mongodb"])
 
         # Verify pipeline flow
         assert len(events) == 2
@@ -217,12 +217,12 @@ class TestServicesIntegration:
             prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
-            articles = research_articles(
+            articles = research_story(
                 prioritized_events, perplexity_client=mock_clients["perplexity"]
             )
 
             # Store final articles
-            insert_articles(articles, mongodb_client=mock_clients["mongodb"])
+            persist_articles(articles, mongodb_client=mock_clients["mongodb"])
 
         # Verify data transformations
         # Lead -> Lead (deduplication preserves structure)
@@ -278,7 +278,7 @@ class TestServicesIntegration:
             prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
-            articles = research_articles(
+            articles = research_story(
                 prioritized_events, perplexity_client=mock_clients["perplexity"]
             )
 

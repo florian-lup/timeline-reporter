@@ -11,8 +11,8 @@ from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClien
 from services import (
     deduplicate_leads,
     discover_leads,
-    insert_articles,
-    research_articles,
+    persist_articles,
+    research_story,
     curate_leads,
 )
 from utils import logger  # noqa: F401 – configure logging first
@@ -40,12 +40,12 @@ def run_pipeline() -> None:  # noqa: D401
     prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
 
     # 4️⃣ Research
-    articles = research_articles(
+    articles = research_story(
         prioritized_leads, perplexity_client=perplexity_client
     )
 
     # 5️⃣ Storage
-    insert_articles(articles, mongodb_client=mongodb_client)
+    persist_articles(articles, mongodb_client=mongodb_client)
 
     logger.info(
         "Pipeline complete: %d articles stored",

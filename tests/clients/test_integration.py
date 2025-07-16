@@ -206,7 +206,7 @@ class TestClientIntegration:
             mock_collection.insert_one.return_value = mock_result
 
             # Execute full pipeline
-            from services import research_articles
+            from services import research_story
             from models import Lead
 
             perplexity_client = PerplexityClient()
@@ -214,7 +214,7 @@ class TestClientIntegration:
 
             # 1. Research phase
             test_events = [Lead(context="Breaking News: Important event")]
-            articles = research_articles(
+            articles = research_story(
                 test_events, perplexity_client=perplexity_client
             )
 
