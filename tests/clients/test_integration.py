@@ -213,7 +213,7 @@ class TestClientIntegration:
             mongodb_client = MongoDBClient()
 
             # 1. Research phase
-            test_events = [Lead(title="Breaking News", summary="Important event")]
+            test_events = [Lead(context="Breaking News: Important event")]
             articles = research_articles(
                 test_events, perplexity_client=perplexity_client
             )

@@ -7,6 +7,7 @@ from clients import PerplexityClient
 from config import RESEARCH_INSTRUCTIONS
 from models import Lead, Story
 from utils import logger
+from utils.date import get_today_formatted
 
 
 def research_articles(
@@ -17,7 +18,7 @@ def research_articles(
 
     for event in events:
         prompt = RESEARCH_INSTRUCTIONS.format(
-            event_summary=event.summary, event_date=event.date
+            event_summary=event.context, event_date=event.date
         )
         response_text = perplexity_client.research(prompt)
         article = _parse_article_from_response(response_text)
@@ -31,29 +32,31 @@ def research_articles(
 # Helpers
 # ---------------------------------------------------------------------------
 
-_FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
-
 
 def _parse_article_from_response(response_text: str) -> Story:
-    """Parses the JSON (with optional fences) returned by Perplexity."""
-    # Ideally no fences due to structured output, but guard just in case
-    match = _FENCE_REGEX.search(response_text)
-    json_str = match.group(1) if match else response_text
+    """Parse JSON from Perplexity and return a Story object."""
+    # Some models wrap JSON in markdown triple-backticks; strip them if needed.
+    fence_regex = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
+    match = fence_regex.search(response_text)
+    json_blob = match.group(1) if match else response_text
 
     try:
-        data = json.loads(json_str)
+        data = json.loads(json_blob)
     except json.JSONDecodeError as exc:  # pragma: no cover
-        logger.warning("Article JSON parse failed: %s", exc)
-        data = {
-            "headline": "",
-            "summary": "",
-            "body": response_text,
-            "sources": [],
-        }
+        logger.warning("JSON parse failed: %s", exc)
+        # Return a minimal Story with empty content
+        return Story(
+            headline="",
+            summary="",
+            body="",
+            sources=[],
+        )
 
+    # Create Story from the JSON data, with fallbacks for missing fields
     return Story(
-        headline=data.get("headline", "") or "",
-        summary=data.get("summary", "") or "",
-        body=data.get("body", "") or "",
-        sources=data.get("sources", []) or [],
+        headline=data.get("headline", ""),
+        summary=data.get("summary", ""),
+        body=data.get("body", ""),
+        sources=data.get("sources", []),
+        date=data.get("date", get_today_formatted()),  # Use date from JSON or default
     )

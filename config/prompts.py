@@ -23,8 +23,9 @@ DISCOVERY_INSTRUCTIONS = (
     f"{get_today_formatted()}. Focus on major global developments, breaking "
     "news, and important updates that would be of interest to a general "
     "audience. Return your findings as a JSON array of events, where each "
-    "event has 'title' and 'summary' fields. Example format: "
-    '[{"title": "Event Title", "summary": "Brief description..."}]'
+    "event has a 'context' field containing a comprehensive paragraph "
+    "explaining the lead with all key details and implications. Example format: "
+    '[{"context": "Comprehensive paragraph describing the event, its significance, and key details..."}]'
 )
 
 # ---------------------------------------------------------------------------

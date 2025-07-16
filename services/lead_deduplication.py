@@ -17,22 +17,21 @@ def deduplicate_leads(
 ) -> list[Lead]:
     """Removes near-duplicate events based on vector similarity.
 
-    Each *event*'s summary is embedded and compared against existing vectors in
+    Each *event*'s context is embedded and compared against existing vectors in
     Pinecone. Anything with a similarity ≥ threshold is dropped.
     """
     unique_events: list[Lead] = []
 
     for idx, event in enumerate(events):
-        # Create embedding
-        text_for_embedding = event.title + "\n" + event.summary
-        vector = openai_client.embed_text(text_for_embedding)
+        # Create embedding from the context
+        vector = openai_client.embed_text(event.context)
 
         # Query for similar existing events
         matches = pinecone_client.similarity_search(vector)
         if matches:
             logger.info(
                 "Skipping duplicate: '%s' (similarity: %.2f)",
-                event.title,
+                event.context[:50] + "..." if len(event.context) > 50 else event.context,
                 matches[0][1],
             )
             continue
@@ -43,8 +42,7 @@ def deduplicate_leads(
             vector_id,
             vector,
             metadata={
-                "title": event.title,
-                "summary": event.summary,
+                "context": event.context,
                 "date": event.date,
             },
         )

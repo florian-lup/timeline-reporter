@@ -24,7 +24,7 @@ def curate_leads(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lea
     # Format events for evaluation with numbers
     events_text = "\n".join(
         [
-            f"{i + 1}. Title: {event.title}\n   Summary: {event.summary}\n"
+            f"{i + 1}. {event.context}\n"
             for i, event in enumerate(events)
         ]
     )
@@ -48,7 +48,8 @@ def curate_leads(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lea
 
     # Log the selected events for transparency
     for i, event in enumerate(selected_events, 1):
-        logger.info("Priority %d: %s", i, event.title)
+        context_preview = event.context[:50] + "..." if len(event.context) > 50 else event.context
+        logger.info("Priority %d: %s", i, context_preview)
 
     return selected_events
 

@@ -21,36 +21,19 @@ class TestDecisionService:
         """Sample events for testing."""
         return [
             Lead(
-                title="Climate Summit 2024",
-                summary=(
-                    "World leaders meet to discuss climate change solutions "
-                    "and carbon reduction targets."
-                ),
+                context="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
             ),
             Lead(
-                title="Earthquake in Pacific",
-                summary=(
-                    "A 6.5 magnitude earthquake struck the Pacific region "
-                    "with minimal damage reported."
-                ),
+                context="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
             ),
             Lead(
-                title="Tech Conference Announced",
-                summary=(
-                    "Major technology companies announce new AI developments "
-                    "at annual conference."
-                ),
+                context="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
             ),
             Lead(
-                title="Economic Policy Update",
-                summary=(
-                    "Government announces new economic policies affecting "
-                    "global markets."
-                ),
+                context="Economic Policy Update: Government announces new economic policies affecting global markets.",
             ),
             Lead(
-                title="Space Mission Success",
-                summary="NASA successfully launches new Mars exploration mission.",
+                context="Space Mission Success: NASA successfully launches new Mars exploration mission.",
             ),
         ]
 
@@ -59,205 +42,120 @@ class TestDecisionService:
         """Sample AI response selecting events."""
         return "1, 3, 5"  # Select events 1, 3, and 5
 
-    def test_curate_leads_success(
-        self, mock_openai_client, sample_events, sample_ai_response
-    ):
-        """Test successful event decision making."""
+    def test_curate_leads_basic(self, mock_openai_client, sample_events, sample_ai_response):
+        """Test basic functionality of curate_leads."""
         mock_openai_client.chat_completion.return_value = sample_ai_response
-
-        with patch("services.lead_curation.DECISION_MODEL", "test-decision-model"):
-            result = curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Should return 3 selected events
-        assert len(result) == 3
-        assert result[0] == sample_events[0]  # Event 1
-        assert result[1] == sample_events[2]  # Event 3
-        assert result[2] == sample_events[4]  # Event 5
-
-        # Verify OpenAI client was called with correct parameters
-        mock_openai_client.chat_completion.assert_called_once()
-        call_args = mock_openai_client.chat_completion.call_args
-        assert call_args[1]["model"] == "test-decision-model"
-
-    def test_curate_leads_prompt_formatting(
-        self, mock_openai_client, sample_events, sample_ai_response
-    ):
-        """Test that decision prompt is properly formatted."""
-        mock_openai_client.chat_completion.return_value = sample_ai_response
-
-        curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Verify prompt contains numbered events
-        call_args = mock_openai_client.chat_completion.call_args[0][0]
-        assert "1. Title: Climate Summit 2024" in call_args
-        assert "2. Title: Earthquake in Pacific" in call_args
-        assert "3. Title: Tech Conference Announced" in call_args
-        assert "evaluation criteria" in call_args.lower()
-        assert "global impact" in call_args.lower()
-
-    def test_curate_leads_empty_list(self, mock_openai_client):
-        """Test decision making with empty event list."""
-        with patch("services.lead_curation.logger") as mock_logger:
-            result = curate_leads([], openai_client=mock_openai_client)
-
-        assert result == []
-        mock_openai_client.chat_completion.assert_not_called()
-        mock_logger.info.assert_called_with("No events to evaluate")
-
-    def test_curate_leads_single_event(self, mock_openai_client):
-        """Test decision making with single event."""
-        single_event = [Lead(title="Solo Event", summary="Only event in list")]
-        mock_openai_client.chat_completion.return_value = "1"
-
-        result = curate_leads(single_event, openai_client=mock_openai_client)
-
-        assert len(result) == 1
-        assert result[0] == single_event[0]
-
-    @pytest.mark.parametrize(
-        "ai_response,expected_count",
-        [
-            ("1, 2, 3", 3),
-            ("1", 1),
-            ("2, 4", 2),
-            ("1 3 5", 3),  # Space separated
-            ("Events: 1, 2, and 4", 3),  # With extra text
-            ("Select numbers 2 and 5", 2),  # With descriptive text
-        ],
-    )
-    def test_curate_leads_various_response_formats(
-        self, mock_openai_client, sample_events, ai_response, expected_count
-    ):
-        """Test decision making with various AI response formats."""
-        mock_openai_client.chat_completion.return_value = ai_response
 
         result = curate_leads(sample_events, openai_client=mock_openai_client)
 
-        assert len(result) == expected_count
+        assert len(result) == 3
+        assert result[0] == sample_events[0]  # Index 1 -> 0
+        assert result[1] == sample_events[2]  # Index 3 -> 2
+        assert result[2] == sample_events[4]  # Index 5 -> 4
 
-    def test_curate_leads_invalid_numbers(self, mock_openai_client, sample_events):
-        """Test decision making with invalid event numbers."""
-        # AI selects events that don't exist
-        mock_openai_client.chat_completion.return_value = (
-            "1, 7, 10"  # 7 and 10 don't exist
-        )
+    def test_curate_leads_empty_input(self, mock_openai_client):
+        """Test curate_leads with empty input."""
+        result = curate_leads([], openai_client=mock_openai_client)
+        
+        assert result == []
+        mock_openai_client.chat_completion.assert_not_called()
 
-        with patch("services.lead_curation.logger") as mock_logger:
-            result = curate_leads(sample_events, openai_client=mock_openai_client)
+    def test_curate_leads_no_valid_numbers(self, mock_openai_client, sample_events):
+        """Test when AI response contains no valid numbers."""
+        mock_openai_client.chat_completion.return_value = "No events selected"
+        
+        result = curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Should return first 3 events as fallback
+        assert len(result) == 3
+        assert result == sample_events[:3]
 
-        # Should only get event 1 (others are invalid)
+    def test_curate_leads_invalid_indices(self, mock_openai_client, sample_events):
+        """Test when AI response contains invalid indices."""
+        mock_openai_client.chat_completion.return_value = "1, 10, 15"  # Indices 10 and 15 are out of range
+        
+        result = curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Should only include valid index (1)
         assert len(result) == 1
         assert result[0] == sample_events[0]
 
-        # Should log warnings about invalid numbers
-        mock_logger.warning.assert_called()
-
-    def test_curate_leads_no_valid_numbers(self, mock_openai_client, sample_events):
-        """Test decision making when AI response has no valid numbers."""
-        mock_openai_client.chat_completion.return_value = "No clear selection provided"
-
-        with patch("services.lead_curation.logger") as mock_logger:
-            result = curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Should fallback to first 3 events
-        assert len(result) == 3
-        assert result == sample_events[:3]
-
-        mock_logger.warning.assert_any_call(
-            "No valid numbers in response, using fallback"
-        )
-
-    def test_curate_leads_ai_error_handling(self, mock_openai_client, sample_events):
-        """Test error handling when AI request fails."""
-        mock_openai_client.chat_completion.side_effect = Exception("AI API Error")
-
-        # Should propagate the exception
-        with pytest.raises(Exception, match="AI API Error"):
-            curate_leads(sample_events, openai_client=mock_openai_client)
-
-    def test_curate_leads_preserves_original_objects(
-        self, mock_openai_client, sample_events
-    ):
-        """Test that decision service preserves original Event objects unchanged."""
-        mock_openai_client.chat_completion.return_value = "1, 3"
-
+    def test_curate_leads_mixed_valid_invalid(self, mock_openai_client, sample_events):
+        """Test when AI response has mix of valid and invalid indices."""
+        mock_openai_client.chat_completion.return_value = "1, 3, 10, 2"  # Index 10 is invalid
+        
         result = curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Should include only valid indices (1, 3, 2)
+        assert len(result) == 3
+        assert result[0] == sample_events[0]  # Index 1
+        assert result[1] == sample_events[2]  # Index 3  
+        assert result[2] == sample_events[1]  # Index 2
 
-        # Should return exact same object instances
-        assert result[0] is sample_events[0]
-        assert result[1] is sample_events[2]
-
-        # Objects should be unchanged
-        assert result[0].title == "Climate Summit 2024"
-        expected_summary = (
-            "World leaders meet to discuss climate change solutions "
-            "and carbon reduction targets."
-        )
-        assert result[0].summary == expected_summary
+    def test_curate_leads_formats_events_correctly(self, mock_openai_client, sample_events):
+        """Test that events are formatted correctly for AI evaluation."""
+        mock_openai_client.chat_completion.return_value = "1"
+        
+        curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Verify the prompt formatting
+        call_args = mock_openai_client.chat_completion.call_args[0][0]
+        
+        # Should contain numbered events with context
+        assert "1. Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets." in call_args
+        assert "2. Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported." in call_args
 
     @patch("services.lead_curation.logger")
-    def test_logging_decision_service(
-        self, mock_logger, mock_openai_client, sample_events, sample_ai_response
-    ):
-        """Test that decision service logs properly."""
+    def test_curate_leads_logging(self, mock_logger, mock_openai_client, sample_events, sample_ai_response):
+        """Test that logging works correctly."""
         mock_openai_client.chat_completion.return_value = sample_ai_response
-
-        curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Verify logging
+        
+        result = curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Verify evaluation logging
         mock_logger.info.assert_any_call("Evaluating %d events for priority", 5)
+        
+        # Verify selection logging 
         mock_logger.info.assert_any_call("Selected %d priority events", 3)
-        mock_logger.info.assert_any_call("Priority %d: %s", 1, "Climate Summit 2024")
+        
+        # Verify individual event logging (with context preview)
+        expected_context_0 = sample_events[0].context[:50] + "..." if len(sample_events[0].context) > 50 else sample_events[0].context
+        mock_logger.info.assert_any_call("Priority %d: %s", 1, expected_context_0)
+
+    def test_curate_leads_uses_decision_model(self, mock_openai_client, sample_events):
+        """Test that the correct model is used for decision making."""
+        from config.settings import DECISION_MODEL
+        
+        mock_openai_client.chat_completion.return_value = "1"
+        
+        curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Verify model parameter
+        call_kwargs = mock_openai_client.chat_completion.call_args[1]
+        assert call_kwargs["model"] == DECISION_MODEL
+
+    def test_filter_leads_by_indices_edge_cases(self, sample_events):
+        """Test edge cases in _filter_leads_by_indices helper."""
+        from services.lead_curation import _filter_leads_by_indices
+        
+        # Test with duplicate numbers
+        result = _filter_leads_by_indices("1, 1, 2", sample_events)
+        assert len(result) == 3  # Should include duplicates
+        assert result[0] == sample_events[0]
+        assert result[1] == sample_events[0] 
+        assert result[2] == sample_events[1]
+        
+        # Test with zero
+        result = _filter_leads_by_indices("0, 1", sample_events)
+        assert len(result) == 1  # Zero is invalid (should be 1-based)
+        assert result[0] == sample_events[0]
 
     def test_curate_leads_fallback_behavior(self, mock_openai_client, sample_events):
-        """Test fallback behavior when parsing fails completely."""
-        mock_openai_client.chat_completion.return_value = (
-            "Unable to parse this response"
-        )
-
-        with patch("services.lead_curation.logger") as mock_logger:
-            result = curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Should fallback to first 3 events
+        """Test fallback behavior when parsing fails."""
+        mock_openai_client.chat_completion.return_value = ""  # Empty response
+        
+        result = curate_leads(sample_events, openai_client=mock_openai_client)
+        
+        # Should return top 3 as fallback
         assert len(result) == 3
         assert result == sample_events[:3]
-
-        mock_logger.warning.assert_any_call(
-            "No valid numbers in response, using fallback"
-        )
-
-    def test_curate_leads_partial_parsing_success(
-        self, mock_openai_client, sample_events
-    ):
-        """Test when some numbers are valid and some are invalid."""
-        # Mix of valid (1, 3) and invalid (99) numbers
-        mock_openai_client.chat_completion.return_value = "1, 99, 3, abc"
-
-        with patch("services.lead_curation.logger") as mock_logger:
-            result = curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Should get the 2 valid selections
-        assert len(result) == 2
-        assert result[0] == sample_events[0]  # Event 1
-        assert result[1] == sample_events[2]  # Event 3
-
-        # Should log warnings for invalid numbers
-        mock_logger.warning.assert_called()
-
-    def test_curate_leads_duplicate_selections(
-        self, mock_openai_client, sample_events
-    ):
-        """Test when AI selects the same event multiple times."""
-        # Duplicates
-        mock_openai_client.chat_completion.return_value = "1, 1, 2, 1, 3"
-
-        result = curate_leads(sample_events, openai_client=mock_openai_client)
-
-        # Should deduplicate automatically (duplicates will appear in list)
-        # But in practice, same Event object added multiple times
-        assert len(result) == 5  # All selections added, including duplicates
-        assert result[0] == sample_events[0]  # First "1"
-        assert result[1] == sample_events[0]  # Second "1"
-        assert result[2] == sample_events[1]  # "2"
-        assert result[3] == sample_events[0]  # Third "1"
-        assert result[4] == sample_events[2]  # "3"

@@ -53,6 +53,6 @@ def _parse_leads_from_response(response_text: str) -> list[Lead]:
         return []
 
     events: list[Lead] = [
-        Lead(title=item["title"], summary=item["summary"]) for item in data
+        Lead(context=item["context"]) for item in data
     ]
     return events

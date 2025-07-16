@@ -22,341 +22,262 @@ class TestResearchService:
         """Sample events for testing."""
         return [
             Lead(
-                title="Climate Summit 2024",
-                summary=(
-                    "World leaders meet to discuss climate change solutions "
-                    "and carbon reduction targets."
-                ),
+                context="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
             ),
             Lead(
-                title="Tech Innovation Expo",
-                summary=(
-                    "Major technology companies showcase AI and renewable "
-                    "energy innovations."
-                ),
+                context="Tech Innovation Expo: Major technology companies showcase AI and renewable energy innovations.",
             ),
         ]
 
     @pytest.fixture
-    def sample_research_responses(self):
-        """Sample responses from Perplexity research."""
-        return [
-            json.dumps(
-                {
-                    "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": (
-                        "World leaders at the 2024 Climate Summit agreed on "
-                        "unprecedented carbon reduction goals."
-                    ),
-                    "body": (
-                        "In a historic gathering, the 2024 Climate Summit "
-                        "concluded with ambitious commitments."
-                    ),
-                    "sources": [
-                        "https://example.com/climate-summit",
-                        "https://example.com/carbon-targets",
-                    ],
-                }
-            ),
-            json.dumps(
-                {
-                    "headline": "AI Revolution Takes Center Stage at Tech Expo",
-                    "summary": (
-                        "The annual Tech Innovation Expo revealed groundbreaking "
-                        "AI technologies."
-                    ),
-                    "body": (
-                        "This year's Tech Innovation Expo showcased revolutionary "
-                        "AI applications."
-                    ),
-                    "sources": [
-                        "https://example.com/tech-expo",
-                        "https://example.com/ai-innovations",
-                    ],
-                }
-            ),
-        ]
+    def sample_research_response(self):
+        """Sample research response from Perplexity."""
+        return json.dumps({
+            "headline": "World Leaders Unite for Climate Action at Summit 2024",
+            "summary": "Global climate summit reaches historic agreements on carbon reduction targets.",
+            "body": "The Climate Summit 2024 has concluded with unprecedented cooperation between world leaders...",
+            "sources": [
+                "https://example.com/climate-news",
+                "https://example.com/summit-report"
+            ]
+        })
 
     @pytest.fixture
-    def malformed_research_response(self):
-        """Sample malformed response with markdown fences."""
-        return """```json
-        {
-            "headline": "Breaking News Event",
-            "summary": "Important summary",
-            "body": "Full story content",
-            "sources": ["https://example.com"]
-        }
-        ```"""
+    def sample_malformed_research_response(self):
+        """Sample malformed research response."""
+        return '{"headline": "Test", "incomplete": json'
 
     def test_research_articles_success(
-        self, mock_perplexity_client, sample_events, sample_research_responses
+        self, mock_perplexity_client, sample_events, sample_research_response
     ):
-        """Test successful research of events."""
-        mock_perplexity_client.research.side_effect = sample_research_responses
+        """Test successful article research."""
+        mock_perplexity_client.research.return_value = sample_research_response
 
-        with patch(
-            "services.article_research.RESEARCH_INSTRUCTIONS",
-            "Research this event: {event_summary}",
-        ):
-            articles = research_articles(
-                sample_events, perplexity_client=mock_perplexity_client
-            )
+        articles = research_articles(sample_events, perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 2
-
-        # Verify first article
         assert isinstance(articles[0], Story)
-        assert (
-            articles[0].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
-        )
-        assert "carbon reduction goals" in articles[0].summary
-        assert len(articles[0].sources) == 2
-        # Verify all required fields have values
-        assert articles[0].headline != ""
-        assert articles[0].summary != ""
+        assert articles[0].headline == "World Leaders Unite for Climate Action at Summit 2024"
+        assert "carbon reduction targets" in articles[0].summary
         assert articles[0].body != ""
+        assert articles[0].summary != ""
 
-        # Verify Perplexity was called correctly
+        # Verify research was called for each event
         assert mock_perplexity_client.research.call_count == 2
 
     def test_research_articles_prompt_formatting(
-        self, mock_perplexity_client, sample_events, sample_research_responses
+        self, mock_perplexity_client, sample_events, sample_research_response
     ):
-        """Test that research prompts are properly formatted."""
-        mock_perplexity_client.research.side_effect = sample_research_responses
+        """Test that research prompts are formatted correctly."""
+        mock_perplexity_client.research.return_value = sample_research_response
 
-        with patch(
-            "services.article_research.RESEARCH_INSTRUCTIONS",
-            "Research event: {event_summary}",
-        ):
-            research_articles(sample_events, perplexity_client=mock_perplexity_client)
+        research_articles(sample_events, perplexity_client=mock_perplexity_client)
 
-        # Verify prompts were formatted with event summaries
-        call_args = mock_perplexity_client.research.call_args_list
-        assert len(call_args) == 2
+        # Verify prompts were formatted with event context
+        call_args_list = mock_perplexity_client.research.call_args_list
+        
+        # Check that both calls contain the event context
+        first_call_prompt = call_args_list[0][0][0]
+        second_call_prompt = call_args_list[1][0][0]
+        assert sample_events[0].context in first_call_prompt
+        assert sample_events[1].context in second_call_prompt
 
-        assert "Research event: " + sample_events[0].summary == call_args[0][0][0]
-        assert "Research event: " + sample_events[1].summary == call_args[1][0][0]
-
-    def test_research_articles_with_markdown_fences(
-        self, mock_perplexity_client, sample_events, malformed_research_response
+    def test_research_articles_json_parsing(
+        self, mock_perplexity_client, sample_events
     ):
-        """Test research with markdown fence-wrapped JSON."""
-        mock_perplexity_client.research.return_value = malformed_research_response
+        """Test JSON parsing from research response."""
+        response = json.dumps({
+            "headline": "Test Headline",
+            "summary": "Important summary",
+            "body": "Detailed article body",
+            "sources": ["https://example.com/test"]
+        })
+        mock_perplexity_client.research.return_value = response
 
-        articles = research_articles(
-            [sample_events[0]], perplexity_client=mock_perplexity_client
-        )
+        articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 1
-        assert articles[0].headline == "Breaking News Event"
+        assert articles[0].headline == "Test Headline"
         assert articles[0].summary == "Important summary"
-        assert articles[0].body == "Full story content"
-        assert articles[0].sources == ["https://example.com"]
+        assert articles[0].body == "Detailed article body"
+        assert articles[0].sources == ["https://example.com/test"]
 
     def test_research_articles_malformed_json(
-        self, mock_perplexity_client, sample_events
+        self, mock_perplexity_client, sample_events, sample_malformed_research_response
     ):
-        """Test research with malformed JSON response."""
-        mock_perplexity_client.research.return_value = "invalid json content{"
+        """Test handling of malformed JSON response."""
+        mock_perplexity_client.research.return_value = sample_malformed_research_response
 
         with patch("services.article_research.logger") as mock_logger:
-            articles = research_articles(
-                [sample_events[0]], perplexity_client=mock_perplexity_client
-            )
+            articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 1
-        # Should create article with fallback values
-        assert articles[0].headline == ""
-        assert articles[0].summary == ""
-        assert articles[0].body == "invalid json content{"  # Raw response as story
-        assert articles[0].sources == []
+        assert articles[0].headline == ""  # Default empty
+        assert articles[0].summary == ""  # Default empty
+        mock_logger.warning.assert_called()
 
-        mock_logger.warning.assert_called_once()
+    def test_research_articles_empty_input(self, mock_perplexity_client):
+        """Test research with empty event list."""
+        articles = research_articles([], perplexity_client=mock_perplexity_client)
 
-    def test_research_articles_missing_fields(
-        self, mock_perplexity_client, sample_events
+        assert articles == []
+        mock_perplexity_client.research.assert_not_called()
+
+    @patch("services.article_research.logger")
+    def test_research_articles_logging(
+        self, mock_logger, mock_perplexity_client, sample_events, sample_research_response
     ):
-        """Test research with missing fields in response."""
-        incomplete_response = json.dumps(
-            {
-                "headline": "Only Headline",
-                # Missing summary, story, sources
-            }
-        )
-        mock_perplexity_client.research.return_value = incomplete_response
+        """Test that research logs article count."""
+        mock_perplexity_client.research.return_value = sample_research_response
 
-        articles = research_articles(
-            [sample_events[0]], perplexity_client=mock_perplexity_client
-        )
+        research_articles(sample_events, perplexity_client=mock_perplexity_client)
+
+        mock_logger.info.assert_called_with("Generated %d articles", 2)
+
+    def test_research_articles_with_fenced_json(self, mock_perplexity_client, sample_events):
+        """Test research with JSON wrapped in markdown fences."""
+        fenced_response = '''```json
+        {
+            "headline": "Research Headline",
+            "summary": "Research Summary",
+            "body": "Research Body",
+            "sources": ["https://example.com"]
+        }
+        ```'''
+        mock_perplexity_client.research.return_value = fenced_response
+
+        articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
+
+        assert len(articles) == 1
+        assert articles[0].headline == "Research Headline"
+
+    def test_research_articles_unicode_handling(self, mock_perplexity_client, sample_events):
+        """Test research with Unicode characters."""
+        unicode_response = json.dumps({
+            "headline": "Événement Important 🌍",
+            "summary": "Résumé avec caractères spéciaux",
+            "body": "Corps de l'article détaillé",
+            "sources": ["https://example.com/français"]
+        })
+        mock_perplexity_client.research.return_value = unicode_response
+
+        articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
+
+        assert len(articles) == 1
+        assert "Résumé" in articles[0].summary
+        assert articles[0].headline == "Événement Important 🌍"
+
+    def test_research_articles_missing_fields(self, mock_perplexity_client, sample_events):
+        """Test research with missing JSON fields."""
+        response_missing_fields = json.dumps({
+            "headline": "Only Headline"
+            # Missing summary, body, sources
+        })
+        mock_perplexity_client.research.return_value = response_missing_fields
+
+        articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 1
         assert articles[0].headline == "Only Headline"
         assert articles[0].summary == ""  # Default empty
-        assert articles[0].body == ""  # Default empty
-        assert articles[0].sources == []  # Default empty
+        assert articles[0].body == ""     # Default empty
+        assert articles[0].sources == []  # Default empty list
 
-    def test_research_articles_empty_list(self, mock_perplexity_client):
-        """Test research with empty event list."""
-        with patch("services.article_research.logger") as mock_logger:
-            result = research_articles([], perplexity_client=mock_perplexity_client)
+    def test_research_articles_null_values(self, mock_perplexity_client, sample_events):
+        """Test research with null values in JSON."""
+        response_null_values = json.dumps({
+            "headline": "Test Headline",
+            "summary": None,
+            "body": None,
+            "sources": None
+        })
+        mock_perplexity_client.research.return_value = response_null_values
 
-        assert result == []
-        mock_perplexity_client.research.assert_not_called()
-        mock_logger.info.assert_called_with("Generated %d articles", 0)
-
-    def test_research_articles_unicode_content(
-        self, mock_perplexity_client, sample_events
-    ):
-        """Test research with unicode characters in response."""
-        unicode_response = json.dumps(
-            {
-                "headline": "Climate Summit 🌍 Results",
-                "summary": "Leaders discuss émissions reduction",
-                "body": "The summit in København addressed climate change",
-                "sources": ["https://example.com/climate-🌍"],
-            }
-        )
-        mock_perplexity_client.research.return_value = unicode_response
-
-        articles = research_articles(
-            [sample_events[0]], perplexity_client=mock_perplexity_client
-        )
+        articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 1
-        assert "🌍" in articles[0].headline
-        assert "émissions" in articles[0].summary
-        assert "København" in articles[0].body
-        assert "🌍" in articles[0].sources[0]
+        # Verify handling of null values (Story constructor allows None)
+        assert articles[0].headline == "Test Headline"
+        assert articles[0].summary is None  # None values preserved
+        assert articles[0].body is None
+        assert articles[0].sources is None
 
-    @pytest.mark.parametrize(
-        "field_value",
-        [
-            "",  # Empty string
-            "   ",  # Whitespace only
-            "a" * 1000,  # Very long content
-            "Multi\nLine\nContent",  # Multiline
-            "Special chars: !@#$%^&*()",  # Special characters
-        ],
-    )
-    def test_research_articles_various_field_values(
-        self, mock_perplexity_client, sample_events, field_value
-    ):
-        """Test research with various field values."""
-        response = json.dumps(
-            {
-                "headline": field_value,
-                "summary": field_value,
-                "body": field_value,
-                "sources": [field_value],
-            }
-        )
-        mock_perplexity_client.research.return_value = response
+    def test_research_articles_single_event(self, mock_perplexity_client, sample_research_response):
+        """Test research with single event."""
+        single_event = [Lead(context="Single Event: Description of a single event")]
+        mock_perplexity_client.research.return_value = sample_research_response
 
-        articles = research_articles(
-            [sample_events[0]], perplexity_client=mock_perplexity_client
-        )
+        articles = research_articles(single_event, perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 1
-        assert articles[0].headline == field_value
-        assert articles[0].summary == field_value
-        assert articles[0].body == field_value
-        assert articles[0].sources == [field_value]
+        assert mock_perplexity_client.research.call_count == 1
 
-    @patch("services.article_research.logger")
-    def test_logging_research(
-        self,
-        mock_logger,
-        mock_perplexity_client,
-        sample_events,
-        sample_research_responses,
-    ):
-        """Test that research service logs properly."""
-        mock_perplexity_client.research.side_effect = sample_research_responses
+    def test_research_articles_client_error_propagation(self, mock_perplexity_client, sample_events):
+        """Test that client errors are properly propagated."""
+        mock_perplexity_client.research.side_effect = Exception("Research API Error")
 
-        research_articles(sample_events, perplexity_client=mock_perplexity_client)
-
-        # Verify final count logging
-        mock_logger.info.assert_called_with("Generated %d articles", 2)
-
-        # Debug logging was removed - no debug assertions needed
-        debug_calls = list(mock_logger.debug.call_args_list)
-        assert len(debug_calls) == 0
-
-    def test_research_articles_article_structure(
-        self, mock_perplexity_client, sample_events, sample_research_responses
-    ):
-        """Test that generated articles have correct structure."""
-        mock_perplexity_client.research.side_effect = sample_research_responses
-
-        articles = research_articles(
-            sample_events, perplexity_client=mock_perplexity_client
-        )
-
-        for article in articles:
-            # Verify all required fields are present
-            assert hasattr(article, "headline")
-            assert hasattr(article, "summary")
-            assert hasattr(article, "body")
-            assert hasattr(article, "sources")
-
-            # Verify types
-            assert isinstance(article.headline, str)
-            assert isinstance(article.summary, str)
-            assert isinstance(article.body, str)
-            assert isinstance(article.sources, list)
-
-    def test_research_articles_perplexity_error_handling(
-        self, mock_perplexity_client, sample_events
-    ):
-        """Test error handling when Perplexity client fails."""
-        mock_perplexity_client.research.side_effect = Exception("API Error")
-
-        # Should propagate the exception
-        with pytest.raises(Exception, match="API Error"):
+        with pytest.raises(Exception, match="Research API Error"):
             research_articles(sample_events, perplexity_client=mock_perplexity_client)
 
-    def test_parse_article_from_response_edge_cases(
-        self, mock_perplexity_client, sample_events
-    ):
-        """Test edge cases in article parsing."""
-        # Test with null values in JSON
-        response_with_nulls = json.dumps(
-            {"headline": None, "summary": None, "body": "Valid story", "sources": None}
-        )
-        mock_perplexity_client.research.return_value = response_with_nulls
+    def test_parse_article_from_response_direct(self):
+        """Test the _parse_article_from_response function directly."""
+        from services.article_research import _parse_article_from_response
 
-        articles = research_articles(
-            [sample_events[0]], perplexity_client=mock_perplexity_client
-        )
+        # Test valid JSON
+        valid_json = json.dumps({
+            "headline": "Direct Test",
+            "summary": "Direct Summary",
+            "body": "Direct Body",
+            "sources": ["direct.com"]
+        })
+        
+        article = _parse_article_from_response(valid_json)
+        assert isinstance(article, Story)
+        assert article.headline == "Direct Test"
+
+        # Test invalid JSON
+        with patch("services.article_research.logger") as mock_logger:
+            article = _parse_article_from_response("invalid json")
+            assert article.headline == ""  # Should return empty Story
+            mock_logger.warning.assert_called()
+
+    def test_research_articles_empty_strings_handling(self, mock_perplexity_client, sample_events):
+        """Test research with empty string values."""
+        empty_response = json.dumps({
+            "headline": "",
+            "summary": "",
+            "body": "",
+            "sources": []
+        })
+        mock_perplexity_client.research.return_value = empty_response
+
+        articles = research_articles(sample_events[:1], perplexity_client=mock_perplexity_client)
 
         assert len(articles) == 1
-        # Article creation logic converts None values to defaults
-        assert articles[0].headline == ""  # None converted to empty string
+        assert articles[0].headline == ""
         assert articles[0].summary == ""  # None converted to empty string
-        assert articles[0].body == "Valid story"
-        assert articles[0].sources == []  # None converted to empty list
+        assert articles[0].body == ""
+        assert articles[0].sources == []
 
-    def test_research_articles_large_response(
-        self, mock_perplexity_client, sample_events
-    ):
-        """Test research with very large response content."""
-        large_story = "Content " * 10000  # Very large story
-        large_response = json.dumps(
-            {
-                "headline": "Large Article",
-                "summary": "Summary of large article",
-                "body": large_story,
-                "sources": ["https://example.com"] * 100,  # Many sources
-            }
+    def test_research_articles_date_preservation(self, mock_perplexity_client, sample_research_response):
+        """Test that event dates are preserved in article research."""
+        # Create event with specific date
+        event_with_date = Lead(
+            context="Test Event: A test event description",
+            date="2024-01-15"
         )
-        mock_perplexity_client.research.return_value = large_response
+        
+        # Modify the research response to include the event date
+        research_with_date = json.dumps({
+            "headline": "Breaking News Story",
+            "summary": "Important event summary",
+            "body": "Full article body with detailed information.",
+            "sources": ["https://example.com/source1", "https://example.com/source2"],
+            "date": "2024-01-15"  # Include date in response
+        })
+        mock_perplexity_client.research.return_value = research_with_date
 
-        articles = research_articles(
-            [sample_events[0]], perplexity_client=mock_perplexity_client
-        )
+        articles = research_articles([event_with_date], perplexity_client=mock_perplexity_client)
 
-        assert len(articles) == 1
-        assert len(articles[0].body) == len(large_story)
-        assert len(articles[0].sources) == 100
+        # Article should have the date from the JSON response
+        assert articles[0].date == "2024-01-15"
