@@ -13,19 +13,19 @@ from utils.date import get_today_formatted
 def research_story(
     leads: list[Lead], *, perplexity_client: PerplexityClient
 ) -> list[Story]:
-    """Calls Perplexity once per lead to generate full articles."""
-    articles: list[Story] = []
+    """Calls Perplexity once per lead to generate full stories."""
+    stories: list[Story] = []
 
     for lead in leads:
         prompt = RESEARCH_INSTRUCTIONS.format(
             event_summary=lead.context, event_date=lead.date
         )
         response_text = perplexity_client.research(prompt)
-        article = _parse_story_from_response(response_text)
-        articles.append(article)
+        story = _parse_story_from_response(response_text)
+        stories.append(story)
 
-    logger.info("Generated %d articles", len(articles))
-    return articles
+    logger.info("Generated %d stories", len(stories))
+    return stories
 
 
 # ---------------------------------------------------------------------------

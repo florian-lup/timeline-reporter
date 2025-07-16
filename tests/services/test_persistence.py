@@ -1,15 +1,15 @@
-"""Test suite for storage service."""
+"""Test suite for story persistence service."""
 
 from unittest.mock import Mock, patch
 
 import pytest
 
-from services import persist_articles
+from services import persist_stories
 from models import Story
 
 
-class TestStorageService:
-    """Test suite for storage service functions."""
+class TestPersistenceService:
+    """Test suite for story persistence service functions."""
 
     @pytest.fixture
     def mock_mongodb_client(self):
@@ -17,163 +17,163 @@ class TestStorageService:
         return Mock()
 
     @pytest.fixture
-    def sample_articles(self):
-        """Sample articles for testing."""
+    def sample_stories(self):
+        """Sample stories for testing."""
         return [
             Story(
                 headline="Climate Summit Agreement",
                 summary="World leaders reach consensus on climate action.",
                 body="Detailed story about the climate summit and its outcomes.",
-                sources=["https://example.com/climate"],
+                sources=["https://example.com/climate-news"],
             ),
             Story(
                 headline="Tech Innovation News",
                 summary="Breakthrough in AI technology announced.",
                 body="Comprehensive coverage of the latest AI developments.",
-                sources=["https://example.com/tech"],
+                sources=["https://example.com/tech-news"],
             ),
         ]
 
-    def test_persist_articles_success(self, mock_mongodb_client, sample_articles):
-        """Test successful article storage."""
-        mock_mongodb_client.insert_article.side_effect = [
+    def test_persist_stories_success(self, mock_mongodb_client, sample_stories):
+        """Test successful story storage."""
+        mock_mongodb_client.insert_story.side_effect = [
             "60a1b2c3d4e5f6789",
             "60a1b2c3d4e5f6790",
         ]
 
-        with patch("services.story_persistence.logger") as mock_logger:
-            persist_articles(sample_articles, mongodb_client=mock_mongodb_client)
+        # No return value expected
+        persist_stories(sample_stories, mongodb_client=mock_mongodb_client)
 
-        # Verify MongoDB calls
-        assert mock_mongodb_client.insert_article.call_count == 2
+        # Verify storage calls
+        assert mock_mongodb_client.insert_story.call_count == 2
 
-        # Verify article dictionaries were passed correctly
-        call_args = mock_mongodb_client.insert_article.call_args_list
+        # Verify story dictionaries were passed correctly
+        call_args = mock_mongodb_client.insert_story.call_args_list
 
-        # First article
-        first_article_dict = call_args[0][0][0]
-        assert first_article_dict["headline"] == "Climate Summit Agreement"
-        assert first_article_dict["summary"] == "World leaders reach consensus on climate action."
-        assert first_article_dict["body"] == "Detailed story about the climate summit and its outcomes."
+        # First story
+        first_story_dict = call_args[0][0][0]
+        assert first_story_dict["headline"] == "Climate Summit Agreement"
+        assert first_story_dict["summary"] == "World leaders reach consensus on climate action."
+        assert first_story_dict["body"] == "Detailed story about the climate summit and its outcomes."
 
-        # Second article
-        second_article_dict = call_args[1][0][0]
-        assert second_article_dict["headline"] == "Tech Innovation News"
-        assert second_article_dict["summary"] == "Breakthrough in AI technology announced."
-        assert second_article_dict["body"] == "Comprehensive coverage of the latest AI developments."
+        # Second story
+        second_story_dict = call_args[1][0][0]
+        assert second_story_dict["headline"] == "Tech Innovation News"
+        assert second_story_dict["summary"] == "Breakthrough in AI technology announced."
+        assert second_story_dict["body"] == "Comprehensive coverage of the latest AI developments."
 
-        # Verify logging
-        assert mock_logger.info.call_count == 2
+    @patch("services.story_persistence.logger")
+    def test_persist_stories_logging(self, mock_logger, mock_mongodb_client, sample_stories):
+        """Test that storage logging works correctly."""
+        mock_mongodb_client.insert_story.side_effect = ["60a1b2c3d4e5f6789", "60a1b2c3d4e5f6790"]
+
+        persist_stories(sample_stories, mongodb_client=mock_mongodb_client)
+
+        # Verify individual story logging
         mock_logger.info.assert_any_call(
-            "Stored article: '%s' (id=%s)",
+            "Stored story: '%s' (id=%s)",
             "Climate Summit Agreement",
             "60a1b2c3d4e5f6789",
         )
         mock_logger.info.assert_any_call(
-            "Stored article: '%s' (id=%s)", "Tech Innovation News", "60a1b2c3d4e5f6790"
+            "Stored story: '%s' (id=%s)", "Tech Innovation News", "60a1b2c3d4e5f6790"
         )
 
-    def test_persist_articles_empty_list(self, mock_mongodb_client):
-        """Test storage with empty article list."""
-        with patch("services.story_persistence.logger") as mock_logger:
-            persist_articles([], mongodb_client=mock_mongodb_client)
+    def test_persist_stories_empty_list(self, mock_mongodb_client):
+        """Test storage with empty story list."""
 
-        mock_mongodb_client.insert_article.assert_not_called()
-        mock_logger.info.assert_not_called()
+        persist_stories([], mongodb_client=mock_mongodb_client)
 
-    def test_persist_articles_single_article(self, mock_mongodb_client):
-        """Test storage with single article."""
-        single_article = [
+        mock_mongodb_client.insert_story.assert_not_called()
+
+    def test_persist_stories_single_story(self, mock_mongodb_client):
+        """Test storage with single story."""
+        single_story = [
             Story(
-                headline="Single Article",
-                summary="Single article summary",
-                body="Single article story",
-                sources=["https://example.com"],
+                headline="Single Story",
+                summary="Single story summary",
+                body="Single story content",
+                sources=["https://example.com/single"],
             )
         ]
 
-        mock_mongodb_client.insert_article.return_value = "60a1b2c3d4e5f6789"
+        mock_mongodb_client.insert_story.return_value = "60a1b2c3d4e5f6789"
 
-        persist_articles(single_article, mongodb_client=mock_mongodb_client)
+        persist_stories(single_story, mongodb_client=mock_mongodb_client)
 
-        mock_mongodb_client.insert_article.assert_called_once()
-        call_args = mock_mongodb_client.insert_article.call_args[0][0]
-        assert call_args["headline"] == "Single Article"
+        assert mock_mongodb_client.insert_story.call_count == 1
 
-    def test_persist_articles_article_dict_conversion(
-        self, mock_mongodb_client, sample_articles
+    def test_persist_stories_story_dict_conversion(
+        self, mock_mongodb_client, sample_stories
     ):
-        """Test that articles are properly converted to dictionaries."""
-        mock_mongodb_client.insert_article.side_effect = ["id1", "id2"]
+        """Test that stories are properly converted to dictionaries."""
+        mock_mongodb_client.insert_story.side_effect = ["id1", "id2"]
 
-        persist_articles(sample_articles, mongodb_client=mock_mongodb_client)
+        persist_stories(sample_stories, mongodb_client=mock_mongodb_client)
 
-        # Verify article conversion
-        call_args = mock_mongodb_client.insert_article.call_args_list
-        for i, call in enumerate(call_args):
-            article_dict = call[0][0]
-            original_article = sample_articles[i]
+        # Verify dictionary conversion for each story
+        call_args_list = mock_mongodb_client.insert_story.call_args_list
 
-            # Verify all fields are present
-            assert article_dict["headline"] == original_article.headline
-            assert article_dict["summary"] == original_article.summary
-            assert article_dict["body"] == original_article.body
-            assert article_dict["sources"] == original_article.sources
+        for i, call in enumerate(call_args_list):
+            story_dict = call[0][0]
+            original_story = sample_stories[i]
 
-    def test_persist_articles_mongodb_error_handling(
-        self, mock_mongodb_client, sample_articles
+            assert story_dict["headline"] == original_story.headline
+            assert story_dict["summary"] == original_story.summary
+            assert story_dict["body"] == original_story.body
+            assert story_dict["sources"] == original_story.sources
+
+    def test_persist_stories_mongodb_error_handling(
+        self, mock_mongodb_client, sample_stories
     ):
-        """Test error handling when MongoDB insertion fails."""
-        mock_mongodb_client.insert_article.side_effect = Exception("Database error")
+        """Test error handling for MongoDB insertion failures."""
+        mock_mongodb_client.insert_story.side_effect = Exception("Database error")
 
-        # Should propagate the exception
         with pytest.raises(Exception, match="Database error"):
-            persist_articles(sample_articles, mongodb_client=mock_mongodb_client)
+            persist_stories(sample_stories, mongodb_client=mock_mongodb_client)
 
-    def test_persist_articles_with_unicode_content(self, mock_mongodb_client):
-        """Test storage with unicode characters."""
-        unicode_article = [
+    def test_persist_stories_with_unicode_content(self, mock_mongodb_client):
+        """Test storage with unicode characters in content."""
+        unicode_story = [
             Story(
-                headline="Climate Summit 🌍 Results",
-                summary="Leaders discuss émissions reduction",
-                body="The summit in København addressed climate change",
-                sources=["https://example.com/climate-🌍"],
+                headline="Événement Important 🌍",
+                summary="Résumé avec caractères spéciaux: àáäâ",
+                body="Contenu détaillé avec émojis 🚀 et accents",
+                sources=["https://example.com/unicode"],
             )
         ]
 
-        mock_mongodb_client.insert_article.return_value = "unicode_id"
+        mock_mongodb_client.insert_story.return_value = "60a1b2c3d4e5f6789"
 
-        persist_articles(unicode_article, mongodb_client=mock_mongodb_client)
+        persist_stories(unicode_story, mongodb_client=mock_mongodb_client)
 
-        call_args = mock_mongodb_client.insert_article.call_args[0][0]
-        assert "🌍" in call_args["headline"]
-        assert "émissions" in call_args["summary"]
-        assert "København" in call_args["body"]
+        # Verify unicode content is preserved
+        story_dict = mock_mongodb_client.insert_story.call_args[0][0]
+        assert "🌍" in story_dict["headline"]
+        assert "àáäâ" in story_dict["summary"]
 
-    def test_persist_articles_large_batch(self, mock_mongodb_client):
-        """Test storage with large number of articles."""
+    def test_persist_stories_large_batch(self, mock_mongodb_client):
+        """Test storage with large number of stories."""
         large_batch = [
             Story(
-                headline=f"Article {i}",
+                headline=f"Story {i}",
                 summary=f"Summary {i}",
-                body=f"Story {i}",
+                body=f"Body {i}",
                 sources=[f"https://example.com/{i}"],
             )
             for i in range(100)
         ]
 
-        mock_mongodb_client.insert_article.side_effect = [
-            f"id{i}" for i in range(100)
-        ]
+        mock_mongodb_client.insert_story.return_value = "60a1b2c3d4e5f6789"
 
-        persist_articles(large_batch, mongodb_client=mock_mongodb_client)
+        persist_stories(large_batch, mongodb_client=mock_mongodb_client)
 
-        # Verify all articles were processed
-        assert mock_mongodb_client.insert_article.call_count == 100
+        # Verify all stories were processed
+        assert mock_mongodb_client.insert_story.call_count == 100
 
-        # Verify data integrity for first and last articles
-        first_call = mock_mongodb_client.insert_article.call_args_list[0][0][0]
-        last_call = mock_mongodb_client.insert_article.call_args_list[-1][0][0]
+        # Verify data integrity for first and last stories
+        first_call = mock_mongodb_client.insert_story.call_args_list[0][0][0]
+        last_call = mock_mongodb_client.insert_story.call_args_list[-1][0][0]
 
-        assert first_call["headline"] == "Article 0"
-        assert last_call["headline"] == "Article 99"
+        assert first_call["headline"] == "Story 0"
+        assert last_call["headline"] == "Story 99"

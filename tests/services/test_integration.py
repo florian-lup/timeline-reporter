@@ -8,7 +8,7 @@ import pytest
 from services import (
     deduplicate_leads,
     discover_leads,
-    persist_articles,
+    persist_stories,
     research_story,
     curate_leads,
 )
@@ -72,7 +72,7 @@ class TestServicesIntegration:
         mock_perplexity.research.side_effect = research_responses
 
         # Set up storage
-        mock_mongodb.insert_article.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
+        mock_mongodb.insert_story.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
 
         return {
             "openai": mock_openai,
@@ -99,33 +99,33 @@ class TestServicesIntegration:
             prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
-            articles = research_story(
+            stories = research_story(
                 prioritized_events, perplexity_client=mock_clients["perplexity"]
             )
-            persist_articles(articles, mongodb_client=mock_clients["mongodb"])
+            persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
         # Verify pipeline flow
         assert len(events) == 2
         assert len(unique_events) == 2  # No duplicates removed
         assert len(prioritized_events) == 2  # Decision selected both events
-        assert len(articles) == 2
+        assert len(stories) == 2
 
         # Verify data flow through pipeline
         # Events from discovery
         assert "Climate Summit 2024" in events[0].context
         assert "AI Breakthrough Announced" in events[1].context
 
-        # Articles from research
+        # Stories from research
         assert (
-            articles[0].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
+            stories[0].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
         )
-        assert articles[1].headline == "AI Revolution in Healthcare Diagnostics"
+        assert stories[1].headline == "AI Revolution in Healthcare Diagnostics"
 
         # Verify clients were called appropriately
         mock_clients["perplexity"].deep_research.assert_called_once()
         assert mock_clients["openai"].embed_text.call_count == 2  # One per event
         assert mock_clients["perplexity"].research.call_count == 2  # One per article
-        assert mock_clients["mongodb"].insert_article.call_count == 2
+        assert mock_clients["mongodb"].insert_story.call_count == 2
 
     @pytest.mark.integration  
     def test_pipeline_with_deduplication(
@@ -174,7 +174,7 @@ class TestServicesIntegration:
         assert len(unique_events) == 4  # One duplicate removed
         assert len(prioritized_events) == 3  # Decision selected 3/4 events
 
-        # Verify selected articles correspond to selected events
+        # Verify selected stories correspond to selected events
         assert "Event 2" in prioritized_events[0].context  # Index 1 -> Event 2 (since Event 1 was duplicate)
         assert "Event 3" in prioritized_events[1].context  # Index 2 -> Event 3  
         assert "Event 5" in prioritized_events[2].context  # Index 4 -> Event 5
@@ -217,12 +217,12 @@ class TestServicesIntegration:
             prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
-            articles = research_story(
+            stories = research_story(
                 prioritized_events, perplexity_client=mock_clients["perplexity"]
             )
 
-            # Store final articles
-            persist_articles(articles, mongodb_client=mock_clients["mongodb"])
+            # Store final stories
+            persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
         # Verify data transformations
         # Lead -> Lead (deduplication preserves structure)
@@ -235,12 +235,12 @@ class TestServicesIntegration:
         assert prioritized_events[0].context == unique_events[0].context
 
         # Lead -> Story (research transforms and enhances)
-        assert isinstance(articles[0], Story)
-        assert articles[0].headline == "Transformed Headline"
+        assert isinstance(stories[0], Story)
+        assert stories[0].headline == "Transformed Headline"
         assert (
-            articles[0].summary != prioritized_events[0].context
+            stories[0].summary != prioritized_events[0].context
         )  # Enhanced by research
-        assert len(articles[0].sources) == 2
+        assert len(stories[0].sources) == 2
 
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline performance with larger data volume."""
@@ -253,7 +253,7 @@ class TestServicesIntegration:
         # Set up decision to select subset
         mock_clients["openai"].chat_completion.return_value = "1, 3, 5, 7, 9"
 
-        # Override research responses for 5 articles
+        # Override research responses for 5 stories
         research_responses = [
             json.dumps({
                 "headline": f"Article {i}",
@@ -278,7 +278,7 @@ class TestServicesIntegration:
             prioritized_events = curate_leads(
                 unique_events, openai_client=mock_clients["openai"]
             )
-            articles = research_story(
+            stories = research_story(
                 prioritized_events, perplexity_client=mock_clients["perplexity"]
             )
 
@@ -286,7 +286,7 @@ class TestServicesIntegration:
         assert len(events) == 10
         assert len(unique_events) == 10  # No duplicates
         assert len(prioritized_events) == 5  # Decision selected 5
-        assert len(articles) == 5
+        assert len(stories) == 5
 
         # Verify embeddings were created for all events
         assert mock_clients["openai"].embed_text.call_count == 10

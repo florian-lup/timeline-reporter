@@ -106,8 +106,8 @@ class TestClientIntegration:
             assert result_data["headline"] == "Test Research Article"
             assert len(result_data["sources"]) == 2
 
-    def test_mongodb_article_storage_integration(self):
-        """Test MongoDB article storage functionality."""
+    def test_mongodb_story_storage_integration(self):
+        """Test MongoDB story storage functionality."""
         with (
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
             patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
@@ -123,39 +123,39 @@ class TestClientIntegration:
             mock_result.inserted_id = "507f1f77bcf86cd799439011"
             mock_collection.insert_one.return_value = mock_result
 
-            # Test article storage
+            # Test story storage
             mongodb_client = MongoDBClient()
-            test_article = {
-                "headline": "Test Article",
+            test_story = {
+                "headline": "Test Story",
                 "summary": "Test summary",
                 "body": "Test story content",
                 "sources": ["https://example.com"],
                 "date": "2024-01-01",
             }
 
-            result_id = mongodb_client.insert_article(test_article)
+            result_id = mongodb_client.insert_story(test_story)
 
             # Verify storage
-            mock_collection.insert_one.assert_called_once_with(test_article)
+            mock_collection.insert_one.assert_called_once_with(test_story)
             assert result_id == "507f1f77bcf86cd799439011"
 
-    def test_article_model_integration(self):
+    def test_story_model_integration(self):
         """Test Story model integration with updated fields."""
         # Test creating Story with all required fields
-        article = Story(
+        story = Story(
             headline="Test Headline",
             summary="Test summary",
             body="Test story content",
             sources=["https://example.com"],
         )
 
-        assert article.headline == "Test Headline"
-        assert article.summary == "Test summary"
-        assert article.body == "Test story content"
-        assert article.sources == ["https://example.com"]
+        assert story.headline == "Test Headline"
+        assert story.summary == "Test summary"
+        assert story.body == "Test story content"
+        assert story.sources == ["https://example.com"]
 
         # Test converting to dict for MongoDB storage
-        article_dict = article.__dict__
+        story_dict = story.__dict__
         expected_keys = {
             "headline",
             "summary",
@@ -163,11 +163,11 @@ class TestClientIntegration:
             "sources",
             "date",
         }
-        actual_keys = set(article_dict.keys())
+        actual_keys = set(story_dict.keys())
         assert actual_keys == expected_keys
 
         # Test that all fields are present (no None values)
-        for key, value in article_dict.items():
+        for key, value in story_dict.items():
             assert value is not None, f"Field {key} should not be None"
 
     def test_research_to_storage_pipeline_integration(self):
@@ -181,14 +181,14 @@ class TestClientIntegration:
             # Setup Perplexity mock (research)
             mock_http_client = Mock()
             mock_response = Mock()
-            article_data = {
+            story_data = {
                 "headline": "Breaking News",
                 "summary": "Important event summary",
                 "body": "Full story details...",
                 "sources": ["https://source.com"],
             }
             mock_response.json.return_value = {
-                "choices": [{"message": {"content": json.dumps(article_data)}}]
+                "choices": [{"message": {"content": json.dumps(story_data)}}]
             }
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
@@ -214,23 +214,23 @@ class TestClientIntegration:
 
             # 1. Research phase
             test_events = [Lead(context="Breaking News: Important event")]
-            articles = research_story(
+            stories = research_story(
                 test_events, perplexity_client=perplexity_client
             )
 
             # 2. Storage phase
-            for article in articles:
-                mongodb_client.insert_article(article.__dict__)
+            for story in stories:
+                mongodb_client.insert_story(story.__dict__)
 
             # Verify end-to-end pipeline
-            assert len(articles) == 1
-            final_article = articles[0]
+            assert len(stories) == 1
+            final_story = stories[0]
 
             # Check research data is preserved
-            assert final_article.headline == "Breaking News"
-            assert final_article.summary == "Important event summary"
-            assert final_article.body == "Full story details..."
-            assert final_article.sources == ["https://source.com"]
+            assert final_story.headline == "Breaking News"
+            assert final_story.summary == "Important event summary"
+            assert final_story.body == "Full story details..."
+            assert final_story.sources == ["https://source.com"]
 
             # Verify all services were called
             # Perplexity research
@@ -239,7 +239,7 @@ class TestClientIntegration:
             mock_collection.insert_one.assert_called_once()
 
     def test_similarity_search_workflow(self):
-        """Test workflow for finding similar articles."""
+        """Test workflow for finding similar stories."""
         with (
             patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.pinecone_client.Pinecone") as mock_pinecone,

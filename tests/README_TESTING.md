@@ -105,8 +105,8 @@ Test business logic services:
 
 - **Discovery**: Event discovery from news sources
 - **Deduplication**: Filtering duplicate events using embeddings
-- **Research**: Converting events to full articles
-- **Storage**: Persisting articles to database
+- **Research**: Converting events to full stories
+- **Storage**: Persisting stories to database
 - **Integration**: Complete pipeline from discovery to storage
 
 ## Test Features
@@ -127,7 +127,7 @@ Shared fixtures in `conftest.py`:
 
 - `mock_environment_variables`: Auto-mocked environment variables
 - `sample_vector`: Sample embedding vector for tests
-- `sample_article_data`: Sample article data structure
+- `sample_story_data`: Sample story data structure
 - `sample_research_prompt`: Sample research query
 
 ### Pipeline Testing
@@ -135,7 +135,7 @@ Shared fixtures in `conftest.py`:
 Services integration tests demonstrate:
 
 - **Complete workflow**: Discovery → Deduplication → Research → Storage
-- **Data transformation**: Events become Articles
+- **Data transformation**: Events become Stories
 - **Error propagation**: How failures cascade through the pipeline
 - **Performance**: Large-scale processing with 10+ events
 

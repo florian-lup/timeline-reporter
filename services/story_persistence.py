@@ -9,9 +9,9 @@ from utils import logger
 # ---------------------------------------------------------------------------
 
 
-def persist_articles(articles: list[Story], *, mongodb_client: MongoDBClient) -> None:
-    """Stores articles in MongoDB."""
-    for article in articles:
-        article_dict = article.__dict__.copy()
-        inserted_id = mongodb_client.insert_article(article_dict)
-        logger.info("Stored article: '%s' (id=%s)", article.headline, inserted_id)
+def persist_stories(stories: list[Story], *, mongodb_client: MongoDBClient) -> None:
+    """Stores stories in MongoDB."""
+    for story in stories:
+        story_dict = story.__dict__.copy()
+        inserted_id = mongodb_client.insert_story(story_dict)
+        logger.info("Stored story: '%s' (id=%s)", story.headline, inserted_id)

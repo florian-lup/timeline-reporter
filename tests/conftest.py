@@ -71,7 +71,7 @@ def mock_perplexity_client():
 def mock_mongodb_client():
     """Mock MongoDB client for testing."""
     mock_client = Mock()
-    mock_client.insert_article.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
+    mock_client.insert_story.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
     return mock_client
 
 

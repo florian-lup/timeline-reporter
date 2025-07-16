@@ -38,7 +38,7 @@ class MongoDBClient:
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------
-    def insert_article(self, article: dict[str, Any]) -> str:
-        """Inserts *article* dict and returns inserted document id as str."""
-        result = self._collection.insert_one(article)
+    def insert_story(self, story: dict[str, Any]) -> str:
+        """Inserts *story* dict and returns inserted document id as str."""
+        result = self._collection.insert_one(story)
         return str(result.inserted_id)

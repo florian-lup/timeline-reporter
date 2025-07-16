@@ -4,11 +4,11 @@ This package provides the core pipeline services:
 - Discovery: Finding current events
 - Deduplication: Removing similar events
 - Decision: Prioritizing most impactful events
-- Research: Creating full articles from events
-- Storage: Saving articles to MongoDB
+- Research: Creating full stories from events
+- Storage: Saving stories to MongoDB
 """
 
-from .story_persistence import persist_articles
+from .story_persistence import persist_stories
 from .story_research import research_story
 from .lead_deduplication import deduplicate_leads
 from .lead_discovery import discover_leads
@@ -20,5 +20,5 @@ __all__ = [
     "deduplicate_leads",
     "curate_leads",
     "research_story",
-    "persist_articles",
+    "persist_stories",
 ]

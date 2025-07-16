@@ -2,7 +2,7 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, prioritizes, researches, and stores articles
+    python -m main  # discovers, deduplicates, prioritizes, researches, and stores stories
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClien
 from services import (
     deduplicate_leads,
     discover_leads,
-    persist_articles,
+    persist_stories,
     research_story,
     curate_leads,
 )
@@ -40,16 +40,16 @@ def run_pipeline() -> None:  # noqa: D401
     prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
 
     # 4️⃣ Research
-    articles = research_story(
+    stories = research_story(
         prioritized_leads, perplexity_client=perplexity_client
     )
 
     # 5️⃣ Storage
-    persist_articles(articles, mongodb_client=mongodb_client)
+    persist_stories(stories, mongodb_client=mongodb_client)
 
     logger.info(
-        "Pipeline complete: %d articles stored",
-        len(articles),
+        "Pipeline complete: %d stories stored",
+        len(stories),
     )
 
 

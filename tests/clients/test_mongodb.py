@@ -83,7 +83,7 @@ class TestMongoDBClient:
         ):
             MongoDBClient(uri=None)
 
-    def test_insert_article_success(self, mock_mongo_client, sample_article):
+    def test_insert_story_success(self, mock_mongo_client, sample_article):
         """Test successful article insertion."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
@@ -95,12 +95,12 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            result = client.insert_article(sample_article)
+            result = client.insert_story(sample_article)
 
             mock_collection.insert_one.assert_called_once_with(sample_article)
             assert result == str(mock_object_id)
 
-    def test_insert_article_with_missing_headline(self, mock_mongo_client):
+    def test_insert_story_with_missing_headline(self, mock_mongo_client):
         """Test article insertion with missing headline (should still work)."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
@@ -116,12 +116,12 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            result = client.insert_article(article_without_headline)
+            result = client.insert_story(article_without_headline)
 
             mock_collection.insert_one.assert_called_once_with(article_without_headline)
             assert result == str(mock_object_id)
 
-    def test_insert_article_empty_dict(self, mock_mongo_client):
+    def test_insert_story_empty_dict(self, mock_mongo_client):
         """Test insertion of empty article dictionary."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
@@ -132,7 +132,7 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            result = client.insert_article({})
+            result = client.insert_story({})
 
             mock_collection.insert_one.assert_called_once_with({})
             assert result == str(mock_object_id)
@@ -154,10 +154,10 @@ class TestMongoDBClient:
             )
 
     @patch("clients.mongodb_client.logger")
-    def test_logging_on_insert_article(
+    def test_logging_on_insert_story(
         self, mock_logger, mock_mongo_client, sample_article
     ):
-        """Test that insert_article logs the operation."""
+        """Test that insert_story logs the operation."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 
         mock_result = Mock()
@@ -167,7 +167,7 @@ class TestMongoDBClient:
 
         with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
             client = MongoDBClient()
-            client.insert_article(sample_article)
+            client.insert_story(sample_article)
 
             # Debug logging was removed - no assertion needed
             pass
