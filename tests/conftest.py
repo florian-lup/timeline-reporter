@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from models import Article, Lead
+from models import Lead, Story
 
 
 @pytest.fixture(autouse=True)
@@ -43,7 +43,7 @@ def sample_article_data():
     return {
         "headline": "Test Article Headline",
         "summary": "This is a test article summary with relevant information.",
-        "story": (
+        "body": (
             "This is the full story content with detailed information about the topic."
         ),
         "sources": [
@@ -95,29 +95,29 @@ def sample_events():
 
 @pytest.fixture
 def sample_article():
-    """Sample Article object for testing."""
-    return Article(
+    """Sample Story object for testing."""
+    return Story(
         headline="Sample Article Headline",
         summary="This is a sample article summary.",
-        story="This is the full story content with detailed information.",
+        body="This is the full story content with detailed information.",
         sources=["https://example.com/source1", "https://example.com/source2"],
     )
 
 
 @pytest.fixture
 def sample_articles():
-    """Sample list of Article objects for testing."""
+    """Sample list of Story objects for testing."""
     return [
-        Article(
+        Story(
             headline="Tech News Article",
             summary="Article about technology developments",
-            story="Full story about technology developments in the industry.",
+            body="Full story about technology developments in the industry.",
             sources=["https://example.com/tech1", "https://example.com/tech2"],
         ),
-        Article(
+        Story(
             headline="Climate News Article",
             summary="Article about climate change",
-            story="Full story about recent climate change developments.",
+            body="Full story about recent climate change developments.",
             sources=["https://example.com/climate1"],
         ),
     ]
@@ -143,7 +143,7 @@ def mock_perplexity_client():
         {
             "headline": "Test Headline",
             "summary": "Test summary",
-            "story": "Test story content",
+            "body": "Test story content",
             "sources": ["https://example.com/test"],
         }
     )
@@ -214,7 +214,7 @@ def sample_research_response():
                 "unprecedented accuracy in medical diagnosis, potentially "
                 "transforming healthcare delivery."
             ),
-            "story": (
+            "body": (
                 "Researchers at leading medical institutions have developed an "
                 "AI system that demonstrates 99% accuracy in diagnosing a wide "
                 "range of medical conditions. The system uses advanced machine "

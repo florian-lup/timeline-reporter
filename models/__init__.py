@@ -2,12 +2,12 @@
 
 This package provides the core domain models:
 - Lead: Represents news leads discovered in the pipeline
-- Article: Represents fully-researched articles to be stored
+- Story: Represents fully-researched stories to be stored
 """
 
-from .core import Article, Lead
+from .core import Lead, Story
 
 __all__ = [
     "Lead",
-    "Article",
+    "Story",
 ] 

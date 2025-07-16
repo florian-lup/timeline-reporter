@@ -57,5 +57,5 @@ DISCOVERY_TOPICS: str = (
 # ---------------------------------------------------------------------------
 # MongoDB
 # ---------------------------------------------------------------------------
-MONGODB_DATABASE_NAME: str = "events"
-MONGODB_COLLECTION_NAME: str = "articles"
+MONGODB_DATABASE_NAME: str = "breaking-news"
+MONGODB_COLLECTION_NAME: str = "stories"

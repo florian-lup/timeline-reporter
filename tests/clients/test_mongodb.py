@@ -33,7 +33,7 @@ class TestMongoDBClient:
         return {
             "headline": "Test Article",
             "summary": "This is a test article",
-            "story": "Full story content here",
+            "body": "Full story content here",
             "sources": ["https://example.com"],
         }
 
@@ -106,7 +106,7 @@ class TestMongoDBClient:
 
         article_without_headline = {
             "summary": "This is a test article",
-            "story": "Full story content here",
+            "body": "Full story content here",
         }
 
         mock_result = Mock()
@@ -178,11 +178,11 @@ class TestMongoDBClient:
 
         with (
             patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
-            patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "events"),
-            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "articles"),
+            patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "breaking-news"),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "stories"),
         ):
             MongoDBClient()
 
             # Verify database and collection access
-            mock_instance.__getitem__.assert_called_with("events")
-            mock_db.__getitem__.assert_called_with("articles")
+            mock_instance.__getitem__.assert_called_with("breaking-news")
+            mock_db.__getitem__.assert_called_with("stories")

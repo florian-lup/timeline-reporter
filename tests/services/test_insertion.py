@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import insert_articles
-from models import Article
+from models import Story
 
 
 class TestStorageService:
@@ -20,16 +20,16 @@ class TestStorageService:
     def sample_articles(self):
         """Sample articles for testing."""
         return [
-            Article(
+            Story(
                 headline="Climate Summit Agreement",
                 summary="World leaders reach consensus on climate action.",
-                story="Detailed story about the climate summit and its outcomes.",
+                body="Detailed story about the climate summit and its outcomes.",
                 sources=["https://example.com/climate"],
             ),
-            Article(
+            Story(
                 headline="Tech Innovation News",
                 summary="Breakthrough in AI technology announced.",
-                story="Comprehensive coverage of the latest AI developments.",
+                body="Comprehensive coverage of the latest AI developments.",
                 sources=["https://example.com/tech"],
             ),
         ]
@@ -54,13 +54,13 @@ class TestStorageService:
         first_article_dict = call_args[0][0][0]
         assert first_article_dict["headline"] == "Climate Summit Agreement"
         assert first_article_dict["summary"] == "World leaders reach consensus on climate action."
-        assert first_article_dict["story"] == "Detailed story about the climate summit and its outcomes."
+        assert first_article_dict["body"] == "Detailed story about the climate summit and its outcomes."
 
         # Second article
         second_article_dict = call_args[1][0][0]
         assert second_article_dict["headline"] == "Tech Innovation News"
         assert second_article_dict["summary"] == "Breakthrough in AI technology announced."
-        assert second_article_dict["story"] == "Comprehensive coverage of the latest AI developments."
+        assert second_article_dict["body"] == "Comprehensive coverage of the latest AI developments."
 
         # Verify logging
         assert mock_logger.info.call_count == 2
@@ -84,10 +84,10 @@ class TestStorageService:
     def test_insert_articles_single_article(self, mock_mongodb_client):
         """Test storage with single article."""
         single_article = [
-            Article(
+            Story(
                 headline="Single Article",
                 summary="Single article summary",
-                story="Single article story",
+                body="Single article story",
                 sources=["https://example.com"],
             )
         ]
@@ -117,7 +117,7 @@ class TestStorageService:
             # Verify all fields are present
             assert article_dict["headline"] == original_article.headline
             assert article_dict["summary"] == original_article.summary
-            assert article_dict["story"] == original_article.story
+            assert article_dict["body"] == original_article.body
             assert article_dict["sources"] == original_article.sources
 
     def test_insert_articles_mongodb_error_handling(
@@ -133,10 +133,10 @@ class TestStorageService:
     def test_insert_articles_with_unicode_content(self, mock_mongodb_client):
         """Test storage with unicode characters."""
         unicode_article = [
-            Article(
+            Story(
                 headline="Climate Summit 🌍 Results",
                 summary="Leaders discuss émissions reduction",
-                story="The summit in København addressed climate change",
+                body="The summit in København addressed climate change",
                 sources=["https://example.com/climate-🌍"],
             )
         ]
@@ -148,15 +148,15 @@ class TestStorageService:
         call_args = mock_mongodb_client.insert_article.call_args[0][0]
         assert "🌍" in call_args["headline"]
         assert "émissions" in call_args["summary"]
-        assert "København" in call_args["story"]
+        assert "København" in call_args["body"]
 
     def test_insert_articles_large_batch(self, mock_mongodb_client):
         """Test storage with large number of articles."""
         large_batch = [
-            Article(
+            Story(
                 headline=f"Article {i}",
                 summary=f"Summary {i}",
-                story=f"Story {i}",
+                body=f"Story {i}",
                 sources=[f"https://example.com/{i}"],
             )
             for i in range(100)

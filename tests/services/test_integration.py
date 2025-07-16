@@ -12,7 +12,7 @@ from services import (
     research_articles,
     select_events,
 )
-from models import Article, Lead
+from models import Lead, Story
 
 
 @pytest.mark.integration
@@ -76,13 +76,13 @@ class TestServicesIntegration:
             json.dumps({
                 "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
                 "summary": "World leaders at the climate summit agree...",
-                "story": "In a historic moment, global leaders...",
+                "body": "In a historic moment, global leaders...",
                 "sources": ["https://climate-summit.com", "https://example.com"],
             }),
             json.dumps({
                 "headline": "AI Revolution in Healthcare Diagnostics",
                 "summary": "Breakthrough AI system shows promise...",
-                "story": "Researchers have developed an AI system...",
+                "body": "Researchers have developed an AI system...",
                 "sources": ["https://ai-health.com", "https://example.com"],
             }),
         ]
@@ -179,13 +179,13 @@ class TestServicesIntegration:
             json.dumps({
                 "headline": "Article 1",
                 "summary": "Summary 1",
-                "story": "Story 1",
+                "body": "Story 1",
                 "sources": ["https://source1.com"],
             }),
             json.dumps({
                 "headline": "Article 2", 
                 "summary": "Summary 2",
-                "story": "Story 2", 
+                "body": "Story 2", 
                 "sources": ["https://source2.com"],
             }),
         ]
@@ -251,7 +251,7 @@ class TestServicesIntegration:
             json.dumps({
                 "headline": f"Article {i}",
                 "summary": f"Summary {i}",
-                "story": f"Story {i}",
+                "body": f"Story {i}",
                 "sources": [f"https://source{i}.com"],
             })
             for i in [1, 3, 5]
@@ -313,7 +313,7 @@ class TestServicesIntegration:
             {
                 "headline": "Transformed Headline",
                 "summary": "Transformed summary with more detail",
-                "story": (
+                "body": (
                     "Full story with comprehensive details about the original event"
                 ),
                 "sources": [
@@ -358,8 +358,8 @@ class TestServicesIntegration:
         assert isinstance(prioritized_events[0], Lead)
         assert prioritized_events[0].title == unique_events[0].title
 
-        # Lead -> Article (research transforms and enhances)
-        assert isinstance(articles[0], Article)
+        # Lead -> Story (research transforms and enhances)
+        assert isinstance(articles[0], Story)
         assert articles[0].headline == "Transformed Headline"
         assert (
             articles[0].summary != prioritized_events[0].summary
@@ -428,7 +428,7 @@ class TestServicesIntegration:
             json.dumps({
                 "headline": f"Article {i}",
                 "summary": f"Summary {i}",
-                "story": f"Story {i}",
+                "body": f"Story {i}",
                 "sources": [f"https://source{i}.com"],
             })
             for i in range(1, 6)

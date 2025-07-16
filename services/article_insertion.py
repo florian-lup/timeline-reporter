@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from clients import MongoDBClient
-from models import Article
+from models import Story
 from utils import logger
 
 # ---------------------------------------------------------------------------
@@ -9,7 +9,7 @@ from utils import logger
 # ---------------------------------------------------------------------------
 
 
-def insert_articles(articles: list[Article], *, mongodb_client: MongoDBClient) -> None:
+def insert_articles(articles: list[Story], *, mongodb_client: MongoDBClient) -> None:
     """Stores articles in MongoDB."""
     for article in articles:
         article_dict = article.__dict__.copy()

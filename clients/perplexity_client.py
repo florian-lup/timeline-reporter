@@ -53,13 +53,13 @@ class PerplexityClient:
         "properties": {
             "headline": {"type": "string"},
             "summary": {"type": "string"},
-            "story": {"type": "string"},
+                            "body": {"type": "string"},
             "sources": {
                 "type": "array",
                 "items": {"type": "string"},
             },
         },
-        "required": ["headline", "summary", "story", "sources"],
+                    "required": ["headline", "summary", "body", "sources"],
     }
 
     # JSON schema for Discovery structured output (array of events)

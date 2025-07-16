@@ -23,7 +23,7 @@ class TestPerplexityClient:
                             {
                                 "headline": "Test Headline",
                                 "summary": "Test summary",
-                                "story": "Test story content",
+                                "body": "Test story content",
                                 "sources": [
                                     "https://example.com/source1",
                                     "https://example.com/source2",
@@ -108,7 +108,7 @@ class TestPerplexityClient:
                 {
                     "headline": "Test Headline",
                     "summary": "Test summary",
-                    "story": "Test story content",
+                    "body": "Test story content",
                     "sources": [
                         "https://example.com/source1",
                         "https://example.com/source2",
@@ -173,7 +173,7 @@ class TestPerplexityClient:
             assert "required" in schema
 
             # Verify required fields
-            required_fields = ["headline", "summary", "story", "sources"]
+            required_fields = ["headline", "summary", "body", "sources"]
             assert set(schema["required"]) == set(required_fields)
 
             # Verify properties

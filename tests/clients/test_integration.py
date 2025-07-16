@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
-from models import Article, Lead
+from models import Lead, Story
 
 
 @pytest.mark.integration
@@ -81,7 +81,7 @@ class TestClientIntegration:
             research_data = {
                 "headline": "Test Research Article",
                 "summary": "This is a test research summary",
-                "story": "This is the full test research story...",
+                "body": "This is the full test research story...",
                 "sources": ["https://example.com/source1", "https://example.com/source2"],
             }
             mock_response.json.return_value = {
@@ -128,7 +128,7 @@ class TestClientIntegration:
             test_article = {
                 "headline": "Test Article",
                 "summary": "Test summary",
-                "story": "Test story content",
+                "body": "Test story content",
                 "sources": ["https://example.com"],
                 "date": "2024-01-01",
             }
@@ -140,18 +140,18 @@ class TestClientIntegration:
             assert result_id == "507f1f77bcf86cd799439011"
 
     def test_article_model_integration(self):
-        """Test Article model integration with updated fields."""
-        # Test creating Article with all required fields
-        article = Article(
+        """Test Story model integration with updated fields."""
+        # Test creating Story with all required fields
+        article = Story(
             headline="Test Headline",
             summary="Test summary",
-            story="Test story content",
+            body="Test story content",
             sources=["https://example.com"],
         )
 
         assert article.headline == "Test Headline"
         assert article.summary == "Test summary"
-        assert article.story == "Test story content"
+        assert article.body == "Test story content"
         assert article.sources == ["https://example.com"]
 
         # Test converting to dict for MongoDB storage
@@ -159,7 +159,7 @@ class TestClientIntegration:
         expected_keys = {
             "headline",
             "summary",
-            "story",
+            "body",
             "sources",
             "date",
         }
@@ -184,7 +184,7 @@ class TestClientIntegration:
             article_data = {
                 "headline": "Breaking News",
                 "summary": "Important event summary",
-                "story": "Full story details...",
+                "body": "Full story details...",
                 "sources": ["https://source.com"],
             }
             mock_response.json.return_value = {
@@ -229,7 +229,7 @@ class TestClientIntegration:
             # Check research data is preserved
             assert final_article.headline == "Breaking News"
             assert final_article.summary == "Important event summary"
-            assert final_article.story == "Full story details..."
+            assert final_article.body == "Full story details..."
             assert final_article.sources == ["https://source.com"]
 
             # Verify all services were called

@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import research_articles
-from models import Article, Lead
+from models import Lead, Story
 
 
 class TestResearchService:
@@ -48,7 +48,7 @@ class TestResearchService:
                         "World leaders at the 2024 Climate Summit agreed on "
                         "unprecedented carbon reduction goals."
                     ),
-                    "story": (
+                    "body": (
                         "In a historic gathering, the 2024 Climate Summit "
                         "concluded with ambitious commitments."
                     ),
@@ -65,7 +65,7 @@ class TestResearchService:
                         "The annual Tech Innovation Expo revealed groundbreaking "
                         "AI technologies."
                     ),
-                    "story": (
+                    "body": (
                         "This year's Tech Innovation Expo showcased revolutionary "
                         "AI applications."
                     ),
@@ -84,7 +84,7 @@ class TestResearchService:
         {
             "headline": "Breaking News Event",
             "summary": "Important summary",
-            "story": "Full story content",
+            "body": "Full story content",
             "sources": ["https://example.com"]
         }
         ```"""
@@ -106,7 +106,7 @@ class TestResearchService:
         assert len(articles) == 2
 
         # Verify first article
-        assert isinstance(articles[0], Article)
+        assert isinstance(articles[0], Story)
         assert (
             articles[0].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
         )
@@ -115,7 +115,7 @@ class TestResearchService:
         # Verify all required fields have values
         assert articles[0].headline != ""
         assert articles[0].summary != ""
-        assert articles[0].story != ""
+        assert articles[0].body != ""
 
         # Verify Perplexity was called correctly
         assert mock_perplexity_client.research.call_count == 2
@@ -152,7 +152,7 @@ class TestResearchService:
         assert len(articles) == 1
         assert articles[0].headline == "Breaking News Event"
         assert articles[0].summary == "Important summary"
-        assert articles[0].story == "Full story content"
+        assert articles[0].body == "Full story content"
         assert articles[0].sources == ["https://example.com"]
 
     def test_research_articles_malformed_json(
@@ -170,7 +170,7 @@ class TestResearchService:
         # Should create article with fallback values
         assert articles[0].headline == ""
         assert articles[0].summary == ""
-        assert articles[0].story == "invalid json content{"  # Raw response as story
+        assert articles[0].body == "invalid json content{"  # Raw response as story
         assert articles[0].sources == []
 
         mock_logger.warning.assert_called_once()
@@ -194,7 +194,7 @@ class TestResearchService:
         assert len(articles) == 1
         assert articles[0].headline == "Only Headline"
         assert articles[0].summary == ""  # Default empty
-        assert articles[0].story == ""  # Default empty
+        assert articles[0].body == ""  # Default empty
         assert articles[0].sources == []  # Default empty
 
     def test_research_articles_empty_list(self, mock_perplexity_client):
@@ -214,7 +214,7 @@ class TestResearchService:
             {
                 "headline": "Climate Summit 🌍 Results",
                 "summary": "Leaders discuss émissions reduction",
-                "story": "The summit in København addressed climate change",
+                "body": "The summit in København addressed climate change",
                 "sources": ["https://example.com/climate-🌍"],
             }
         )
@@ -227,7 +227,7 @@ class TestResearchService:
         assert len(articles) == 1
         assert "🌍" in articles[0].headline
         assert "émissions" in articles[0].summary
-        assert "København" in articles[0].story
+        assert "København" in articles[0].body
         assert "🌍" in articles[0].sources[0]
 
     @pytest.mark.parametrize(
@@ -248,7 +248,7 @@ class TestResearchService:
             {
                 "headline": field_value,
                 "summary": field_value,
-                "story": field_value,
+                "body": field_value,
                 "sources": [field_value],
             }
         )
@@ -261,7 +261,7 @@ class TestResearchService:
         assert len(articles) == 1
         assert articles[0].headline == field_value
         assert articles[0].summary == field_value
-        assert articles[0].story == field_value
+        assert articles[0].body == field_value
         assert articles[0].sources == [field_value]
 
     @patch("services.article_research.logger")
@@ -298,13 +298,13 @@ class TestResearchService:
             # Verify all required fields are present
             assert hasattr(article, "headline")
             assert hasattr(article, "summary")
-            assert hasattr(article, "story")
+            assert hasattr(article, "body")
             assert hasattr(article, "sources")
 
             # Verify types
             assert isinstance(article.headline, str)
             assert isinstance(article.summary, str)
-            assert isinstance(article.story, str)
+            assert isinstance(article.body, str)
             assert isinstance(article.sources, list)
 
     def test_research_articles_perplexity_error_handling(
@@ -323,7 +323,7 @@ class TestResearchService:
         """Test edge cases in article parsing."""
         # Test with null values in JSON
         response_with_nulls = json.dumps(
-            {"headline": None, "summary": None, "story": "Valid story", "sources": None}
+            {"headline": None, "summary": None, "body": "Valid story", "sources": None}
         )
         mock_perplexity_client.research.return_value = response_with_nulls
 
@@ -335,7 +335,7 @@ class TestResearchService:
         # Article creation logic converts None values to defaults
         assert articles[0].headline == ""  # None converted to empty string
         assert articles[0].summary == ""  # None converted to empty string
-        assert articles[0].story == "Valid story"
+        assert articles[0].body == "Valid story"
         assert articles[0].sources == []  # None converted to empty list
 
     def test_research_articles_large_response(
@@ -347,7 +347,7 @@ class TestResearchService:
             {
                 "headline": "Large Article",
                 "summary": "Summary of large article",
-                "story": large_story,
+                "body": large_story,
                 "sources": ["https://example.com"] * 100,  # Many sources
             }
         )
@@ -358,5 +358,5 @@ class TestResearchService:
         )
 
         assert len(articles) == 1
-        assert len(articles[0].story) == len(large_story)
+        assert len(articles[0].body) == len(large_story)
         assert len(articles[0].sources) == 100

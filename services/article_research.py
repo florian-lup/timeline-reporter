@@ -5,15 +5,15 @@ import re
 
 from clients import PerplexityClient
 from config import RESEARCH_INSTRUCTIONS
-from models import Article, Lead
+from models import Lead, Story
 from utils import logger
 
 
 def research_articles(
     events: list[Lead], *, perplexity_client: PerplexityClient
-) -> list[Article]:
+) -> list[Story]:
     """Calls Perplexity once per event to generate full articles."""
-    articles: list[Article] = []
+    articles: list[Story] = []
 
     for event in events:
         prompt = RESEARCH_INSTRUCTIONS.format(
@@ -34,7 +34,7 @@ def research_articles(
 _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 
 
-def _parse_article_from_response(response_text: str) -> Article:
+def _parse_article_from_response(response_text: str) -> Story:
     """Parses the JSON (with optional fences) returned by Perplexity."""
     # Ideally no fences due to structured output, but guard just in case
     match = _FENCE_REGEX.search(response_text)
@@ -47,13 +47,13 @@ def _parse_article_from_response(response_text: str) -> Article:
         data = {
             "headline": "",
             "summary": "",
-            "story": response_text,
+            "body": response_text,
             "sources": [],
         }
 
-    return Article(
+    return Story(
         headline=data.get("headline", "") or "",
         summary=data.get("summary", "") or "",
-        story=data.get("story", "") or "",
+        body=data.get("body", "") or "",
         sources=data.get("sources", []) or [],
     )

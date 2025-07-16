@@ -15,11 +15,11 @@ class Lead:
 
 
 @dataclass
-class Article:
-    """Represents a fully-fledged researched article to be stored in MongoDB."""
+class Story:
+    """Represents a fully-fledged researched story to be stored in MongoDB."""
 
     headline: str
     summary: str
-    story: str
+    body: str
     sources: list[str]
     date: str = field(default_factory=get_today_formatted) 
