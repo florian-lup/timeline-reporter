@@ -1,4 +1,4 @@
-"""Integration tests for client interactions."""
+"""Integration tests for client functionality."""
 
 import json
 from unittest.mock import Mock, patch
@@ -6,52 +6,113 @@ from unittest.mock import Mock, patch
 import pytest
 
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
-from utils import Article
+from utils import Article, Event
 
 
 @pytest.mark.integration
 class TestClientIntegration:
     """Integration tests showing how clients work together."""
 
-    def test_research_to_storage_workflow(self):
-        """Test complete workflow from research to storage."""
-        # Mock all external dependencies
+    def test_openai_embedding_to_pinecone_workflow(self):
+        """Test workflow from text embedding to Pinecone storage."""
         with (
-            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
             patch("clients.openai_client.OpenAI") as mock_openai,
-            patch("clients.mongodb_client.MongoClient") as mock_mongo,
             patch("clients.pinecone_client.Pinecone") as mock_pinecone,
-            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
             patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
-            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
             patch("clients.pinecone_client.PINECONE_API_KEY", "test-key"),
         ):
-            # Setup Perplexity mock
+            # Setup OpenAI mock
+            mock_openai_instance = Mock()
+            mock_openai.return_value = mock_openai_instance
+            mock_embedding_response = Mock()
+            mock_embedding_response.data = [
+                Mock(embedding=[0.1] * 1536)
+            ]  # Sample embedding
+            mock_openai_instance.embeddings.create.return_value = (
+                mock_embedding_response
+            )
+
+            # Setup Pinecone mock
+            mock_pinecone_instance = Mock()
+            mock_pinecone.return_value = mock_pinecone_instance
+            mock_index = Mock()
+            # Mock query response with proper matches format
+            mock_query_result = Mock()
+            mock_query_result.matches = []  # No matches for this test
+            mock_index.query.return_value = mock_query_result
+            mock_pinecone_instance.Index.return_value = mock_index
+            # Mock list_indexes to return proper format
+            mock_list_result = Mock()
+            mock_list_result.names.return_value = ["existing-index"]
+            mock_pinecone_instance.list_indexes.return_value = mock_list_result
+
+            # Test the workflow
+            openai_client = OpenAIClient()
+            pinecone_client = PineconeClient()
+
+            # 1. Generate embedding
+            test_text = "This is a test event for embedding"
+            embedding = openai_client.embed_text(test_text)
+
+            # 2. Store in Pinecone
+            pinecone_client.upsert_vector("test-event-123", embedding, {"content": test_text})
+
+            # 3. Search for similar events
+            search_results = pinecone_client.similarity_search(embedding)
+
+            # Verify calls
+            mock_openai_instance.embeddings.create.assert_called_once()
+            mock_index.upsert.assert_called_once()
+            mock_index.query.assert_called_once()
+
+            # Verify data flow
+            assert len(embedding) == 1536
+            # Verify that upsert was called (specific parameter checking omitted for simplicity)
+
+    def test_perplexity_research_integration(self):
+        """Test Perplexity client research functionality."""
+        with (
+            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
+        ):
+            # Setup HTTP client mock
             mock_http_client = Mock()
             mock_response = Mock()
-            article_data = {
-                "headline": "AI Breakthrough",
-                "summary": "New AI model shows remarkable capabilities",
-                "story": "Detailed story about AI breakthrough...",
-                "sources": ["https://example.com/ai-news"],
+            research_data = {
+                "headline": "Test Research Article",
+                "summary": "This is a test research summary",
+                "story": "This is the full test research story...",
+                "sources": ["https://example.com/source1", "https://example.com/source2"],
             }
             mock_response.json.return_value = {
-                "choices": [{"message": {"content": json.dumps(article_data)}}]
+                "choices": [{"message": {"content": json.dumps(research_data)}}]
             }
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
 
-            # Setup OpenAI mock
-            mock_openai_instance = Mock()
-            mock_openai.return_value = mock_openai_instance
-            mock_embed_response = Mock()
-            mock_embed_data = Mock()
-            mock_embed_data.embedding = [0.1] * 1536
-            mock_embed_response.data = [mock_embed_data]
-            mock_openai_instance.embeddings.create.return_value = mock_embed_response
+            # Test research
+            perplexity_client = PerplexityClient()
+            research_prompt = "Research this event: Breaking news about technology"
+            result = perplexity_client.research(research_prompt)
 
-            # Setup MongoDB mock (fixed mocking)
+            # Verify API call
+            mock_http_client.post.assert_called_once()
+            call_args = mock_http_client.post.call_args
+            assert "investigative journalist" in call_args[1]["json"]["messages"][0]["content"]
+
+            # Verify result parsing
+            result_data = json.loads(result)
+            assert result_data["headline"] == "Test Research Article"
+            assert len(result_data["sources"]) == 2
+
+    def test_mongodb_article_storage_integration(self):
+        """Test MongoDB article storage functionality."""
+        with (
+            patch("clients.mongodb_client.MongoClient") as mock_mongo,
+            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
+        ):
+            # Setup MongoDB mock
             mock_mongo_instance = Mock()
             mock_mongo.return_value = mock_mongo_instance
             mock_db = Mock()
@@ -62,205 +123,36 @@ class TestClientIntegration:
             mock_result.inserted_id = "507f1f77bcf86cd799439011"
             mock_collection.insert_one.return_value = mock_result
 
-            # Setup Pinecone mock
-            mock_pinecone_instance = Mock()
-            mock_pinecone.return_value = mock_pinecone_instance
-            mock_indexes = mock_pinecone_instance.list_indexes.return_value
-            mock_names = mock_indexes.names
-            mock_names.return_value = ["timeline-events"]
-            mock_index = Mock()
-            mock_pinecone_instance.Index.return_value = mock_index
-
-            # Execute workflow
-            perplexity_client = PerplexityClient()
-            openai_client = OpenAIClient()
+            # Test article storage
             mongodb_client = MongoDBClient()
-            pinecone_client = PineconeClient()
+            test_article = {
+                "headline": "Test Article",
+                "summary": "Test summary",
+                "story": "Test story content",
+                "sources": ["https://example.com"],
+                "date": "2024-01-01",
+            }
 
-            # 1. Research with Perplexity
-            research_result = perplexity_client.research("AI developments")
-            article = json.loads(research_result)
+            result_id = mongodb_client.insert_article(test_article)
 
-            # 2. Create embedding with OpenAI
-            text_to_embed = f"{article['headline']} {article['summary']}"
-            embedding = openai_client.embed_text(text_to_embed)
+            # Verify storage
+            mock_collection.insert_one.assert_called_once_with(test_article)
+            assert result_id == "507f1f77bcf86cd799439011"
 
-            # 3. Store in MongoDB
-            article_id = mongodb_client.insert_article(article)
-
-            # 4. Store vector in Pinecone
-            pinecone_client.upsert_vector(
-                article_id,
-                embedding,
-                {"headline": article["headline"], "date": "2024-01-01"},
-            )
-
-            # Verify the workflow
-            assert article["headline"] == "AI Breakthrough"
-            assert len(embedding) == 1536
-            assert article_id == "507f1f77bcf86cd799439011"
-
-            # Verify all clients were called correctly
-            mock_http_client.post.assert_called_once()
-            mock_openai_instance.embeddings.create.assert_called_once()
-            mock_collection.insert_one.assert_called_once_with(article)
-            mock_index.upsert.assert_called_once()
-
-    def test_complete_tts_workflow(self):
-        """Test complete workflow including TTS generation and storage."""
-        with (
-            patch("clients.openai_client.OpenAI") as mock_openai,
-            patch("clients.mongodb_client.MongoClient") as mock_mongo,
-            patch(
-                "services.audio_generation.get_random_reporter_voice",
-                return_value=("ash", "Alex"),
-            ),
-            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
-            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
-        ):
-            # Setup OpenAI mock for both chat and TTS
-            mock_openai_instance = Mock()
-            mock_openai.return_value = mock_openai_instance
-
-            # Mock chat completion for analysis generation
-            mock_chat_response = Mock()
-            mock_choice = Mock()
-            mock_message = Mock()
-            mock_message.content = (
-                "This is an engaging analysis of the AI breakthrough "
-                "for broadcast presentation."
-            )
-            mock_choice.message = mock_message
-            mock_chat_response.choices = [mock_choice]
-            mock_openai_instance.chat.completions.create.return_value = (
-                mock_chat_response
-            )
-
-            # Mock TTS response
-            mock_tts_response = Mock()
-            mock_tts_response.content = b"fake_mp3_audio_data_for_broadcast"
-            mock_openai_instance.audio.speech.create.return_value = mock_tts_response
-
-            # Setup MongoDB mock
-            mock_mongo_instance = Mock()
-            mock_mongo.return_value = mock_mongo_instance
-            mock_db = Mock()
-            mock_collection = Mock()
-            mock_mongo_instance.__getitem__ = Mock(return_value=mock_db)
-            mock_db.__getitem__ = Mock(return_value=mock_collection)
-            mock_result = Mock()
-            mock_result.inserted_id = "507f1f77bcf86cd799439012"
-            mock_collection.insert_one.return_value = mock_result
-
-            # Execute TTS workflow
-            from services import generate_audio
-
-            openai_client = OpenAIClient()
-            MongoDBClient()
-
-            # Create test article with required fields
-            test_articles = [
-                Article(
-                    headline="AI Breakthrough in 2024",
-                    summary=("Revolutionary AI model shows unprecedented capabilities"),
-                    story=("Detailed story about the groundbreaking AI development..."),
-                    sources=["https://example.com/ai-news"],
-                    broadcast=b"",  # Placeholder
-                    reporter="",  # Placeholder
-                )
-            ]
-
-            # Run TTS service
-            result_articles = generate_audio(test_articles, openai_client=openai_client)
-
-            # Verify results
-            assert len(result_articles) == 1
-            processed_article = result_articles[0]
-
-            # Check TTS output
-            expected_data = b"fake_mp3_audio_data_for_broadcast"
-            assert processed_article.broadcast == expected_data
-            assert processed_article.reporter == "Alex"
-            assert processed_article.headline == "AI Breakthrough in 2024"
-
-            # Verify OpenAI calls
-            mock_openai_instance.chat.completions.create.assert_called_once()
-            mock_openai_instance.audio.speech.create.assert_called_once()
-
-            # Verify TTS parameters
-            tts_call = mock_openai_instance.audio.speech.create.call_args
-            assert tts_call[1]["voice"] == "ash"
-            expected_input = (
-                "This is an engaging analysis of the AI breakthrough "
-                "for broadcast presentation."
-            )
-            assert tts_call[1]["input"] == expected_input
-            assert tts_call[1]["response_format"] == "mp3"
-
-            # Note: Storage is handled separately in the new architecture
-            # TTS service only adds broadcast and reporter fields, doesn't store
-
-    def test_openai_chat_and_tts_integration(self):
-        """Test integration of OpenAI chat completion and TTS functionality."""
-        with patch("clients.openai_client.OpenAI") as mock_openai:
-            mock_openai_instance = Mock()
-            mock_openai.return_value = mock_openai_instance
-
-            # Mock chat completion
-            mock_chat_response = Mock()
-            mock_choice = Mock()
-            mock_message = Mock()
-            mock_message.content = "Generated analysis text for TTS conversion"
-            mock_choice.message = mock_message
-            mock_chat_response.choices = [mock_choice]
-            mock_openai_instance.chat.completions.create.return_value = (
-                mock_chat_response
-            )
-
-            # Mock TTS
-            mock_tts_response = Mock()
-            mock_tts_response.content = b"converted_audio_data"
-            mock_openai_instance.audio.speech.create.return_value = mock_tts_response
-
-            with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-                client = OpenAIClient()
-
-                # 1. Generate analysis text
-                analysis_text = client.chat_completion(
-                    "Create analysis for: AI breakthrough news", model="test-model"
-                )
-
-                # 2. Convert to speech
-                audio_data = client.text_to_speech(analysis_text, "alloy")
-
-                # Verify integration
-                expected_text = "Generated analysis text for TTS conversion"
-                assert analysis_text == expected_text
-                assert audio_data == b"converted_audio_data"
-
-                # Verify method calls
-                mock_openai_instance.chat.completions.create.assert_called_once()
-                mock_openai_instance.audio.speech.create.assert_called_once()
-
-                # Verify the text from chat is used in TTS
-                tts_call = mock_openai_instance.audio.speech.create.call_args
-                assert tts_call[1]["input"] == analysis_text
-
-    def test_article_model_with_required_fields(self):
-        """Test Article model integration with required broadcast and reporter."""
+    def test_article_model_integration(self):
+        """Test Article model integration with updated fields."""
         # Test creating Article with all required fields
         article = Article(
             headline="Test Headline",
             summary="Test summary",
             story="Test story content",
             sources=["https://example.com"],
-            broadcast=b"audio_data",
-            reporter="Alex",
         )
 
         assert article.headline == "Test Headline"
-        assert article.broadcast == b"audio_data"
-        assert article.reporter == "Alex"
+        assert article.summary == "Test summary"
+        assert article.story == "Test story content"
+        assert article.sources == ["https://example.com"]
 
         # Test converting to dict for MongoDB storage
         article_dict = article.__dict__
@@ -269,8 +161,6 @@ class TestClientIntegration:
             "summary",
             "story",
             "sources",
-            "broadcast",
-            "reporter",
             "date",
         }
         actual_keys = set(article_dict.keys())
@@ -280,18 +170,12 @@ class TestClientIntegration:
         for key, value in article_dict.items():
             assert value is not None, f"Field {key} should not be None"
 
-    def test_research_to_tts_pipeline_integration(self):
-        """Test integration from research service through TTS to storage."""
+    def test_research_to_storage_pipeline_integration(self):
+        """Test integration from research service through to storage."""
         with (
             patch("clients.perplexity_client.httpx.Client") as mock_httpx,
-            patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
-            patch(
-                "services.audio_generation.get_random_reporter_voice",
-                return_value=("ballad", "Blake"),
-            ),
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
-            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
             patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
         ):
             # Setup Perplexity mock (research)
@@ -310,28 +194,6 @@ class TestClientIntegration:
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
 
-            # Setup OpenAI mock (chat + TTS)
-            mock_openai_instance = Mock()
-            mock_openai.return_value = mock_openai_instance
-
-            # Chat completion for analysis
-            mock_chat_response = Mock()
-            mock_choice = Mock()
-            mock_message = Mock()
-            mock_message.content = (
-                "Professional analysis of the breaking news for broadcast."
-            )
-            mock_choice.message = mock_message
-            mock_chat_response.choices = [mock_choice]
-            mock_openai_instance.chat.completions.create.return_value = (
-                mock_chat_response
-            )
-
-            # TTS conversion
-            mock_tts_response = Mock()
-            mock_tts_response.content = b"broadcast_audio_data"
-            mock_openai_instance.audio.speech.create.return_value = mock_tts_response
-
             # MongoDB storage
             mock_mongo_instance = Mock()
             mock_mongo.return_value = mock_mongo_instance
@@ -344,12 +206,11 @@ class TestClientIntegration:
             mock_collection.insert_one.return_value = mock_result
 
             # Execute full pipeline
-            from services import generate_audio, research_articles
+            from services import research_articles
             from utils import Event
 
             perplexity_client = PerplexityClient()
-            openai_client = OpenAIClient()
-            MongoDBClient()
+            mongodb_client = MongoDBClient()
 
             # 1. Research phase
             test_events = [Event(title="Breaking News", summary="Important event")]
@@ -357,12 +218,13 @@ class TestClientIntegration:
                 test_events, perplexity_client=perplexity_client
             )
 
-            # 2. TTS phase
-            final_articles = generate_audio(articles, openai_client=openai_client)
+            # 2. Storage phase
+            for article in articles:
+                mongodb_client.insert_article(article.__dict__)
 
             # Verify end-to-end pipeline
-            assert len(final_articles) == 1
-            final_article = final_articles[0]
+            assert len(articles) == 1
+            final_article = articles[0]
 
             # Check research data is preserved
             assert final_article.headline == "Breaking News"
@@ -370,18 +232,11 @@ class TestClientIntegration:
             assert final_article.story == "Full story details..."
             assert final_article.sources == ["https://source.com"]
 
-            # Check TTS data is added
-            assert final_article.broadcast == b"broadcast_audio_data"
-            assert final_article.reporter == "Blake"
-
             # Verify all services were called
             # Perplexity research
             mock_http_client.post.assert_called_once()
-            # Analysis generation
-            mock_openai_instance.chat.completions.create.assert_called_once()
-            # TTS conversion
-            mock_openai_instance.audio.speech.create.assert_called_once()
-            # Note: Storage handled separately in the new architecture
+            # MongoDB storage
+            mock_collection.insert_one.assert_called_once()
 
     def test_similarity_search_workflow(self):
         """Test workflow for finding similar articles."""
@@ -396,122 +251,133 @@ class TestClientIntegration:
             # Setup mocks
             mock_openai_instance = Mock()
             mock_openai.return_value = mock_openai_instance
-            mock_embed_response = Mock()
-            mock_embed_data = Mock()
-            query_vector = [0.2] * 1536
-            mock_embed_data.embedding = query_vector
-            mock_embed_response.data = [mock_embed_data]
-            mock_openai_instance.embeddings.create.return_value = mock_embed_response
+            mock_embedding_response = Mock()
+            mock_embedding_response.data = [Mock(embedding=[0.5] * 1536)]
+            mock_openai_instance.embeddings.create.return_value = (
+                mock_embedding_response
+            )
 
             mock_pinecone_instance = Mock()
             mock_pinecone.return_value = mock_pinecone_instance
-            mock_names = mock_pinecone_instance.list_indexes.return_value.names
-            mock_names.return_value = ["timeline-events"]
             mock_index = Mock()
+            mock_index.query.return_value = Mock(
+                matches=[
+                    Mock(id="similar-event-1", score=0.9),
+                    Mock(id="similar-event-2", score=0.8),
+                ]
+            )
             mock_pinecone_instance.Index.return_value = mock_index
+            # Mock list_indexes to return proper format
+            mock_list_result = Mock()
+            mock_list_result.names.return_value = ["existing-index"]
+            mock_pinecone_instance.list_indexes.return_value = mock_list_result
 
-            # Mock similarity search results
-            mock_match = Mock()
-            mock_match.id = "507f1f77bcf86cd799439011"
-            mock_match.score = 0.95
-            mock_query_result = Mock()
-            mock_query_result.matches = [mock_match]
-            mock_index.query.return_value = mock_query_result
-
-            # Execute similarity search workflow
+            # Test similarity search workflow
             openai_client = OpenAIClient()
             pinecone_client = PineconeClient()
 
-            # 1. Create embedding for search query
-            query_embedding = openai_client.embed_text("machine learning news")
+            # Search for similar content
+            query_text = "Climate summit discusses global warming solutions"
+            embedding = openai_client.embed_text(query_text)
+            similar_events = pinecone_client.similarity_search(embedding)
 
-            # 2. Search for similar vectors
-            similar_results = pinecone_client.similarity_search(query_embedding)
+            # Verify workflow
+            assert len(similar_events) == 2
+            assert similar_events[0][0] == "similar-event-1"  # ID is first element
+            assert similar_events[0][1] == 0.9  # Score is second element
 
-            # Verify results
-            assert len(similar_results) == 1
-            assert similar_results[0][0] == "507f1f77bcf86cd799439011"
-            assert similar_results[0][1] == 0.95
-
-            # Verify calls
-            mock_openai_instance.embeddings.create.assert_called_once()
-            mock_index.query.assert_called_once()
-
-    @pytest.mark.slow
-    def test_error_handling_in_workflow(self):
-        """Test error handling across the workflow."""
-        with (
-            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
-            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
-        ):
-            # Setup failing HTTP request
-            mock_http_client = Mock()
-            mock_response = Mock()
-            mock_response.raise_for_status.side_effect = Exception("API Error")
-            mock_httpx.return_value.__enter__.return_value = mock_http_client
-            mock_http_client.post.return_value = mock_response
-
-            perplexity_client = PerplexityClient()
-
-            # Verify error propagation
-            with pytest.raises(Exception, match="API Error"):
-                perplexity_client.research("test query")
-
-    @pytest.mark.slow
-    def test_tts_error_handling_integration(self):
-        """Test error handling in TTS workflow integration."""
+    def test_client_error_handling_integration(self):
+        """Test error handling across client integrations."""
         with (
             patch("clients.openai_client.OpenAI") as mock_openai,
-            patch("clients.mongodb_client.MongoClient") as mock_mongo,
             patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
-            patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
         ):
-            # Setup OpenAI mock to fail on TTS
             mock_openai_instance = Mock()
             mock_openai.return_value = mock_openai_instance
-
-            # Chat completion succeeds
-            mock_chat_response = Mock()
-            mock_choice = Mock()
-            mock_message = Mock()
-            mock_message.content = "Analysis text"
-            mock_choice.message = mock_message
-            mock_chat_response.choices = [mock_choice]
-            mock_openai_instance.chat.completions.create.return_value = (
-                mock_chat_response
+            mock_openai_instance.embeddings.create.side_effect = Exception(
+                "API rate limit exceeded"
             )
-
-            # TTS fails
-            mock_openai_instance.audio.speech.create.side_effect = Exception(
-                "TTS API Error"
-            )
-
-            # MongoDB setup (shouldn't be called due to TTS failure)
-            mock_mongo_instance = Mock()
-            mock_mongo.return_value = mock_mongo_instance
-            mock_db = Mock()
-            mock_collection = Mock()
-            mock_mongo_instance.__getitem__ = Mock(return_value=mock_db)
-            mock_db.__getitem__ = Mock(return_value=mock_collection)
-
-            from services import generate_audio
 
             openai_client = OpenAIClient()
-            MongoDBClient()
 
-            test_articles = [
-                Article(
-                    headline="Test",
-                    summary="Test",
-                    story="Test",
-                    sources=[],
-                    broadcast=b"",
-                    reporter="",
-                )
-            ]
+            # Test that exceptions propagate correctly
+            with pytest.raises(Exception, match="API rate limit exceeded"):
+                openai_client.embed_text("test text")
 
-            # Should handle error gracefully and return empty list
-            result = generate_audio(test_articles, openai_client=openai_client)
+    def test_multimodal_client_workflow(self):
+        """Test workflow combining multiple clients."""
+        with (
+            patch("clients.perplexity_client.httpx.Client") as mock_httpx,
+            patch("clients.openai_client.OpenAI") as mock_openai,
+            patch("clients.pinecone_client.Pinecone") as mock_pinecone,
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
+            patch("clients.openai_client.OPENAI_API_KEY", "test-key"),
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-key"),
+        ):
+            # Setup all client mocks
+            # Perplexity (discovery)
+            mock_http_client = Mock()
+            mock_discovery_response = Mock()
+            mock_discovery_response.json.return_value = {
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(
+                                [{"title": "Climate News", "summary": "Important update"}]
+                            )
+                        }
+                    }
+                ]
+            }
+            mock_discovery_response.raise_for_status.return_value = None
+            mock_httpx.return_value.__enter__.return_value = mock_http_client
+            mock_http_client.post.return_value = mock_discovery_response
 
-            assert len(result) == 0  # Article skipped due to TTS failure
-            # Note: Storage handled separately in the new architecture
+            # OpenAI (embeddings)
+            mock_openai_instance = Mock()
+            mock_openai.return_value = mock_openai_instance
+            mock_embedding_response = Mock()
+            mock_embedding_response.data = [Mock(embedding=[0.3] * 1536)]
+            mock_openai_instance.embeddings.create.return_value = (
+                mock_embedding_response
+            )
+
+            # Pinecone (similarity search)
+            mock_pinecone_instance = Mock()
+            mock_pinecone.return_value = mock_pinecone_instance
+            mock_index = Mock()
+            mock_index.query.return_value = Mock(matches=[])  # No similar events
+            mock_pinecone_instance.Index.return_value = mock_index
+            # Mock list_indexes to return proper format
+            mock_list_result = Mock()
+            mock_list_result.names.return_value = ["existing-index"]
+            mock_pinecone_instance.list_indexes.return_value = mock_list_result
+
+            # Test multimodal workflow
+            perplexity_client = PerplexityClient()
+            openai_client = OpenAIClient()
+            pinecone_client = PineconeClient()
+
+            # 1. Discovery
+            discovery_result = perplexity_client.deep_research(
+                "Find recent climate news"
+            )
+            events = json.loads(discovery_result)
+
+            # 2. Embedding generation
+            event_text = f"{events[0]['title']} {events[0]['summary']}"
+            embedding = openai_client.embed_text(event_text)
+
+            # 3. Similarity search
+            similar_events = pinecone_client.similarity_search(embedding)
+
+            # Verify multimodal workflow
+            assert len(events) == 1
+            assert events[0]["title"] == "Climate News"
+            assert len(embedding) == 1536
+            assert len(similar_events) == 0  # No duplicates found
+
+            # Verify all clients were called
+            mock_http_client.post.assert_called_once()
+            mock_openai_instance.embeddings.create.assert_called_once()
+            mock_index.query.assert_called_once()

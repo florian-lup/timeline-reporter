@@ -112,8 +112,10 @@ class TestResearchService:
         )
         assert "carbon reduction goals" in articles[0].summary
         assert len(articles[0].sources) == 2
-        assert articles[0].broadcast == b""  # Placeholder
-        assert articles[0].reporter == ""  # Placeholder
+        # Verify all required fields have values
+        assert articles[0].headline != ""
+        assert articles[0].summary != ""
+        assert articles[0].story != ""
 
         # Verify Perplexity was called correctly
         assert mock_perplexity_client.research.call_count == 2
@@ -298,20 +300,12 @@ class TestResearchService:
             assert hasattr(article, "summary")
             assert hasattr(article, "story")
             assert hasattr(article, "sources")
-            assert hasattr(article, "broadcast")
-            assert hasattr(article, "reporter")
 
             # Verify types
             assert isinstance(article.headline, str)
             assert isinstance(article.summary, str)
             assert isinstance(article.story, str)
             assert isinstance(article.sources, list)
-            assert isinstance(article.broadcast, bytes)
-            assert isinstance(article.reporter, str)
-
-            # Verify placeholder values for TTS fields
-            assert article.broadcast == b""
-            assert article.reporter == ""
 
     def test_research_articles_perplexity_error_handling(
         self, mock_perplexity_client, sample_events

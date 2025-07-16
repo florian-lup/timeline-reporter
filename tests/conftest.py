@@ -101,8 +101,6 @@ def sample_article():
         summary="This is a sample article summary.",
         story="This is the full story content with detailed information.",
         sources=["https://example.com/source1", "https://example.com/source2"],
-        broadcast=b"",
-        reporter="",
     )
 
 
@@ -115,16 +113,12 @@ def sample_articles():
             summary="Article about technology developments",
             story="Full story about technology developments in the industry.",
             sources=["https://example.com/tech1", "https://example.com/tech2"],
-            broadcast=b"",
-            reporter="",
         ),
         Article(
             headline="Climate News Article",
             summary="Article about climate change",
             story="Full story about recent climate change developments.",
             sources=["https://example.com/climate1"],
-            broadcast=b"",
-            reporter="",
         ),
     ]
 
@@ -135,7 +129,6 @@ def mock_openai_client():
     mock_client = Mock()
     mock_client.embed_text.return_value = [0.1] * 1536
     mock_client.chat_completion.return_value = "Test chat completion response"
-    mock_client.text_to_speech.return_value = b"test_audio_data"
     return mock_client
 
 

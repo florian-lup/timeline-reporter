@@ -25,16 +25,12 @@ class TestStorageService:
                 summary="World leaders reach consensus on climate action.",
                 story="Detailed story about the climate summit and its outcomes.",
                 sources=["https://example.com/climate"],
-                broadcast=b"audio_data_1",
-                reporter="Alex",
             ),
             Article(
                 headline="Tech Innovation News",
                 summary="Breakthrough in AI technology announced.",
                 story="Comprehensive coverage of the latest AI developments.",
                 sources=["https://example.com/tech"],
-                broadcast=b"audio_data_2",
-                reporter="Blake",
             ),
         ]
 
@@ -57,14 +53,14 @@ class TestStorageService:
         # First article
         first_article_dict = call_args[0][0][0]
         assert first_article_dict["headline"] == "Climate Summit Agreement"
-        assert first_article_dict["broadcast"] == b"audio_data_1"
-        assert first_article_dict["reporter"] == "Alex"
+        assert first_article_dict["summary"] == "World leaders reach consensus on climate action."
+        assert first_article_dict["story"] == "Detailed story about the climate summit and its outcomes."
 
         # Second article
         second_article_dict = call_args[1][0][0]
         assert second_article_dict["headline"] == "Tech Innovation News"
-        assert second_article_dict["broadcast"] == b"audio_data_2"
-        assert second_article_dict["reporter"] == "Blake"
+        assert second_article_dict["summary"] == "Breakthrough in AI technology announced."
+        assert second_article_dict["story"] == "Comprehensive coverage of the latest AI developments."
 
         # Verify logging
         assert mock_logger.info.call_count == 2
@@ -93,8 +89,6 @@ class TestStorageService:
                 summary="Single article summary",
                 story="Single article story",
                 sources=["https://example.com"],
-                broadcast=b"single_audio",
-                reporter="Reporter",
             )
         ]
 
@@ -125,8 +119,6 @@ class TestStorageService:
             assert article_dict["summary"] == original_article.summary
             assert article_dict["story"] == original_article.story
             assert article_dict["sources"] == original_article.sources
-            assert article_dict["broadcast"] == original_article.broadcast
-            assert article_dict["reporter"] == original_article.reporter
 
     def test_insert_articles_mongodb_error_handling(
         self, mock_mongodb_client, sample_articles
@@ -146,8 +138,6 @@ class TestStorageService:
                 summary="Leaders discuss émissions reduction",
                 story="The summit in København addressed climate change",
                 sources=["https://example.com/climate-🌍"],
-                broadcast=b"unicode_audio_data",
-                reporter="François",
             )
         ]
 
@@ -159,29 +149,31 @@ class TestStorageService:
         assert "🌍" in call_args["headline"]
         assert "émissions" in call_args["summary"]
         assert "København" in call_args["story"]
-        assert call_args["reporter"] == "François"
 
-    @pytest.mark.parametrize("article_count", [1, 5, 10, 50])
-    def test_insert_articles_various_counts(self, mock_mongodb_client, article_count):
-        """Test storage with various article counts."""
-        articles = []
-        expected_ids = []
-
-        for i in range(article_count):
-            articles.append(
-                Article(
-                    headline=f"Article {i}",
-                    summary=f"Summary {i}",
-                    story=f"Story {i}",
-                    sources=[f"https://example.com/{i}"],
-                    broadcast=f"audio_{i}".encode(),
-                    reporter=f"Reporter{i}",
-                )
+    def test_insert_articles_large_batch(self, mock_mongodb_client):
+        """Test storage with large number of articles."""
+        large_batch = [
+            Article(
+                headline=f"Article {i}",
+                summary=f"Summary {i}",
+                story=f"Story {i}",
+                sources=[f"https://example.com/{i}"],
             )
-            expected_ids.append(f"id_{i}")
+            for i in range(100)
+        ]
 
-        mock_mongodb_client.insert_article.side_effect = expected_ids
+        mock_mongodb_client.insert_article.side_effect = [
+            f"id{i}" for i in range(100)
+        ]
 
-        insert_articles(articles, mongodb_client=mock_mongodb_client)
+        insert_articles(large_batch, mongodb_client=mock_mongodb_client)
 
-        assert mock_mongodb_client.insert_article.call_count == article_count
+        # Verify all articles were processed
+        assert mock_mongodb_client.insert_article.call_count == 100
+
+        # Verify data integrity for first and last articles
+        first_call = mock_mongodb_client.insert_article.call_args_list[0][0][0]
+        last_call = mock_mongodb_client.insert_article.call_args_list[-1][0][0]
+
+        assert first_call["headline"] == "Article 0"
+        assert last_call["headline"] == "Article 99"

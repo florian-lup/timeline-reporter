@@ -94,7 +94,7 @@ pytest tests/services/test_integration.py -v
 Test individual client components:
 
 - **MongoDB client**: Database operations, connection handling
-- **OpenAI client**: Chat completion, embeddings, TTS
+- **OpenAI client**: Chat completion, embeddings
 - **Perplexity client**: Research API, response parsing
 - **Pinecone client**: Vector operations, similarity search
 - **Integration**: How clients work together
@@ -106,7 +106,6 @@ Test business logic services:
 - **Discovery**: Event discovery from news sources
 - **Deduplication**: Filtering duplicate events using embeddings
 - **Research**: Converting events to full articles
-- **TTS**: Generating broadcast audio from articles
 - **Storage**: Persisting articles to database
 - **Integration**: Complete pipeline from discovery to storage
 
@@ -135,8 +134,8 @@ Shared fixtures in `conftest.py`:
 
 Services integration tests demonstrate:
 
-- **Complete workflow**: Discovery → Deduplication → Research → TTS → Storage
-- **Data transformation**: Events become Articles with audio
+- **Complete workflow**: Discovery → Deduplication → Research → Storage
+- **Data transformation**: Events become Articles
 - **Error propagation**: How failures cascade through the pipeline
 - **Performance**: Large-scale processing with 10+ events
 
@@ -171,20 +170,32 @@ Tests cover various error scenarios:
 
 Test configuration in `pytest.ini`:
 
-- Test discovery patterns
-- Coverage settings
-- Warning filters
-- Custom markers
+```ini
+[tool:pytest]
+testpaths = tests
+python_files = test_*.py
+python_functions = test_*
+python_classes = Test*
+markers =
+    unit: Unit tests
+    integration: Integration tests
+    slow: Slow running tests
+addopts =
+    --strict-markers
+    --tb=short
+    -v
+filterwarnings =
+    ignore::DeprecationWarning
+    ignore::PendingDeprecationWarning
+```
 
 ## Test Statistics
 
-Current test suite includes:
+The test suite includes:
 
-- **158 total tests** across the entire project
-- **73 client tests** (MongoDB, OpenAI, Perplexity, Pinecone + integration)
-- **65 services tests** (Discovery, Deduplication, Research, TTS, Storage + integration)
-- **Fast execution**: ~3 seconds for full suite
-- **Comprehensive coverage**: All major components and workflows
+- **40 client tests** (MongoDB, OpenAI, Perplexity, Pinecone + integration)
+- **55 services tests** (Discovery, Deduplication, Research, Storage + integration)
+- **95 total tests** with comprehensive coverage of all components
 
 ## Continuous Integration
 

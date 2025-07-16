@@ -119,7 +119,7 @@ ignore = [
     "FBT002",  # Boolean default arg in function definition
     
     # Security exceptions for this project
-    "S311",    # Standard pseudo-random generators (fine for voice selection)
+    "S311",    # Standard pseudo-random generators (acceptable for this project)
     "S603",    # subprocess call (needed for our lint script)
     "S607",    # Starting a process with a partial executable path
     

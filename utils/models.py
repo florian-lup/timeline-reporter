@@ -22,6 +22,4 @@ class Article:
     summary: str
     story: str
     sources: list[str]
-    broadcast: bytes
-    reporter: str
     date: str = field(default_factory=get_today_formatted)

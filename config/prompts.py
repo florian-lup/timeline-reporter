@@ -79,33 +79,6 @@ RESEARCH_INSTRUCTIONS = (
 )
 
 # ---------------------------------------------------------------------------
-# TTS & Broadcast Analysis Prompts
-# ---------------------------------------------------------------------------
-
-TTS_INSTRUCTIONS = (
-    "You are a professional news reporter. Based on the research article "
-    "provided below, create a compelling analysis for broadcast presentation.\n\n"
-    "Article:\n"
-    "Headline: {headline}\n"
-    "Summary: {summary}\n"
-    "Story: {story}\n\n"
-    "Create a natural, engaging reporter analysis that:\n"
-    "- Is conversational and suitable for audio broadcast\n"
-    "- Captures the key points and implications\n"
-    "- Uses a professional yet accessible tone\n"
-    "- Is between 500-1000 words\n"
-    "- Flows naturally when read aloud\n\n"
-    "IMPORTANT: Return ONLY clean, plain text suitable for text-to-speech conversion:\n"
-    "- No markdown formatting (no *, **, _, etc.)\n"
-    "- No special characters or symbols\n"
-    "- No quotation marks around the entire text\n"
-    "- No JSON formatting or code blocks\n"
-    "- Use full words instead of abbreviations for better pronunciation\n"
-    "- Write numbers as words when appropriate for speech clarity\n"
-    "Return only the clean analysis text that can be directly fed to TTS."
-)
-
-# ---------------------------------------------------------------------------
 # Prompt Categories for Easy Access
 # ---------------------------------------------------------------------------
 
@@ -124,14 +97,9 @@ RESEARCH_PROMPTS = {
     "instructions": RESEARCH_INSTRUCTIONS,
 }
 
-TTS_PROMPTS = {
-    "instructions": TTS_INSTRUCTIONS,
-}
-
 # All prompts for easy iteration/management
 ALL_PROMPTS = {
     "discovery": DISCOVERY_PROMPTS,
     "decision": DECISION_PROMPTS,
     "research": RESEARCH_PROMPTS,
-    "tts": TTS_PROMPTS,
 }

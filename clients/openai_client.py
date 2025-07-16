@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from openai import OpenAI
 
@@ -10,7 +10,6 @@ from config import (
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
     OPENAI_API_KEY,
-    TTS_MODEL,
 )
 from utils import logger
 
@@ -66,32 +65,6 @@ class OpenAIClient:
 
         content: str = response.choices[0].message.content
         return content
-
-    def text_to_speech(
-        self,
-        text: str,
-        voice: (
-            Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
-            | Literal["ash", "ballad", "coral", "sage"]
-        ),
-    ) -> bytes:
-        """Convert text to speech using OpenAI's TTS model.
-
-        Args:
-            text: The text to convert to speech
-            voice: The voice to use (e.g., "alloy", "echo", "fable", etc.)
-
-        Returns:
-            MP3 audio data as bytes
-        """
-        logger.info("Converting to speech with voice: %s", voice)
-
-        response = self._client.audio.speech.create(
-            model=TTS_MODEL, voice=voice, input=text, response_format="mp3"
-        )
-
-        audio_data: bytes = response.content
-        return audio_data
 
     def embed_text(self, text: str) -> list[float]:
         """Gets an embedding vector for *text*."""
