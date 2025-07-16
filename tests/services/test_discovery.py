@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import discover_events
-from utils import Event
+from models import Lead
 
 
 class TestDiscoveryService:
@@ -80,7 +80,7 @@ class TestDiscoveryService:
             events = discover_events(mock_perplexity_client)
 
         assert len(events) == 2
-        assert isinstance(events[0], Event)
+        assert isinstance(events[0], Lead)
         assert events[0].title == "Climate Summit Announced"
         assert events[0].summary == (
             "World leaders gather to discuss urgent climate action plans "

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from clients import OpenAIClient, PineconeClient
-from utils import Event, logger
+from models import Lead
+from utils import logger
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -9,17 +10,17 @@ from utils import Event, logger
 
 
 def deduplicate_events(
-    events: list[Event],
+    events: list[Lead],
     *,
     openai_client: OpenAIClient,
     pinecone_client: PineconeClient,
-) -> list[Event]:
+) -> list[Lead]:
     """Removes near-duplicate events based on vector similarity.
 
     Each *event*'s summary is embedded and compared against existing vectors in
     Pinecone. Anything with a similarity ≥ threshold is dropped.
     """
-    unique_events: list[Event] = []
+    unique_events: list[Lead] = []
 
     for idx, event in enumerate(events):
         # Create embedding

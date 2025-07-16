@@ -5,10 +5,11 @@ import re
 from clients import OpenAIClient
 from config import DECISION_INSTRUCTIONS, DECISION_SYSTEM_PROMPT
 from config.settings import DECISION_MODEL
-from utils import Event, logger
+from models import Lead
+from utils import logger
 
 
-def select_events(events: list[Event], *, openai_client: OpenAIClient) -> list[Event]:
+def select_events(events: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful events from deduplicated list.
 
     Uses AI to evaluate events based on impact, significance, and newsworthiness,
@@ -58,8 +59,8 @@ def select_events(events: list[Event], *, openai_client: OpenAIClient) -> list[E
 
 
 def _filter_events_by_indices(
-    response_text: str, original_events: list[Event]
-) -> list[Event]:
+    response_text: str, original_events: list[Lead]
+) -> list[Lead]:
     """Filters original events based on selected indices from AI response."""
     # Extract numbers from response (handles formats like "1, 3, 5" or "2 4 7" etc.)
     numbers = re.findall(r"\b(\d+)\b", response_text)

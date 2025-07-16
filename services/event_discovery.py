@@ -5,7 +5,8 @@ import re
 
 from clients import PerplexityClient
 from config import DISCOVERY_INSTRUCTIONS
-from utils import Event, logger
+from models import Lead
+from utils import logger
 
 # Older versions of the model sometimes wrap JSON in markdown fences; we keep a
 # fallback regex but expect pure JSON due to `response_format=json_object`.
@@ -17,7 +18,7 @@ _FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
 # ---------------------------------------------------------------------------
 
 
-def discover_events(perplexity_client: PerplexityClient) -> list[Event]:
+def discover_events(perplexity_client: PerplexityClient) -> list[Lead]:
     """Discovers events for multiple topics in a single API call.
 
     Returns the combined list of events.
@@ -34,7 +35,7 @@ def discover_events(perplexity_client: PerplexityClient) -> list[Event]:
 # ---------------------------------------------------------------------------
 
 
-def _parse_events_from_response(response_text: str) -> list[Event]:
+def _parse_events_from_response(response_text: str) -> list[Lead]:
     """Extracts JSON from the model response and maps to Event objects."""
     # Some models wrap JSON in markdown triple-backticks; strip them if needed.
     match = _FENCE_REGEX.search(response_text)
@@ -51,7 +52,7 @@ def _parse_events_from_response(response_text: str) -> list[Event]:
         logger.warning("Expected JSON array, got %s", type(data))
         return []
 
-    events: list[Event] = [
-        Event(title=item["title"], summary=item["summary"]) for item in data
+    events: list[Lead] = [
+        Lead(title=item["title"], summary=item["summary"]) for item in data
     ]
     return events

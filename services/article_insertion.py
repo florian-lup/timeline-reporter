@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from clients import MongoDBClient
-from utils import Article, logger
+from models import Article
+from utils import logger
 
 # ---------------------------------------------------------------------------
 # Public API

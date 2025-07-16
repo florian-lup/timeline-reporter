@@ -6,8 +6,8 @@ from utils.date import get_today_formatted
 
 
 @dataclass
-class Event:
-    """Represents a news event discovered in the discovery step."""
+class Lead:
+    """Represents a news lead discovered in the discovery step."""
 
     title: str
     summary: str
@@ -22,4 +22,4 @@ class Article:
     summary: str
     story: str
     sources: list[str]
-    date: str = field(default_factory=get_today_formatted)
+    date: str = field(default_factory=get_today_formatted) 

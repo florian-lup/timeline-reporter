@@ -5,11 +5,12 @@ import re
 
 from clients import PerplexityClient
 from config import RESEARCH_INSTRUCTIONS
-from utils import Article, Event, logger
+from models import Article, Lead
+from utils import logger
 
 
 def research_articles(
-    events: list[Event], *, perplexity_client: PerplexityClient
+    events: list[Lead], *, perplexity_client: PerplexityClient
 ) -> list[Article]:
     """Calls Perplexity once per event to generate full articles."""
     articles: list[Article] = []

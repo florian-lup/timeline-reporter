@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from utils import Article, Event
+from models import Article, Lead
 
 
 @pytest.fixture(autouse=True)
@@ -66,7 +66,7 @@ def sample_research_prompt():
 @pytest.fixture
 def sample_event():
     """Sample Event object for testing."""
-    return Event(
+    return Lead(
         title="Sample Event Title",
         summary="This is a sample event summary for testing purposes.",
     )
@@ -76,17 +76,17 @@ def sample_event():
 def sample_events():
     """Sample list of Event objects for testing."""
     return [
-        Event(
+        Lead(
             title="Technology Breakthrough",
             summary=(
                 "Major advancement in artificial intelligence technology announced."
             ),
         ),
-        Event(
+        Lead(
             title="Climate Change Update",
             summary="New climate research reveals important environmental findings.",
         ),
-        Event(
+        Lead(
             title="Economic Development",
             summary="Significant economic changes affecting global markets.",
         ),

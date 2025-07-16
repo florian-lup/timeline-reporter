@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import insert_articles
-from utils import Article
+from models import Article
 
 
 class TestStorageService:

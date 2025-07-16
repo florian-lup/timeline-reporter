@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
-from utils import Article, Event
+from models import Article, Lead
 
 
 @pytest.mark.integration
@@ -207,13 +207,13 @@ class TestClientIntegration:
 
             # Execute full pipeline
             from services import research_articles
-            from utils import Event
+            from models import Lead
 
             perplexity_client = PerplexityClient()
             mongodb_client = MongoDBClient()
 
             # 1. Research phase
-            test_events = [Event(title="Breaking News", summary="Important event")]
+            test_events = [Lead(title="Breaking News", summary="Important event")]
             articles = research_articles(
                 test_events, perplexity_client=perplexity_client
             )

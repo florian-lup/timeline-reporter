@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import research_articles
-from utils import Article, Event
+from models import Article, Lead
 
 
 class TestResearchService:
@@ -21,14 +21,14 @@ class TestResearchService:
     def sample_events(self):
         """Sample events for testing."""
         return [
-            Event(
+            Lead(
                 title="Climate Summit 2024",
                 summary=(
                     "World leaders meet to discuss climate change solutions "
                     "and carbon reduction targets."
                 ),
             ),
-            Event(
+            Lead(
                 title="Tech Innovation Expo",
                 summary=(
                     "Major technology companies showcase AI and renewable "

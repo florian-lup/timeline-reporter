@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from services import select_events
-from utils import Event
+from models import Lead
 
 
 class TestDecisionService:
@@ -20,35 +20,35 @@ class TestDecisionService:
     def sample_events(self):
         """Sample events for testing."""
         return [
-            Event(
+            Lead(
                 title="Climate Summit 2024",
                 summary=(
                     "World leaders meet to discuss climate change solutions "
                     "and carbon reduction targets."
                 ),
             ),
-            Event(
+            Lead(
                 title="Earthquake in Pacific",
                 summary=(
                     "A 6.5 magnitude earthquake struck the Pacific region "
                     "with minimal damage reported."
                 ),
             ),
-            Event(
+            Lead(
                 title="Tech Conference Announced",
                 summary=(
                     "Major technology companies announce new AI developments "
                     "at annual conference."
                 ),
             ),
-            Event(
+            Lead(
                 title="Economic Policy Update",
                 summary=(
                     "Government announces new economic policies affecting "
                     "global markets."
                 ),
             ),
-            Event(
+            Lead(
                 title="Space Mission Success",
                 summary="NASA successfully launches new Mars exploration mission.",
             ),
@@ -106,7 +106,7 @@ class TestDecisionService:
 
     def test_select_events_single_event(self, mock_openai_client):
         """Test decision making with single event."""
-        single_event = [Event(title="Solo Event", summary="Only event in list")]
+        single_event = [Lead(title="Solo Event", summary="Only event in list")]
         mock_openai_client.chat_completion.return_value = "1"
 
         result = select_events(single_event, openai_client=mock_openai_client)

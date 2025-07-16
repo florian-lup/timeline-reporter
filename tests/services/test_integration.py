@@ -12,7 +12,7 @@ from services import (
     research_articles,
     select_events,
 )
-from utils import Article, Event
+from models import Article, Lead
 
 
 @pytest.mark.integration
@@ -349,16 +349,16 @@ class TestServicesIntegration:
             insert_articles(articles, mongodb_client=mock_clients["mongodb"])
 
         # Verify data transformations
-        # Event -> Event (deduplication preserves structure)
-        assert isinstance(events[0], Event)
-        assert isinstance(unique_events[0], Event)
+        # Lead -> Lead (deduplication preserves structure)
+        assert isinstance(events[0], Lead)
+        assert isinstance(unique_events[0], Lead)
         assert events[0].title == unique_events[0].title
 
-        # Event -> Event (decision preserves structure, filters by impact)
-        assert isinstance(prioritized_events[0], Event)
+        # Lead -> Lead (decision preserves structure, filters by impact)
+        assert isinstance(prioritized_events[0], Lead)
         assert prioritized_events[0].title == unique_events[0].title
 
-        # Event -> Article (research transforms and enhances)
+        # Lead -> Article (research transforms and enhances)
         assert isinstance(articles[0], Article)
         assert articles[0].headline == "Transformed Headline"
         assert (
