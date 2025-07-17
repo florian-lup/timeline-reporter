@@ -16,9 +16,9 @@ DISCOVERY_SYSTEM_PROMPT = (
     "developments from reputable sources. Provide comprehensive summaries "
     "that capture the key details and implications of each lead."
     "\n\nStructure your response as a JSON array where each "
-    "lead has a 'context' field containing a comprehensive paragraph "
+    "lead has a 'tip' field containing a comprehensive paragraph "
     "summarizing the lead's significance and key details. Format: "
-    '[{"context": "Comprehensive paragraph describing the lead, its '
+    '[{"tip": "Comprehensive paragraph describing the lead, its '
     'significance, and key details..."}]'
 )
 
@@ -29,9 +29,9 @@ DISCOVERY_INSTRUCTIONS = (
     f"{get_today_formatted()}. Focus on major global developments, breaking "
     "news, and important updates that would be of interest to a general "
     "audience. Return your findings as a JSON array of leads, where each "
-    "lead has a 'context' field containing a comprehensive paragraph "
+    "lead has a 'tip' field containing a comprehensive paragraph "
     "explaining the lead with all key details and implications. Example format: "
-    '[{"context": "Comprehensive paragraph describing the lead, its '
+    '[{"tip": "Comprehensive paragraph describing the lead, its '
     'significance, and key details..."}]'
 )
 

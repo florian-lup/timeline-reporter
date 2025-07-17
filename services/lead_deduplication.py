@@ -9,7 +9,6 @@ from models.core import Lead
 logger = logging.getLogger(__name__)
 
 # Constants
-CONTEXT_PREVIEW_LENGTH = 50
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -30,21 +29,12 @@ def deduplicate_leads(
     unique_leads: list[Lead] = []
 
     for idx, lead in enumerate(leads):
-        # Create embedding from the context
-        vector = openai_client.embed_text(lead.context)
+        # Create embedding from the tip
+        vector = openai_client.embed_text(lead.tip)
 
         # Query for similar existing leads
         matches = pinecone_client.similarity_search(vector)
         if matches:
-            logger.info(
-                "Skipping duplicate: '%s' (similarity: %.2f)",
-                (
-                    lead.context[:CONTEXT_PREVIEW_LENGTH] + "..."
-                    if len(lead.context) > CONTEXT_PREVIEW_LENGTH
-                    else lead.context
-                ),
-                matches[0][1],
-            )
             continue
 
         # Otherwise, upsert and keep
@@ -53,7 +43,7 @@ def deduplicate_leads(
             vector_id,
             vector,
             metadata={
-                "context": lead.context,
+                "tip": lead.tip,
                 "date": lead.date,
             },
         )

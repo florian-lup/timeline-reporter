@@ -24,11 +24,11 @@ class TestDiscoveryService:
         return json.dumps(
             [
                 {
-                    "context": "Climate Summit Announced: World leaders gather to "
+                    "tip": "Climate Summit Announced: World leaders gather to "
                     "discuss climate action and environmental policies."
                 },
                 {
-                    "context": "Earthquake Hits Pacific Region: 6.2 magnitude "
+                    "tip": "Earthquake Hits Pacific Region: 6.2 magnitude "
                     "earthquake causes minimal damage but raises tsunami concerns."
                 },
             ]
@@ -39,7 +39,7 @@ class TestDiscoveryService:
         """Sample response wrapped in markdown fences."""
         response_data = [
             {
-                "context": "Climate Summit Announced: World leaders gather to discuss "
+                "tip": "Climate Summit Announced: World leaders gather to discuss "
                 "climate action and set new environmental targets."
             }
         ]
@@ -54,9 +54,9 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 2
-        assert "Climate Summit Announced" in leads[0].context
-        assert "World leaders gather" in leads[0].context
-        assert "Earthquake Hits Pacific Region" in leads[1].context
+        assert "Climate Summit Announced" in leads[0].tip
+        assert "World leaders gather" in leads[0].tip
+        assert "Earthquake Hits Pacific Region" in leads[1].tip
 
         # Verify Perplexity client was called
         mock_perplexity_client.lead_discovery.assert_called_once()
@@ -88,7 +88,7 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert "Climate Summit Announced" in leads[0].context
+        assert "Climate Summit Announced" in leads[0].tip
 
     def test_discover_leads_non_list_response(self, mock_perplexity_client):
         """Test discovery when response is not a list."""
@@ -114,9 +114,9 @@ class TestDiscoveryService:
         mock_logger.info.assert_called_with("Discovered %d leads", 2)
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
-        """Test that discovery preserves original formatting in context."""
+        """Test that discovery preserves original formatting in tip."""
         response_with_formatting = json.dumps(
-            [{"context": "  Spaced Title  : Summary with\nnewlines and extra   spaces"}]
+            [{"tip": "  Spaced Title  : Summary with\nnewlines and extra   spaces"}]
         )
         mock_perplexity_client.lead_discovery.return_value = response_with_formatting
 
@@ -124,7 +124,7 @@ class TestDiscoveryService:
 
         assert len(leads) == 1
         assert (
-            leads[0].context
+            leads[0].tip
             == "  Spaced Title  : Summary with\nnewlines and extra   spaces"
         )  # Preserves original formatting
 
@@ -133,7 +133,7 @@ class TestDiscoveryService:
         unicode_response = json.dumps(
             [
                 {
-                    "context": "🌍 Climate Summit: Conférence sur les émissions de "
+                    "tip": "🌍 Climate Summit: Conférence sur les émissions de "
                     "carbone et les objectifs environnementaux"
                 }
             ]
@@ -143,8 +143,8 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert "🌍" in leads[0].context
-        assert "émissions" in leads[0].context
+        assert "🌍" in leads[0].tip
+        assert "émissions" in leads[0].tip
 
     def test_discover_leads_client_error_propagation(self, mock_perplexity_client):
         """Test that client errors are properly propagated."""
@@ -172,7 +172,7 @@ class TestDiscoveryService:
         # Test with missing fields
         response_missing_field = json.dumps(
             [
-                {"title": "Only Title"}  # Missing context field
+                {"title": "Only Title"}  # Missing tip field
             ]
         )
 
@@ -180,18 +180,18 @@ class TestDiscoveryService:
             _parse_leads_from_response(response_missing_field)
 
         # Test with empty strings
-        response_empty_strings = json.dumps([{"context": ""}])
+        response_empty_strings = json.dumps([{"tip": ""}])
 
         leads = _parse_leads_from_response(response_empty_strings)
         assert len(leads) == 1
-        assert leads[0].context == ""
+        assert leads[0].tip == ""
 
     def test_fence_regex_multiple_fences(self, mock_perplexity_client):
         """Test handling of multiple markdown fences."""
         response_multiple_fences = """
         Some text here
         ```json
-        [{"context": "Lead 1: Summary 1"}]
+        [{"tip": "Lead 1: Summary 1"}]
         ```
         More text
         ```
@@ -203,4 +203,4 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert leads[0].context == "Lead 1: Summary 1"
+        assert leads[0].tip == "Lead 1: Summary 1"

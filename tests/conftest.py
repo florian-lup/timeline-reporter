@@ -52,11 +52,11 @@ def mock_perplexity_client():
     discovery_response = json.dumps(
         [
             {
-                "context": "Climate Summit 2024: World leaders meet to discuss "
+                "tip": "Climate Summit 2024: World leaders meet to discuss "
                 "climate action and set ambitious targets for carbon reduction."
             },
             {
-                "context": "AI Breakthrough Announced: New AI model shows "
+                "tip": "AI Breakthrough Announced: New AI model shows "
                 "remarkable capabilities in medical diagnosis and drug discovery."
             },
         ]
@@ -89,7 +89,7 @@ def mock_mongodb_client():
 def sample_lead():
     """Sample Lead object for testing."""
     return Lead(
-        context="Sample Lead Title: This is a sample lead summary for testing "
+        tip="Sample Lead Title: This is a sample lead summary for testing "
         "purposes.",
     )
 
@@ -99,15 +99,15 @@ def sample_leads():
     """Sample list of Lead objects for testing."""
     return [
         Lead(
-            context="Technology Breakthrough: Major advancement in artificial "
+            tip="Technology Breakthrough: Major advancement in artificial "
             "intelligence technology announced.",
         ),
         Lead(
-            context="Climate Change Update: New climate research reveals important "
+            tip="Climate Change Update: New climate research reveals important "
             "environmental findings.",
         ),
         Lead(
-            context="Economic Development: Significant economic changes affecting "
+            tip="Economic Development: Significant economic changes affecting "
             "global markets.",
         ),
     ]

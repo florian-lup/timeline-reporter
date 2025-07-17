@@ -23,32 +23,32 @@ class TestLeadCuration:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate "
+                tip="Climate Summit 2024: World leaders meet to discuss climate "
                 "change solutions and carbon reduction targets with major implications "
                 "for global policy and economy.",
             ),
             Lead(
-                context="Major earthquake in Pacific: A 7.5 magnitude earthquake "
+                tip="Major earthquake in Pacific: A 7.5 magnitude earthquake "
                 "struck the Pacific region causing widespread damage and triggering "
                 "tsunami warnings across multiple countries.",
             ),
             Lead(
-                context="Tech breakthrough: Scientists announce revolutionary AI "
+                tip="Tech breakthrough: Scientists announce revolutionary AI "
                 "system that can predict diseases years before symptoms appear, "
                 "potentially saving millions of lives.",
             ),
             Lead(
-                context="Economic crisis deepens: Global markets tumble as inflation "
+                tip="Economic crisis deepens: Global markets tumble as inflation "
                 "reaches 40-year high, central banks struggle to respond effectively "
                 "to the growing financial instability.",
             ),
             Lead(
-                context="Space milestone: First commercial space station successfully "
+                tip="Space milestone: First commercial space station successfully "
                 "launches, opening new era of private space exploration and research "
                 "opportunities.",
             ),
             Lead(
-                context="Local sports team wins championship after 50 years, bringing "
+                tip="Local sports team wins championship after 50 years, bringing "
                 "joy to fans and boosting local economy through celebrations.",
             ),
         ]
@@ -243,32 +243,32 @@ class TestHybridLeadCurator:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate "
+                tip="Climate Summit 2024: World leaders meet to discuss climate "
                 "change solutions and carbon reduction targets with major implications "
                 "for global policy and economy.",
             ),
             Lead(
-                context="Major earthquake in Pacific: A 7.5 magnitude earthquake "
+                tip="Major earthquake in Pacific: A 7.5 magnitude earthquake "
                 "struck the Pacific region causing widespread damage and triggering "
                 "tsunami warnings across multiple countries.",
             ),
             Lead(
-                context="Tech breakthrough: Scientists announce revolutionary AI "
+                tip="Tech breakthrough: Scientists announce revolutionary AI "
                 "system that can predict diseases years before symptoms appear, "
                 "potentially saving millions of lives.",
             ),
             Lead(
-                context="Economic crisis deepens: Global markets tumble as inflation "
+                tip="Economic crisis deepens: Global markets tumble as inflation "
                 "reaches 40-year high, central banks struggle to respond effectively "
                 "to the growing financial instability.",
             ),
             Lead(
-                context="Space milestone: First commercial space station successfully "
+                tip="Space milestone: First commercial space station successfully "
                 "launches, opening new era of private space exploration and research "
                 "opportunities.",
             ),
             Lead(
-                context="Local sports team wins championship after 50 years, bringing "
+                tip="Local sports team wins championship after 50 years, bringing "
                 "joy to fans and boosting local economy through celebrations.",
             ),
         ]
@@ -461,19 +461,19 @@ class TestHybridLeadCurator:
         """Test final ranking calculation."""
         evaluations = [
             LeadEvaluation(
-                lead=Lead(context="Lead 1"),
+                lead=Lead(tip="Lead 1"),
                 criteria_scores={},
                 weighted_score=8.0,
                 pairwise_wins=2,
             ),
             LeadEvaluation(
-                lead=Lead(context="Lead 2"),
+                lead=Lead(tip="Lead 2"),
                 criteria_scores={},
                 weighted_score=7.5,
                 pairwise_wins=1,
             ),
             LeadEvaluation(
-                lead=Lead(context="Lead 3"),
+                lead=Lead(tip="Lead 3"),
                 criteria_scores={},
                 weighted_score=7.8,
                 pairwise_wins=0,
@@ -487,9 +487,9 @@ class TestHybridLeadCurator:
         # Lead 2 should rank second: 0.7 * 7.5 + 0.3 * 5 = 6.75
         # Lead 3 should rank third: 0.7 * 7.8 + 0.3 * 0 = 5.46
 
-        assert ranked[0].lead.context == "Lead 1"
-        assert ranked[1].lead.context == "Lead 2"
-        assert ranked[2].lead.context == "Lead 3"
+        assert ranked[0].lead.tip == "Lead 1"
+        assert ranked[1].lead.tip == "Lead 2"
+        assert ranked[2].lead.tip == "Lead 3"
 
     def test_top_selection(self, mock_openai_client):
         """Test top lead selection."""
@@ -498,7 +498,7 @@ class TestHybridLeadCurator:
         # Create ranked evaluations
         evaluations = [
             LeadEvaluation(
-                lead=Lead(context=f"Lead {i}"),
+                lead=Lead(tip=f"Lead {i}"),
                 criteria_scores={},
                 weighted_score=10 - i,
                 final_rank=10 - i,
@@ -513,7 +513,7 @@ class TestHybridLeadCurator:
 
         # Should be the highest ranked ones
         for i, eval in enumerate(selected):
-            assert eval.lead.context == f"Lead {i}"
+            assert eval.lead.tip == f"Lead {i}"
 
     def test_full_pipeline_integration(self, mock_openai_client, sample_leads):
         """Test the complete hybrid curation pipeline."""
@@ -556,8 +556,8 @@ class TestHybridLeadCurator:
         assert curator.MIN_LEADS_TO_SELECT <= len(result) <= curator.MAX_LEADS_TO_SELECT
 
         # Verify high-scoring leads are included
-        result_contexts = [lead.context for lead in result]
-        assert any("Climate Summit" in ctx for ctx in result_contexts)
+        result_tips = [lead.tip for lead in result]
+        assert any("Climate Summit" in tip for tip in result_tips)
 
     def test_fallback_behavior(self, mock_openai_client, sample_leads):
         """Test fallback when all leads score below threshold."""

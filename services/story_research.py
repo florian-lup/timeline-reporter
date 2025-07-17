@@ -18,7 +18,7 @@ def research_story(
 
     for lead in leads:
         prompt = RESEARCH_INSTRUCTIONS.format(
-            lead_summary=lead.context, lead_date=lead.date
+            lead_summary=lead.tip, lead_date=lead.date
         )
         response_text = perplexity_client.lead_research(prompt)
         story = _parse_story_from_response(response_text)

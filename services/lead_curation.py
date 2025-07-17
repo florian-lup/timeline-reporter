@@ -99,7 +99,7 @@ class HybridLeadCurator:
         """Step 1: Evaluate each lead on multiple criteria."""
         # Format leads for evaluation
         leads_text = "\n".join(
-            f"{i + 1}. {lead.context}" for i, lead in enumerate(leads)
+            f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads)
         )
 
         # Batch evaluation prompt for efficiency
@@ -253,8 +253,8 @@ Return a JSON array with scores for each lead:
 
                 comparisons_text.append(f"""
 Pair {pair_key}:
-Lead A ({i + 1}): {group[i].lead.context[:200]}...
-Lead B ({j + 1}): {group[j].lead.context[:200]}...
+Lead A ({i + 1}): {group[i].lead.tip[:200]}...
+Lead B ({j + 1}): {group[j].lead.tip[:200]}...
 """)
 
         # Batch all comparisons for efficiency

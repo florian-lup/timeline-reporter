@@ -29,7 +29,7 @@ class TestServicesIntegration:
             "global conflicts, policy changes, natural disasters, and tech "
             "Return your findings as a JSON array of leads, where each lead "
             "includes comprehensive context and details. Format: "
-            '[{"context": "Lead description with comprehensive details..."}]'
+            '[{"tip": "Lead description with comprehensive details..."}]'
         )
 
     @pytest.fixture
@@ -44,11 +44,11 @@ class TestServicesIntegration:
         discovery_json = json.dumps(
             [
                 {
-                    "context": "Climate Summit 2024: Global climate leaders meet to "
+                    "tip": "Climate Summit 2024: Global climate leaders meet to "
                     "establish comprehensive environmental policies."
                 },
                 {
-                    "context": "AI Breakthrough Announced: Major AI advancement in "
+                    "tip": "AI Breakthrough Announced: Major AI advancement in "
                     "healthcare diagnostics revolutionizes medical practice."
                 },
             ]
@@ -134,8 +134,8 @@ class TestServicesIntegration:
 
         # Verify data flow through pipeline
         # Leads from discovery
-        assert "Climate Summit 2024" in leads[0].context
-        assert "AI Breakthrough Announced" in leads[1].context
+        assert "Climate Summit 2024" in leads[0].tip
+        assert "AI Breakthrough Announced" in leads[1].tip
 
         # Stories from research
         assert (
@@ -166,11 +166,11 @@ class TestServicesIntegration:
         # Set up discovery with duplicate leads
         discovery_json = json.dumps(
             [
-                {"context": "Lead 1: First lead description"},
-                {"context": "Lead 2: Second lead description"},
-                {"context": "Lead 3: Similar to Lead 1"},
-                {"context": "Lead 4: Fourth lead description"},
-                {"context": "Lead 5: Fifth lead description"},
+                {"tip": "Lead 1: First lead description"},
+                {"tip": "Lead 2: Second lead description"},
+                {"tip": "Lead 3: Similar to Lead 1"},
+                {"tip": "Lead 4: Fourth lead description"},
+                {"tip": "Lead 5: Fifth lead description"},
             ]
         )
         mock_clients["perplexity"].lead_discovery.return_value = discovery_json
@@ -254,15 +254,15 @@ class TestServicesIntegration:
 
         # Verify selected leads are the expected ones
         # (order may vary due to hybrid scoring)
-        selected_contexts = [lead.context for lead in prioritized_leads]
+        selected_tips = [lead.tip for lead in prioritized_leads]
         # Lead 2 selected
-        assert any("Lead 2" in context for context in selected_contexts)
+        assert any("Lead 2" in tip for tip in selected_tips)
         # Lead 3 selected
-        assert any("Lead 3" in context for context in selected_contexts)
+        assert any("Lead 3" in tip for tip in selected_tips)
         # Lead 5 selected
-        assert any("Lead 5" in context for context in selected_contexts)
+        assert any("Lead 5" in tip for tip in selected_tips)
         # Lead 4 filtered
-        assert not any("Lead 4" in context for context in selected_contexts)
+        assert not any("Lead 4" in tip for tip in selected_tips)
 
     def test_pipeline_data_transformation(
         self, mock_clients, test_discovery_instructions
@@ -270,7 +270,7 @@ class TestServicesIntegration:
         """Test data transformation through pipeline stages."""
 
         # Mock simple discovery response
-        discovery_json = json.dumps([{"context": "Original Lead: Original summary"}])
+        discovery_json = json.dumps([{"tip": "Original Lead: Original summary"}])
         mock_clients["perplexity"].lead_discovery.return_value = discovery_json
 
         # Override the global mock with specific response for this test
@@ -313,17 +313,17 @@ class TestServicesIntegration:
         # Lead -> Lead (deduplication preserves structure)
         assert isinstance(leads[0], Lead)
         assert isinstance(unique_leads[0], Lead)
-        assert leads[0].context == unique_leads[0].context
+        assert leads[0].tip == unique_leads[0].tip
 
         # Lead -> Lead (decision preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].context == unique_leads[0].context
+        assert prioritized_leads[0].tip == unique_leads[0].tip
 
         # Lead -> Story (research transforms and enhances)
         assert isinstance(stories[0], Story)
         assert stories[0].headline == "Transformed Headline"
         assert (
-            stories[0].summary != prioritized_leads[0].context
+            stories[0].summary != prioritized_leads[0].tip
         )  # Enhanced by research
         assert len(stories[0].sources) == 2
 
@@ -331,7 +331,7 @@ class TestServicesIntegration:
         """Test pipeline performance with larger data volume."""
 
         # Create large discovery response
-        discovery_data = [{"context": f"Lead {i}: Summary {i}"} for i in range(1, 11)]
+        discovery_data = [{"tip": f"Lead {i}: Summary {i}"} for i in range(1, 11)]
         discovery_json = json.dumps(discovery_data)
         mock_clients["perplexity"].lead_discovery.return_value = discovery_json
 

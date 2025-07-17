@@ -331,11 +331,11 @@ Let me search for current information.
 </think>
 [
   {
-    "context": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "tip": "Climate Summit Reaches Agreement: World leaders at COP29 "
     "reach historic agreement on climate funding."
   },
   {
-    "context": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "tip": "Geopolitical Tensions Rise: Recent diplomatic developments show "
     "increasing tensions."
   }
 ]"""
@@ -354,11 +354,11 @@ Let me search for current information.
             # Should extract JSON after <think> section
             expected_json = """[
   {
-    "context": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "tip": "Climate Summit Reaches Agreement: World leaders at COP29 "
     "reach historic agreement on climate funding."
   },
   {
-    "context": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "tip": "Geopolitical Tensions Rise: Recent diplomatic developments show "
     "increasing tensions."
   }
 ]"""
@@ -417,8 +417,8 @@ Let me search for current information.
 
             item_schema = schema["items"]
             assert item_schema["type"] == "object"
-            assert set(item_schema["required"]) == {"context"}
-            assert "context" in item_schema["properties"]
+            assert set(item_schema["required"]) == {"tip"}
+            assert "tip" in item_schema["properties"]
 
     def test_lead_discovery_without_think_tags(self, mock_httpx_client):
         """Test deep research with response that doesn't have <think> tags."""
@@ -427,7 +427,7 @@ Let me search for current information.
         # Response without <think> tags
         raw_response = """[
   {
-    "context": "Direct Response: This response doesn't have think tags."
+    "tip": "Direct Response: This response doesn't have think tags."
   }
 ]"""
 

@@ -22,11 +22,11 @@ class TestResearchService:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate "
+                tip="Climate Summit 2024: World leaders meet to discuss climate "
                 "change solutions and carbon reduction targets.",
             ),
             Lead(
-                context="Tech Innovation Expo: Major technology companies showcase AI "
+                tip="Tech Innovation Expo: Major technology companies showcase AI "
                 "and renewable energy innovations.",
             ),
         ]
@@ -82,14 +82,14 @@ class TestResearchService:
 
         research_story(sample_leads, perplexity_client=mock_perplexity_client)
 
-        # Verify prompts were formatted with lead context
+        # Verify prompts were formatted with lead tip
         call_args_list = mock_perplexity_client.lead_research.call_args_list
 
-        # Check that both calls contain the lead context
+        # Check that both calls contain the lead tip
         first_call_prompt = call_args_list[0][0][0]
         second_call_prompt = call_args_list[1][0][0]
-        assert sample_leads[0].context in first_call_prompt
-        assert sample_leads[1].context in second_call_prompt
+        assert sample_leads[0].tip in first_call_prompt
+        assert sample_leads[1].tip in second_call_prompt
 
     def test_research_story_json_parsing(self, mock_perplexity_client, sample_leads):
         """Test JSON parsing from research response."""
@@ -243,7 +243,7 @@ class TestResearchService:
         self, mock_perplexity_client, sample_research_response
     ):
         """Test research with single lead."""
-        single_lead = [Lead(context="Single Lead: Description of a single lead")]
+        single_lead = [Lead(tip="Single Lead: Description of a single lead")]
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
         stories = research_story(single_lead, perplexity_client=mock_perplexity_client)
@@ -311,7 +311,7 @@ class TestResearchService:
         """Test that lead dates are preserved in story research."""
         # Create lead with specific date
         lead_with_date = Lead(
-            context="Test Lead: A test lead description", date="2024-01-15"
+            tip="Test Lead: A test lead description", date="2024-01-15"
         )
 
         # Modify the research response to include the lead date

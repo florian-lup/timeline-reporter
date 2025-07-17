@@ -26,15 +26,15 @@ class TestDeduplicationService:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate "
+                tip="Climate Summit 2024: World leaders meet to discuss climate "
                 "change solutions and carbon reduction targets.",
             ),
             Lead(
-                context="Earthquake in Pacific: A 6.5 magnitude earthquake struck the "
+                tip="Earthquake in Pacific: A 6.5 magnitude earthquake struck the "
                 "Pacific region with minimal damage reported.",
             ),
             Lead(
-                context="Tech Conference Announced: Major technology companies "
+                tip="Tech Conference Announced: Major technology companies "
                 "announce new AI developments at annual conference.",
             ),
         ]
@@ -69,9 +69,9 @@ class TestDeduplicationService:
 
         # Verify embedding calls
         assert mock_openai_client.embed_text.call_count == 3
-        mock_openai_client.embed_text.assert_any_call(sample_leads[0].context)
-        mock_openai_client.embed_text.assert_any_call(sample_leads[1].context)
-        mock_openai_client.embed_text.assert_any_call(sample_leads[2].context)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[0].tip)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[1].tip)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[2].tip)
 
         # Verify upsert calls
         assert mock_pinecone_client.upsert_vector.call_count == 3
@@ -126,7 +126,7 @@ class TestDeduplicationService:
         mock_openai_client,
         mock_pinecone_client,
     ):
-        """Test that duplicate detection is properly logged."""
+        """Test that deduplication completion is logged."""
         # Setup mocks
         mock_openai_client.embed_text.side_effect = sample_embeddings
         mock_pinecone_client.similarity_search.side_effect = [
@@ -136,19 +136,18 @@ class TestDeduplicationService:
         ]
 
         # Call function
-        deduplicate_leads(
+        result = deduplicate_leads(
             sample_leads,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
         )
 
-        # Verify logging
+        # Verify that duplicates were properly filtered out
+        assert len(result) == 2  # Should have 2 unique leads (skipping the duplicate)
+
+        # Verify completion logging
         mock_logger.info.assert_any_call(
-            "Skipping duplicate: '%s' (similarity: %.2f)",
-            sample_leads[1].context[:50] + "..."
-            if len(sample_leads[1].context) > 50
-            else sample_leads[1].context,
-            0.95,
+            "Deduplication complete: %d unique leads", 2
         )
 
     def test_vector_metadata_structure(
@@ -175,5 +174,5 @@ class TestDeduplicationService:
             metadata = kwargs["metadata"]
             assert vector_id == f"lead-{i}"
             assert vector == sample_embeddings[i]
-            assert metadata["context"] == sample_leads[i].context
+            assert metadata["tip"] == sample_leads[i].tip
             assert metadata["date"] == sample_leads[i].date

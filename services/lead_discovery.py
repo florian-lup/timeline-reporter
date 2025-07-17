@@ -52,5 +52,5 @@ def _parse_leads_from_response(response_text: str) -> list[Lead]:
         logger.warning("Expected JSON array, got %s", type(data))
         return []
 
-    leads: list[Lead] = [Lead(context=item["context"]) for item in data]
+    leads: list[Lead] = [Lead(tip=item["tip"]) for item in data]
     return leads
