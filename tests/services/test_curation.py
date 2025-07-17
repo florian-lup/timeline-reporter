@@ -7,7 +7,7 @@ import pytest
 
 from models import Lead
 from services import curate_leads
-from services.lead_curation import HybridLeadCurator, LeadEvaluation
+from services.lead_curation import LeadCurator, LeadEvaluation
 
 
 class TestLeadCuration:
@@ -60,9 +60,9 @@ class TestLeadCuration:
         assert result == []
         mock_openai_client.chat_completion.assert_not_called()
 
-    def test_curate_leads_hybrid_basic(self, mock_openai_client, sample_leads):
-        """Test basic functionality of curate_leads with hybrid method."""
-        # Mock hybrid evaluation response
+    def test_curate_leads_basic(self, mock_openai_client, sample_leads):
+        """Test basic functionality of curate_leads."""
+        # Mock evaluation response
         evaluation_response = json.dumps(
             [
                 {
@@ -230,8 +230,8 @@ class TestLeadCuration:
         assert all(lead in sample_leads for lead in result)
 
 
-class TestHybridLeadCurator:
-    """Test suite for HybridLeadCurator class internals."""
+class TestLeadCurator:
+    """Test suite for LeadCurator class internals."""
 
     @pytest.fixture
     def mock_openai_client(self):
@@ -273,16 +273,16 @@ class TestHybridLeadCurator:
             ),
         ]
 
-    def test_hybrid_curator_initialization(self, mock_openai_client):
-        """Test hybrid curator initialization."""
-        curator = HybridLeadCurator(mock_openai_client)
+    def test_curator_initialization(self, mock_openai_client):
+        """Test curator initialization."""
+        curator = LeadCurator(mock_openai_client)
 
         assert curator.openai_client == mock_openai_client
         assert sum(curator.CRITERIA_WEIGHTS.values()) == 1.0  # Weights sum to 1
 
     def test_curator_empty_input(self, mock_openai_client):
         """Test curating empty lead list."""
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         result = curator.curate_leads([])
 
         assert result == []
@@ -364,7 +364,7 @@ class TestHybridLeadCurator:
 
         mock_openai_client.chat_completion.return_value = evaluation_response
 
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         evaluations = curator._evaluate_all_criteria(sample_leads)
 
         assert len(evaluations) == 6
@@ -449,7 +449,7 @@ class TestHybridLeadCurator:
 
         mock_openai_client.chat_completion.return_value = pairwise_response
 
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         curator._compare_group_pairwise(evaluations)
 
         # Check pairwise wins
@@ -480,7 +480,7 @@ class TestHybridLeadCurator:
             ),
         ]
 
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         ranked = curator._compute_final_ranking(evaluations)
 
         # Lead 1 should rank first: 0.7 * 8.0 + 0.3 * 10 = 8.6
@@ -493,7 +493,7 @@ class TestHybridLeadCurator:
 
     def test_top_selection(self, mock_openai_client):
         """Test top lead selection."""
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
 
         # Create ranked evaluations
         evaluations = [
@@ -516,7 +516,7 @@ class TestHybridLeadCurator:
             assert eval.lead.tip == f"Lead {i}"
 
     def test_full_pipeline_integration(self, mock_openai_client, sample_leads):
-        """Test the complete hybrid curation pipeline."""
+        """Test the complete curation pipeline."""
         # Mock evaluation response
         evaluation_response = json.dumps(
             [
@@ -549,7 +549,7 @@ class TestHybridLeadCurator:
             evaluation_response
         ] + pairwise_responses
 
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         result = curator.curate_leads(sample_leads)
 
         # Should return between MIN and MAX leads
@@ -581,7 +581,7 @@ class TestHybridLeadCurator:
 
         mock_openai_client.chat_completion.return_value = low_score_response
 
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         result = curator.curate_leads(sample_leads)
 
         # Should still return minimum number of leads
@@ -606,9 +606,9 @@ class TestHybridLeadCurator:
             ]
         )
 
-        curator = HybridLeadCurator(mock_openai_client)
+        curator = LeadCurator(mock_openai_client)
         curator.curate_leads(sample_leads[:1])
 
         # Verify logging calls
-        mock_logger.info.assert_any_call("Starting hybrid curation for %d leads", 1)
-        mock_logger.info.assert_any_call("Selected %d leads through hybrid curation", 1)
+        mock_logger.info.assert_any_call("Starting curation for %d leads", 1)
+        mock_logger.info.assert_any_call("Selected %d leads through curation", 1)

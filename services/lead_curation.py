@@ -9,10 +9,10 @@ from dataclasses import dataclass
 from clients import OpenAIClient
 from config.settings import (
     CURATION_MODEL,
-    HYBRID_MAX_LEADS,
-    HYBRID_MIN_LEADS,
-    HYBRID_MIN_WEIGHTED_SCORE,
-    HYBRID_SCORE_SIMILARITY,
+    MAX_LEADS,
+    MIN_LEADS,
+    MIN_WEIGHTED_SCORE,
+    SCORE_SIMILARITY,
 )
 from models import Lead
 from utils import logger
@@ -29,7 +29,7 @@ class LeadEvaluation:
     final_rank: float = 0.0  # Final ranking after all evaluations
 
 
-class HybridLeadCurator:
+class LeadCurator:
     """Advanced lead curation using multiple evaluation techniques."""
 
     # Criteria weights (must sum to 1.0)
@@ -44,22 +44,22 @@ class HybridLeadCurator:
     }
 
     # Configuration from settings
-    MIN_WEIGHTED_SCORE = HYBRID_MIN_WEIGHTED_SCORE
-    MAX_LEADS_TO_SELECT = HYBRID_MAX_LEADS
-    MIN_LEADS_TO_SELECT = HYBRID_MIN_LEADS
-    SCORE_SIMILARITY_THRESHOLD = HYBRID_SCORE_SIMILARITY
+    MIN_WEIGHTED_SCORE = MIN_WEIGHTED_SCORE
+    MAX_LEADS_TO_SELECT = MAX_LEADS
+    MIN_LEADS_TO_SELECT = MIN_LEADS
+    SCORE_SIMILARITY_THRESHOLD = SCORE_SIMILARITY
     MIN_GROUP_SIZE_FOR_PAIRWISE = 2  # Minimum leads needed for pairwise comparison
 
     def __init__(self, openai_client: OpenAIClient):
-        """Initialize the hybrid curator with an OpenAI client."""
+        """Initialize the curator with an OpenAI client."""
         self.openai_client = openai_client
 
     def curate_leads(self, leads: list[Lead]) -> list[Lead]:
-        """Main entry point for hybrid curation."""
+        """Main entry point for curation."""
         if not leads:
             return []
 
-        logger.info("Starting hybrid curation for %d leads", len(leads))
+        logger.info("Starting curation for %d leads", len(leads))
 
         # Step 1: Multi-criteria evaluation
         evaluations = self._evaluate_all_criteria(leads)
@@ -91,8 +91,8 @@ class HybridLeadCurator:
         # Step 5: Select top leads by final rank
         selected = self._select_top_leads(final_ranking)
 
-        logger.info("Hybrid curation completed successfully without fallbacks")
-        logger.info("Selected %d leads through hybrid curation", len(selected))
+        logger.info("Curation completed successfully without fallbacks")
+        logger.info("Selected %d leads through curation", len(selected))
         return [e.lead for e in selected]
 
     def _evaluate_all_criteria(self, leads: list[Lead]) -> list[LeadEvaluation]:
@@ -390,7 +390,7 @@ Lead B ({j + 1}): {group[j].lead.tip[:200]}...
 def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful leads from deduplicated list.
 
-    Uses hybrid AI evaluation combining multi-criteria scoring, pairwise
+    Uses AI evaluation combining multi-criteria scoring, pairwise
     comparison, and topic diversity to select only the top priority stories
     that warrant comprehensive research.
     """
@@ -400,8 +400,8 @@ def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
 
     logger.info("Evaluating %d leads for priority", len(leads))
 
-    # Use the hybrid curation system
-    curator = HybridLeadCurator(openai_client)
+    # Use the curation system
+    curator = LeadCurator(openai_client)
     selected_leads = curator.curate_leads(leads)
 
     logger.info("Selected %d priority leads", len(selected_leads))

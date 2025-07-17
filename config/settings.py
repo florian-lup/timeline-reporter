@@ -53,7 +53,7 @@ MONGODB_COLLECTION_NAME: str = "stories"
 # ---------------------------------------------------------------------------
 # Lead Curation
 # ---------------------------------------------------------------------------
-HYBRID_MIN_WEIGHTED_SCORE: float = 6.0  # Minimum score for lead consideration
-HYBRID_MAX_LEADS: int = 5  # Maximum number of leads to select
-HYBRID_MIN_LEADS: int = 3  # Minimum number of leads to select
-HYBRID_SCORE_SIMILARITY: float = 0.5  # Score threshold for pairwise comparison
+MIN_WEIGHTED_SCORE: float = 6.0  # Minimum score for lead consideration
+MAX_LEADS: int = 5  # Maximum number of leads to select
+MIN_LEADS: int = 3  # Minimum number of leads to select
+SCORE_SIMILARITY: float = 0.5  # Score threshold for pairwise comparison

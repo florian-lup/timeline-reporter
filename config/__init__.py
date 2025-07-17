@@ -34,16 +34,15 @@ from .settings import (
     CURATION_MODEL,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
-    HYBRID_MAX_LEADS,
-    HYBRID_MIN_LEADS,
-    # Lead Curation Configuration
-    HYBRID_MIN_WEIGHTED_SCORE,
-    HYBRID_SCORE_SIMILARITY,
     # OpenAI Configuration
     LEAD_DISCOVERY_MODEL,
     # Perplexity Configuration
     LEAD_RESEARCH_MODEL,
+    MAX_LEADS,
     METRIC,
+    MIN_LEADS,
+    # Lead Curation Configuration
+    MIN_WEIGHTED_SCORE,
     MONGODB_COLLECTION_NAME,
     # MongoDB Configuration
     MONGODB_DATABASE_NAME,
@@ -54,6 +53,7 @@ from .settings import (
     PINECONE_API_KEY,
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
+    SCORE_SIMILARITY,
     SEARCH_CONTEXT_SIZE,
     SIMILARITY_THRESHOLD,
     TOP_K_RESULTS,
@@ -85,10 +85,10 @@ __all__ = [
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
     # Lead Curation Configuration
-    "HYBRID_MIN_WEIGHTED_SCORE",
-    "HYBRID_MAX_LEADS",
-    "HYBRID_MIN_LEADS",
-    "HYBRID_SCORE_SIMILARITY",
+    "MIN_WEIGHTED_SCORE",
+    "MAX_LEADS",
+    "MIN_LEADS",
+    "SCORE_SIMILARITY",
     # Discovery Prompts
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_POLITICS_INSTRUCTIONS",

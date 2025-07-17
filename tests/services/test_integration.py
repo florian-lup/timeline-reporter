@@ -1,7 +1,7 @@
 """Integration tests for services pipeline."""
 
 import json
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -65,7 +65,7 @@ class TestServicesIntegration:
                 }
             ]
         )
-        
+
         # Set lead_discovery to return different responses for each call
         mock_perplexity.lead_discovery.side_effect = [
             politics_response,
@@ -135,10 +135,13 @@ class TestServicesIntegration:
         }
 
     @pytest.mark.integration
-    def test_complete_pipeline_success(self, mock_clients, test_discovery_instructions):
+    def test_complete_pipeline_success(
+        self, mock_clients, test_discovery_instructions
+    ):
         """Test complete pipeline from discovery to storage."""
 
-        # No need to patch DISCOVERY_INSTRUCTIONS anymore since we're using category-specific ones
+        # No need to patch DISCOVERY_INSTRUCTIONS anymore since we're using
+        # category-specific ones
         # Execute complete pipeline
         leads = discover_leads(mock_clients["perplexity"])
         unique_leads = deduplicate_leads(
@@ -168,13 +171,19 @@ class TestServicesIntegration:
 
         # Stories from research
         assert stories[0].headline == "World Leaders Unite at Political Summit"
-        assert stories[1].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
+        assert (
+            stories[1].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
+        )
         assert stories[2].headline == "AI Revolution in Healthcare Diagnostics"
 
         # Verify clients were called appropriately
-        assert mock_clients["perplexity"].lead_discovery.call_count == 3  # Three category calls
+        assert (
+            mock_clients["perplexity"].lead_discovery.call_count == 3
+        )  # Three category calls
         assert mock_clients["openai"].embed_text.call_count == 3  # One per lead
-        assert mock_clients["perplexity"].lead_research.call_count == 3  # One per story
+        assert (
+            mock_clients["perplexity"].lead_research.call_count == 3
+        )  # One per story
         assert mock_clients["mongodb"].insert_story.call_count == 3
 
     @pytest.mark.integration
@@ -215,7 +224,7 @@ class TestServicesIntegration:
             entertainment_json,
         ]
 
-        # Set up hybrid curator responses - evaluation and pairwise comparison
+        # Set up curator responses - evaluation and pairwise comparison
         evaluation_response = json.dumps(
             [
                 {
@@ -289,7 +298,7 @@ class TestServicesIntegration:
         assert len(prioritized_leads) == 3  # Decision selected 3/4 leads
 
         # Verify selected leads are the expected ones
-        # (order may vary due to hybrid scoring)
+        # (order may vary due to scoring)
         selected_tips = [lead.tip for lead in prioritized_leads]
         # Lead 2 selected
         assert any("Lead 2" in tip for tip in selected_tips)
@@ -309,7 +318,7 @@ class TestServicesIntegration:
         politics_json = json.dumps([{"tip": "Political Lead: Political news"}])
         environment_json = json.dumps([{"tip": "Environmental Lead: Climate news"}])
         entertainment_json = json.dumps([{"tip": "Entertainment Lead: Celebrity news"}])
-        
+
         mock_clients["perplexity"].lead_discovery.side_effect = [
             politics_json,
             environment_json,
@@ -356,7 +365,7 @@ class TestServicesIntegration:
 
         # Lead -> Lead (decision preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].tip in [l.tip for l in unique_leads]
+        assert prioritized_leads[0].tip in [lead.tip for lead in unique_leads]
 
         # Lead -> Story (research transforms and enhances)
         assert isinstance(stories[0], Story)
@@ -368,10 +377,17 @@ class TestServicesIntegration:
         """Test pipeline performance with larger data volume."""
 
         # Create large discovery responses across categories
-        politics_data = [{"tip": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
-        environment_data = [{"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
-        entertainment_data = [{"tip": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
-        
+        politics_data = [
+            {"tip": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)
+        ]
+        environment_data = [
+            {"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)
+        ]
+        entertainment_data = [
+            {"tip": f"Entertainment Lead {i}: Celebrity news {i}"}
+            for i in range(8, 11)
+        ]
+
         mock_clients["perplexity"].lead_discovery.side_effect = [
             json.dumps(politics_data),
             json.dumps(environment_data),

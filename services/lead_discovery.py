@@ -27,27 +27,31 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
     Returns the combined list of events from all categories.
     """
     all_leads = []
-    
+
     # Define categories with their respective instructions
     categories = [
         ("politics", DISCOVERY_POLITICS_INSTRUCTIONS),
         ("environment", DISCOVERY_ENVIRONMENT_INSTRUCTIONS),
         ("entertainment", DISCOVERY_ENTERTAINMENT_INSTRUCTIONS),
     ]
-    
+
     # Make separate API calls for each category
     for category_name, instructions in categories:
         logger.info("Discovering leads for category: %s", category_name)
-        
+
         try:
             response_text = perplexity_client.lead_discovery(instructions)
             category_leads = _parse_leads_from_response(response_text)
-            
-            logger.info("Discovered %d leads for %s", len(category_leads), category_name)
+
+            logger.info(
+                "Discovered %d leads for %s", len(category_leads), category_name
+            )
             all_leads.extend(category_leads)
-            
+
         except Exception as exc:
-            logger.error("Failed to discover leads for %s: %s", category_name, exc)
+            logger.error(
+                "Failed to discover leads for %s: %s", category_name, exc
+            )
             # Continue with other categories even if one fails
             continue
 

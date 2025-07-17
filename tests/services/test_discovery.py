@@ -135,7 +135,7 @@ class TestDiscoveryService:
         assert len(leads) == 2
         assert "Presidential Election Update" in leads[0].tip
         assert "World Cup Final" in leads[1].tip
-        
+
         # Verify error was logged
         mock_logger.error.assert_called()
         assert mock_perplexity_client.lead_discovery.call_count == 3
@@ -210,10 +210,17 @@ class TestDiscoveryService:
         discover_leads(mock_perplexity_client)
 
         # Verify category-specific logging
-        assert mock_logger.info.call_count >= 7  # 3 for "Discovering", 3 for "Discovered", 1 for total
-        mock_logger.info.assert_any_call("Discovering leads for category: %s", "politics")
-        mock_logger.info.assert_any_call("Discovered %d leads for %s", 1, "politics")
-        mock_logger.info.assert_any_call("Total leads discovered across all categories: %d", 3)
+        # 3 for "Discovering", 3 for "Discovered", 1 for total
+        assert mock_logger.info.call_count >= 7
+        mock_logger.info.assert_any_call(
+            "Discovering leads for category: %s", "politics"
+        )
+        mock_logger.info.assert_any_call(
+            "Discovered %d leads for %s", 1, "politics"
+        )
+        mock_logger.info.assert_any_call(
+            "Total leads discovered across all categories: %d", 3
+        )
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
         """Test that discovery preserves original formatting in tip."""
