@@ -89,8 +89,7 @@ def mock_mongodb_client():
 def sample_lead():
     """Sample Lead object for testing."""
     return Lead(
-        tip="Sample Lead Title: This is a sample lead summary for testing "
-        "purposes.",
+        tip="Sample Lead Title: This is a sample lead summary for testing purposes.",
     )
 
 

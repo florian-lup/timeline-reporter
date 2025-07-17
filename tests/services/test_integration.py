@@ -322,9 +322,7 @@ class TestServicesIntegration:
         # Lead -> Story (research transforms and enhances)
         assert isinstance(stories[0], Story)
         assert stories[0].headline == "Transformed Headline"
-        assert (
-            stories[0].summary != prioritized_leads[0].tip
-        )  # Enhanced by research
+        assert stories[0].summary != prioritized_leads[0].tip  # Enhanced by research
         assert len(stories[0].sources) == 2
 
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):

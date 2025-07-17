@@ -98,9 +98,7 @@ class HybridLeadCurator:
     def _evaluate_all_criteria(self, leads: list[Lead]) -> list[LeadEvaluation]:
         """Step 1: Evaluate each lead on multiple criteria."""
         # Format leads for evaluation
-        leads_text = "\n".join(
-            f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads)
-        )
+        leads_text = "\n".join(f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads))
 
         # Batch evaluation prompt for efficiency
         prompt = f"""You are evaluating news leads for their newsworthiness using

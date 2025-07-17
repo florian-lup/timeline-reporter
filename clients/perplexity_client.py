@@ -107,11 +107,11 @@ class PerplexityClient:
         return content
 
     def lead_discovery(self, prompt: str) -> str:
-        """Executes deep research using sonar-deep-research model.
+        """Executes a research for leads.
 
         Uses structured output for consistent JSON responses.
 
-        This method uses the sonar-deep-research model which includes
+        This includes
         reasoning tokens wrapped in <think> tags. The response is parsed to
         extract only the JSON content.
 
@@ -157,7 +157,7 @@ class PerplexityClient:
     def _extract_json_from_reasoning_response(self, response: str) -> str:
         """Extract JSON content from a reasoning model response.
 
-        Reasoning models like sonar-deep-research wrap their reasoning in <think> tags
+        Reasoning models wrap their reasoning in <think> tags
         followed by the actual structured output. This method extracts just the JSON.
 
         Args:

@@ -375,7 +375,7 @@ Let me search for current information.
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
             patch(
-                "clients.perplexity_client.LEAD_DISCOVERY_MODEL", "sonar-deep-research"
+                "clients.perplexity_client.LEAD_DISCOVERY_MODEL", "sonar-reasoning-pro"
             ),
         ):
             client = PerplexityClient()
@@ -387,7 +387,7 @@ Let me search for current information.
 
             # Check payload structure
             payload = call_args[1]["json"]
-            assert payload["model"] == "sonar-deep-research"
+            assert payload["model"] == "sonar-reasoning-pro"
             assert len(payload["messages"]) == 2
             assert payload["messages"][0]["role"] == "system"
             assert payload["messages"][1]["role"] == "user"
