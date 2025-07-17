@@ -23,16 +23,12 @@ def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
 
     # Format leads for evaluation with numbers
     leads_text = "\n".join(
-        [
-            f"{i + 1}. {lead.context}\n"
-            for i, lead in enumerate(leads)
-        ]
+        [f"{i + 1}. {lead.context}\n" for i, lead in enumerate(leads)]
     )
 
     # Create decision prompt
     full_prompt = (
-        f"{DECISION_SYSTEM_PROMPT}\n\n"
-        f"{DECISION_INSTRUCTIONS.format(leads=leads_text)}"
+        f"{DECISION_SYSTEM_PROMPT}\n\n{DECISION_INSTRUCTIONS.format(leads=leads_text)}"
     )
 
     # Get AI decision on most impactful leads using decision model
@@ -48,7 +44,9 @@ def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
 
     # Log the selected leads for transparency
     for i, lead in enumerate(selected_leads, 1):
-        context_preview = lead.context[:50] + "..." if len(lead.context) > 50 else lead.context
+        context_preview = (
+            lead.context[:50] + "..." if len(lead.context) > 50 else lead.context
+        )
         logger.info("Priority %d: %s", i, context_preview)
 
     return selected_leads

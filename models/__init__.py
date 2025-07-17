@@ -10,4 +10,4 @@ from .core import Lead, Story
 __all__ = [
     "Lead",
     "Story",
-] 
+]

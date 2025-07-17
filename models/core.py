@@ -21,4 +21,4 @@ class Story:
     summary: str
     body: str
     sources: list[str]
-    date: str = field(default_factory=get_today_formatted) 
+    date: str = field(default_factory=get_today_formatted)

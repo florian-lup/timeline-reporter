@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
-from models import Lead, Story
+from models import Story
 
 
 @pytest.mark.integration
@@ -55,7 +55,9 @@ class TestClientIntegration:
             embedding = openai_client.embed_text(test_text)
 
             # 2. Store in Pinecone
-            pinecone_client.upsert_vector("test-lead-123", embedding, {"content": test_text})
+            pinecone_client.upsert_vector(
+                "test-lead-123", embedding, {"content": test_text}
+            )
 
             # 3. Search for similar events
             search_results = pinecone_client.similarity_search(embedding)
@@ -82,7 +84,10 @@ class TestClientIntegration:
                 "headline": "Test Research Story",
                 "summary": "This is a test research summary",
                 "body": "This is the full test research story...",
-                "sources": ["https://example.com/source1", "https://example.com/source2"],
+                "sources": [
+                    "https://example.com/source1",
+                    "https://example.com/source2",
+                ],
             }
             mock_response.json.return_value = {
                 "choices": [{"message": {"content": json.dumps(research_data)}}]
@@ -99,7 +104,10 @@ class TestClientIntegration:
             # Verify API call
             mock_http_client.post.assert_called_once()
             call_args = mock_http_client.post.call_args
-            assert "investigative journalist" in call_args[1]["json"]["messages"][0]["content"]
+            assert (
+                "investigative journalist"
+                in call_args[1]["json"]["messages"][0]["content"]
+            )
 
             # Verify result parsing
             result_data = json.loads(result)
@@ -206,17 +214,15 @@ class TestClientIntegration:
             mock_collection.insert_one.return_value = mock_result
 
             # Execute full pipeline
-            from services import research_story
             from models import Lead
+            from services import research_story
 
             perplexity_client = PerplexityClient()
             mongodb_client = MongoDBClient()
 
             # 1. Research phase
             test_leads = [Lead(context="Breaking News: Important lead")]
-            stories = research_story(
-                test_leads, perplexity_client=perplexity_client
-            )
+            stories = research_story(test_leads, perplexity_client=perplexity_client)
 
             # 2. Storage phase
             for story in stories:
@@ -323,7 +329,12 @@ class TestClientIntegration:
                     {
                         "message": {
                             "content": json.dumps(
-                                [{"title": "Climate News", "summary": "Important update"}]
+                                [
+                                    {
+                                        "title": "Climate News",
+                                        "summary": "Important update",
+                                    }
+                                ]
                             )
                         }
                     }

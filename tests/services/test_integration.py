@@ -5,14 +5,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from models import Lead, Story
 from services import (
+    curate_leads,
     deduplicate_leads,
     discover_leads,
     persist_stories,
     research_story,
-    curate_leads,
 )
-from models import Lead, Story
 
 
 @pytest.mark.integration
@@ -41,10 +41,16 @@ class TestServicesIntegration:
         mock_mongodb = Mock()
 
         # Set up discovery response
-        discovery_json = json.dumps([
-            {"context": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."},
-            {"context": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."},
-        ])
+        discovery_json = json.dumps(
+            [
+                {
+                    "context": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."
+                },
+                {
+                    "context": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."
+                },
+            ]
+        )
         mock_perplexity.deep_research.return_value = discovery_json
 
         # Set up deduplication (no duplicates)
@@ -56,18 +62,28 @@ class TestServicesIntegration:
 
         # Set up research response
         research_responses = [
-            json.dumps({
-                "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                "summary": "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals.",
-                "body": "In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments.",
-                "sources": ["https://example.com/climate-summit", "https://example.com/carbon-targets"]
-            }),
-            json.dumps({
-                "headline": "AI Revolution in Healthcare Diagnostics",
-                "summary": "Breakthrough AI system shows promise in medical diagnosis and drug discovery.",
-                "body": "Researchers have developed an AI system that revolutionizes healthcare diagnostics.",
-                "sources": ["https://example.com/ai-health", "https://example.com/medical-ai"]
-            })
+            json.dumps(
+                {
+                    "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
+                    "summary": "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals.",
+                    "body": "In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments.",
+                    "sources": [
+                        "https://example.com/climate-summit",
+                        "https://example.com/carbon-targets",
+                    ],
+                }
+            ),
+            json.dumps(
+                {
+                    "headline": "AI Revolution in Healthcare Diagnostics",
+                    "summary": "Breakthrough AI system shows promise in medical diagnosis and drug discovery.",
+                    "body": "Researchers have developed an AI system that revolutionizes healthcare diagnostics.",
+                    "sources": [
+                        "https://example.com/ai-health",
+                        "https://example.com/medical-ai",
+                    ],
+                }
+            ),
         ]
         mock_perplexity.research.side_effect = research_responses
 
@@ -84,7 +100,7 @@ class TestServicesIntegration:
     @pytest.mark.integration
     def test_complete_pipeline_success(self, mock_clients, test_discovery_instructions):
         """Test complete pipeline from discovery to storage."""
-        
+
         with patch(
             "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
             test_discovery_instructions,
@@ -127,7 +143,7 @@ class TestServicesIntegration:
         assert mock_clients["perplexity"].research.call_count == 2  # One per story
         assert mock_clients["mongodb"].insert_story.call_count == 2
 
-    @pytest.mark.integration  
+    @pytest.mark.integration
     def test_pipeline_with_deduplication(
         self, mock_clients, test_discovery_instructions
     ):
@@ -142,13 +158,15 @@ class TestServicesIntegration:
         ]
 
         # Set up discovery with duplicate leads
-        discovery_json = json.dumps([
-            {"context": "Lead 1: First lead description"},
-            {"context": "Lead 2: Second lead description"},
-            {"context": "Lead 3: Similar to Lead 1"},
-            {"context": "Lead 4: Fourth lead description"},
-            {"context": "Lead 5: Fifth lead description"},
-        ])
+        discovery_json = json.dumps(
+            [
+                {"context": "Lead 1: First lead description"},
+                {"context": "Lead 2: Second lead description"},
+                {"context": "Lead 3: Similar to Lead 1"},
+                {"context": "Lead 4: Fourth lead description"},
+                {"context": "Lead 5: Fifth lead description"},
+            ]
+        )
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
         # Set up decision response - leads 1, 2, 4 from the remaining 4 unique leads
@@ -175,28 +193,30 @@ class TestServicesIntegration:
         assert len(prioritized_leads) == 3  # Decision selected 3/4 leads
 
         # Verify selected stories correspond to selected leads
-        assert "Lead 2" in prioritized_leads[0].context  # Index 1 -> Lead 2 (since Lead 1 was duplicate)
-        assert "Lead 3" in prioritized_leads[1].context  # Index 2 -> Lead 3  
+        assert (
+            "Lead 2" in prioritized_leads[0].context
+        )  # Index 1 -> Lead 2 (since Lead 1 was duplicate)
+        assert "Lead 3" in prioritized_leads[1].context  # Index 2 -> Lead 3
         assert "Lead 5" in prioritized_leads[2].context  # Index 4 -> Lead 5
 
     def test_pipeline_data_transformation(
         self, mock_clients, test_discovery_instructions
     ):
         """Test data transformation through pipeline stages."""
-        
+
         # Mock simple discovery response
-        discovery_json = json.dumps([
-            {"context": "Original Lead: Original summary"}
-        ])
+        discovery_json = json.dumps([{"context": "Original Lead: Original summary"}])
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
         # Override the global mock with specific response for this test
-        research_json = json.dumps({
-            "headline": "Transformed Headline",
-            "summary": "Enhanced summary",
-            "body": "Detailed story body",
-            "sources": ["https://source1.com", "https://source2.com"]
-        })
+        research_json = json.dumps(
+            {
+                "headline": "Transformed Headline",
+                "summary": "Enhanced summary",
+                "body": "Detailed story body",
+                "sources": ["https://source1.com", "https://source2.com"],
+            }
+        )
         mock_clients["perplexity"].research.return_value = research_json
         mock_clients["perplexity"].research.side_effect = None  # Reset side_effect
 
@@ -244,7 +264,7 @@ class TestServicesIntegration:
 
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline performance with larger data volume."""
-        
+
         # Create large discovery response
         discovery_data = [{"context": f"Lead {i}: Summary {i}"} for i in range(1, 11)]
         discovery_json = json.dumps(discovery_data)
@@ -255,12 +275,15 @@ class TestServicesIntegration:
 
         # Override research responses for 5 stories
         research_responses = [
-            json.dumps({
-                "headline": f"Story {i}",
-                "summary": f"Summary {i}",
-                "body": f"Body {i}",
-                "sources": [f"https://source{i}.com"]
-            }) for i in [1, 3, 5, 7, 9]
+            json.dumps(
+                {
+                    "headline": f"Story {i}",
+                    "summary": f"Summary {i}",
+                    "body": f"Body {i}",
+                    "sources": [f"https://source{i}.com"],
+                }
+            )
+            for i in [1, 3, 5, 7, 9]
         ]
         mock_clients["perplexity"].research.side_effect = research_responses
 
@@ -290,6 +313,6 @@ class TestServicesIntegration:
 
         # Verify embeddings were created for all leads
         assert mock_clients["openai"].embed_text.call_count == 10
-        
+
         # Verify research was called for all selected leads
         assert mock_clients["perplexity"].research.call_count == 5

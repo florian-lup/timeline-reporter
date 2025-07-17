@@ -4,8 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from services import deduplicate_leads
 from models import Lead
+from services import deduplicate_leads
 
 
 class TestDeduplicationService:
@@ -142,7 +142,9 @@ class TestDeduplicationService:
         # Verify logging
         mock_logger.info.assert_any_call(
             "Skipping duplicate: '%s' (similarity: %.2f)",
-            sample_leads[1].context[:50] + "..." if len(sample_leads[1].context) > 50 else sample_leads[1].context,
+            sample_leads[1].context[:50] + "..."
+            if len(sample_leads[1].context) > 50
+            else sample_leads[1].context,
             0.95,
         )
 
@@ -163,7 +165,7 @@ class TestDeduplicationService:
 
         # Verify metadata for each upsert call
         calls = mock_pinecone_client.upsert_vector.call_args_list
-        
+
         for i, call in enumerate(calls):
             args, kwargs = call
             vector_id, vector = args

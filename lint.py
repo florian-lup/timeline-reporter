@@ -6,11 +6,11 @@ Usage:
 
 Commands:
     check     - Run all checks (ruff, mypy) without modifying files
-    format    - Format code with black and ruff
+    format    - Format code with ruff
     fix       - Auto-fix ruff issues
     all       - Run format, fix, and check
     ruff      - Run only ruff linting
-    black     - Run only black formatting
+    ruff-format - Run only ruff formatting
     mypy      - Run only mypy type checking
 
 Examples:
@@ -52,14 +52,9 @@ def run_ruff_fix() -> int:
     return run_command(["ruff", "check", ".", "--fix"], "Ruff auto-fix")
 
 
-def run_black_check() -> int:
-    """Run black in check mode."""
-    return run_command(["black", ".", "--check", "--diff"], "Black formatting check")
-
-
-def run_black_format() -> int:
-    """Run black formatting."""
-    return run_command(["black", "."], "Black formatting")
+def run_ruff_format() -> int:
+    """Run ruff formatting."""
+    return run_command(["ruff", "format", "."], "Ruff formatting")
 
 
 def run_mypy() -> int:
@@ -80,14 +75,13 @@ def main() -> int:
         exit_code += run_mypy()
 
     elif command == "format":
-        exit_code += run_black_format()
-        exit_code += run_ruff_fix()
+        exit_code += run_ruff_format()
 
     elif command == "fix":
         exit_code += run_ruff_fix()
 
     elif command == "all":
-        exit_code += run_black_format()
+        exit_code += run_ruff_format()
         exit_code += run_ruff_fix()
         exit_code += run_ruff_check()
         exit_code += run_mypy()
@@ -95,8 +89,8 @@ def main() -> int:
     elif command == "ruff":
         exit_code += run_ruff_check()
 
-    elif command == "black":
-        exit_code += run_black_check()
+    elif command == "ruff-format":
+        exit_code += run_ruff_format()
 
     elif command == "mypy":
         exit_code += run_mypy()

@@ -47,23 +47,31 @@ def mock_pinecone_client():
 def mock_perplexity_client():
     """Mock Perplexity client for testing."""
     mock_client = Mock()
-    
+
     # Mock discovery response
-    discovery_response = json.dumps([
-        {"context": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."},
-        {"context": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."}
-    ])
+    discovery_response = json.dumps(
+        [
+            {
+                "context": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."
+            },
+            {
+                "context": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."
+            },
+        ]
+    )
     mock_client.deep_research.return_value = discovery_response
-    
+
     # Mock research response
-    research_response = json.dumps({
-        "headline": "Breaking News Story",
-        "summary": "Important lead summary",
-        "body": "Full story body with detailed information.",
-        "sources": ["https://example.com/source1", "https://example.com/source2"]
-    })
+    research_response = json.dumps(
+        {
+            "headline": "Breaking News Story",
+            "summary": "Important lead summary",
+            "body": "Full story body with detailed information.",
+            "sources": ["https://example.com/source1", "https://example.com/source2"],
+        }
+    )
     mock_client.research.return_value = research_response
-    
+
     return mock_client
 
 
@@ -106,7 +114,10 @@ def sample_story():
         headline="Breaking: Major Climate Summit Concluded",
         summary="World leaders reach historic agreement on carbon reduction targets.",
         body="In a landmark decision today, world leaders...",
-        sources=["https://example.com/climate-news", "https://example.com/summit-report"],
+        sources=[
+            "https://example.com/climate-news",
+            "https://example.com/summit-report",
+        ],
     )
 
 
@@ -118,12 +129,18 @@ def sample_stories():
             headline="Technology Breakthrough in AI",
             summary="Researchers announce major advancement in artificial intelligence.",
             body="Scientists at leading research institutions have...",
-            sources=["https://example.com/tech-news", "https://example.com/ai-research"],
+            sources=[
+                "https://example.com/tech-news",
+                "https://example.com/ai-research",
+            ],
         ),
         Story(
             headline="Climate Action Summit Results",
             summary="Global climate summit concludes with new agreements.",
             body="The three-day climate summit has concluded with...",
-            sources=["https://example.com/climate-summit", "https://example.com/environment"],
+            sources=[
+                "https://example.com/climate-summit",
+                "https://example.com/environment",
+            ],
         ),
     ]
