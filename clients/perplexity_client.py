@@ -5,10 +5,10 @@ from __future__ import annotations
 import httpx
 
 from config import (
-    DEEP_RESEARCH_MODEL,
     DISCOVERY_SYSTEM_PROMPT,
+    LEAD_DISCOVERY_MODEL,
+    LEAD_RESEARCH_MODEL,
     PERPLEXITY_API_KEY,
-    RESEARCH_MODEL,
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_CONTEXT_SIZE,
 )
@@ -42,7 +42,7 @@ class PerplexityClient:
         self._headers = {**self._DEFAULT_HEADERS, "Authorization": f"Bearer {api_key}"}
 
     # JSON schema for Story structured output as per docs
-    _ARTICLE_JSON_SCHEMA = {
+    _STORY_JSON_SCHEMA = {
         "type": "object",
         "properties": {
             "headline": {"type": "string"},
@@ -57,7 +57,7 @@ class PerplexityClient:
     }
 
     # JSON schema for Discovery structured output (array of leads)
-    _DISCOVERY_JSON_SCHEMA = {
+    _LEAD_JSON_SCHEMA = {
         "type": "array",
         "items": {
             "type": "object",
@@ -68,17 +68,17 @@ class PerplexityClient:
         },
     }
 
-    def research(self, prompt: str) -> str:
+    def lead_research(self, prompt: str) -> str:
         """Executes a chat completion request forcing JSON structured output.
 
         Utilises Perplexity's `response_format` parameter (see official guide:
         https://docs.perplexity.ai/guides/structured-outputs) to guarantee the
         model returns a valid JSON object matching the story schema.
         """
-        logger.info("Research request with %s", RESEARCH_MODEL)
+        logger.info("Research request with %s", LEAD_RESEARCH_MODEL)
 
         payload = {
-            "model": RESEARCH_MODEL,
+            "model": LEAD_RESEARCH_MODEL,
             "messages": [
                 {
                     "role": "system",
@@ -91,7 +91,7 @@ class PerplexityClient:
             },
             "response_format": {
                 "type": "json_schema",
-                "json_schema": {"schema": self._ARTICLE_JSON_SCHEMA},
+                "json_schema": {"schema": self._STORY_JSON_SCHEMA},
             },
         }
 
@@ -106,7 +106,7 @@ class PerplexityClient:
         content: str = data["choices"][0]["message"]["content"]
         return content
 
-    def deep_research(self, prompt: str) -> str:
+    def lead_discovery(self, prompt: str) -> str:
         """Executes deep research using sonar-deep-research model.
 
         Uses structured output for consistent JSON responses.
@@ -121,10 +121,10 @@ class PerplexityClient:
         Returns:
             JSON string containing the structured research results
         """
-        logger.info("Deep research request with %s", DEEP_RESEARCH_MODEL)
+        logger.info("Deep research request with %s", LEAD_DISCOVERY_MODEL)
 
         payload = {
-            "model": DEEP_RESEARCH_MODEL,
+            "model": LEAD_DISCOVERY_MODEL,
             "messages": [
                 {
                     "role": "system",
@@ -137,7 +137,7 @@ class PerplexityClient:
             },
             "response_format": {
                 "type": "json_schema",
-                "json_schema": {"schema": self._DISCOVERY_JSON_SCHEMA},
+                "json_schema": {"schema": self._LEAD_JSON_SCHEMA},
             },
         }
 

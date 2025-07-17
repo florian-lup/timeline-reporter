@@ -23,7 +23,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 
     Returns the combined list of events.
     """
-    response_text = perplexity_client.deep_research(DISCOVERY_INSTRUCTIONS)
+    response_text = perplexity_client.lead_discovery(DISCOVERY_INSTRUCTIONS)
     leads = _parse_leads_from_response(response_text)
 
     logger.info("Discovered %d leads", len(leads))

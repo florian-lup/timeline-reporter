@@ -30,8 +30,6 @@ from .settings import (
     CLOUD_PROVIDER,
     CLOUD_REGION,
     CURATION_MODEL,
-    # OpenAI Configuration
-    DEEP_RESEARCH_MODEL,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
     HYBRID_MAX_LEADS,
@@ -39,6 +37,10 @@ from .settings import (
     # Lead Curation Configuration
     HYBRID_MIN_WEIGHTED_SCORE,
     HYBRID_SCORE_SIMILARITY,
+    # OpenAI Configuration
+    LEAD_DISCOVERY_MODEL,
+    # Perplexity Configuration
+    LEAD_RESEARCH_MODEL,
     METRIC,
     MONGODB_COLLECTION_NAME,
     # MongoDB Configuration
@@ -50,8 +52,6 @@ from .settings import (
     PINECONE_API_KEY,
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
-    # Perplexity Configuration
-    RESEARCH_MODEL,
     SEARCH_CONTEXT_SIZE,
     SIMILARITY_THRESHOLD,
     TOP_K_RESULTS,
@@ -70,14 +70,14 @@ __all__ = [
     "CLOUD_PROVIDER",
     "CLOUD_REGION",
     # OpenAI Configuration
-    "DEEP_RESEARCH_MODEL",
+    "LEAD_DISCOVERY_MODEL",
     "EMBEDDING_MODEL",
     "EMBEDDING_DIMENSIONS",
     "METRIC",
     "CHAT_MODEL",
     "CURATION_MODEL",
     # Perplexity Configuration
-    "RESEARCH_MODEL",
+    "LEAD_RESEARCH_MODEL",
     "SEARCH_CONTEXT_SIZE",
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",

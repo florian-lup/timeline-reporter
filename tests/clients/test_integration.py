@@ -100,7 +100,7 @@ class TestClientIntegration:
             # Test research
             perplexity_client = PerplexityClient()
             research_prompt = "Research this lead: Breaking news about technology"
-            result = perplexity_client.research(research_prompt)
+            result = perplexity_client.lead_research(research_prompt)
 
             # Verify API call
             mock_http_client.post.assert_called_once()
@@ -371,7 +371,7 @@ class TestClientIntegration:
             pinecone_client = PineconeClient()
 
             # 1. Discovery
-            discovery_result = perplexity_client.deep_research(
+            discovery_result = perplexity_client.lead_discovery(
                 "Find recent climate news"
             )
             events = json.loads(discovery_result)

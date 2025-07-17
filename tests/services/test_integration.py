@@ -53,7 +53,7 @@ class TestServicesIntegration:
                 },
             ]
         )
-        mock_perplexity.deep_research.return_value = discovery_json
+        mock_perplexity.lead_discovery.return_value = discovery_json
 
         # Set up deduplication (no duplicates)
         mock_openai.embed_text.return_value = [0.1] * 1536
@@ -91,7 +91,7 @@ class TestServicesIntegration:
                 }
             ),
         ]
-        mock_perplexity.research.side_effect = research_responses
+        mock_perplexity.lead_research.side_effect = research_responses
 
         # Set up storage
         mock_mongodb.insert_story.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
@@ -144,9 +144,9 @@ class TestServicesIntegration:
         assert stories[1].headline == "AI Revolution in Healthcare Diagnostics"
 
         # Verify clients were called appropriately
-        mock_clients["perplexity"].deep_research.assert_called_once()
+        mock_clients["perplexity"].lead_discovery.assert_called_once()
         assert mock_clients["openai"].embed_text.call_count == 2  # One per lead
-        assert mock_clients["perplexity"].research.call_count == 2  # One per story
+        assert mock_clients["perplexity"].lead_research.call_count == 2  # One per story
         assert mock_clients["mongodb"].insert_story.call_count == 2
 
     @pytest.mark.integration
@@ -173,7 +173,7 @@ class TestServicesIntegration:
                 {"context": "Lead 5: Fifth lead description"},
             ]
         )
-        mock_clients["perplexity"].deep_research.return_value = discovery_json
+        mock_clients["perplexity"].lead_discovery.return_value = discovery_json
 
         # Set up hybrid curator responses - evaluation and pairwise comparison
         evaluation_response = json.dumps(
@@ -271,7 +271,7 @@ class TestServicesIntegration:
 
         # Mock simple discovery response
         discovery_json = json.dumps([{"context": "Original Lead: Original summary"}])
-        mock_clients["perplexity"].deep_research.return_value = discovery_json
+        mock_clients["perplexity"].lead_discovery.return_value = discovery_json
 
         # Override the global mock with specific response for this test
         research_json = json.dumps(
@@ -282,8 +282,8 @@ class TestServicesIntegration:
                 "sources": ["https://source1.com", "https://source2.com"],
             }
         )
-        mock_clients["perplexity"].research.return_value = research_json
-        mock_clients["perplexity"].research.side_effect = None  # Reset side_effect
+        mock_clients["perplexity"].lead_research.return_value = research_json
+        mock_clients["perplexity"].lead_research.side_effect = None  # Reset side_effect
 
         # Set up decision response for single lead
         mock_clients["openai"].chat_completion.return_value = "1"
@@ -333,7 +333,7 @@ class TestServicesIntegration:
         # Create large discovery response
         discovery_data = [{"context": f"Lead {i}: Summary {i}"} for i in range(1, 11)]
         discovery_json = json.dumps(discovery_data)
-        mock_clients["perplexity"].deep_research.return_value = discovery_json
+        mock_clients["perplexity"].lead_discovery.return_value = discovery_json
 
         # Set up decision to select subset
         mock_clients["openai"].chat_completion.return_value = "1, 3, 5, 7, 9"
@@ -350,7 +350,7 @@ class TestServicesIntegration:
             )
             for i in [1, 3, 5, 7, 9]
         ]
-        mock_clients["perplexity"].research.side_effect = research_responses
+        mock_clients["perplexity"].lead_research.side_effect = research_responses
 
         with patch(
             "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
@@ -380,4 +380,4 @@ class TestServicesIntegration:
         assert mock_clients["openai"].embed_text.call_count == 10
 
         # Verify research was called for all selected leads
-        assert mock_clients["perplexity"].research.call_count == 5
+        assert mock_clients["perplexity"].lead_research.call_count == 5

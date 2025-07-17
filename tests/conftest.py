@@ -61,7 +61,7 @@ def mock_perplexity_client():
             },
         ]
     )
-    mock_client.deep_research.return_value = discovery_response
+    mock_client.lead_discovery.return_value = discovery_response
 
     # Mock research response
     research_response = json.dumps(

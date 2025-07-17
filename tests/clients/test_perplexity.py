@@ -102,7 +102,7 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.research("test prompt")
+            result = client.lead_research("test prompt")
 
             expected_content = json.dumps(
                 {
@@ -125,11 +125,11 @@ class TestPerplexityClient:
 
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
-            patch("clients.perplexity_client.RESEARCH_MODEL", "test-model"),
+            patch("clients.perplexity_client.LEAD_RESEARCH_MODEL", "test-model"),
             patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
         ):
             client = PerplexityClient()
-            client.research("test prompt")
+            client.lead_research("test prompt")
 
             # Verify the POST call
             mock_client.post.assert_called_once()
@@ -162,7 +162,7 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            client.research("test prompt")
+            client.lead_research("test prompt")
 
             payload = mock_client.post.call_args[1]["json"]
             schema = payload["response_format"]["json_schema"]["schema"]
@@ -197,7 +197,7 @@ class TestPerplexityClient:
             client = PerplexityClient()
 
             with pytest.raises(httpx.HTTPStatusError):
-                client.research("test prompt")
+                client.lead_research("test prompt")
 
     def test_research_timeout_configuration(self, sample_response_data):
         """Test that HTTP client is configured with proper timeout."""
@@ -216,7 +216,7 @@ class TestPerplexityClient:
 
             with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
                 client = PerplexityClient()
-                client.research("test prompt")
+                client.lead_research("test prompt")
 
                 # Verify Client was initialized with timeout=90
                 mock_client_class.assert_called_with(timeout=90)
@@ -242,7 +242,7 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.research(prompt)
+            result = client.lead_research(prompt)
 
             # Verify the prompt was passed correctly
             payload = mock_client.post.call_args[1]["json"]
@@ -263,10 +263,10 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            client.research("test prompt")
+            client.lead_research("test prompt")
 
             mock_logger.info.assert_called_once_with(
-                "Research request with %s", "sonar"
+                "Research request with %s", "sonar-pro"
             )
 
     def test_system_message_content(self, mock_httpx_client, sample_response_data):
@@ -277,7 +277,7 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            client.research("test prompt")
+            client.lead_research("test prompt")
 
             payload = mock_client.post.call_args[1]["json"]
             system_message = payload["messages"][0]["content"]
@@ -299,7 +299,7 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.research("test prompt")
+            result = client.lead_research("test prompt")
 
             assert result == test_content
 
@@ -320,7 +320,7 @@ class TestPerplexityClient:
         assert client1._headers["Authorization"] == "Bearer test-key-1"
         assert client2._headers["Authorization"] == "Bearer test-key-2"
 
-    def test_deep_research_success(self, mock_httpx_client):
+    def test_lead_discovery_success(self, mock_httpx_client):
         """Test successful deep research call."""
         mock_client, mock_response = mock_httpx_client
 
@@ -347,7 +347,7 @@ Let me search for current information.
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.deep_research(
+            result = client.lead_discovery(
                 "Find recent events about climate and geopolitics"
             )
 
@@ -364,7 +364,7 @@ Let me search for current information.
 ]"""
             assert result == expected_json
 
-    def test_deep_research_request_structure(self, mock_httpx_client):
+    def test_lead_discovery_request_structure(self, mock_httpx_client):
         """Test that deep research creates proper request structure."""
         mock_client, mock_response = mock_httpx_client
 
@@ -375,11 +375,11 @@ Let me search for current information.
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
             patch(
-                "clients.perplexity_client.DEEP_RESEARCH_MODEL", "sonar-deep-research"
+                "clients.perplexity_client.LEAD_DISCOVERY_MODEL", "sonar-deep-research"
             ),
         ):
             client = PerplexityClient()
-            client.deep_research("test prompt")
+            client.lead_discovery("test prompt")
 
             # Verify the POST call
             mock_client.post.assert_called_once()
@@ -396,7 +396,7 @@ Let me search for current information.
             assert "web_search_options" in payload
             assert "search_context_size" in payload["web_search_options"]
 
-    def test_deep_research_discovery_schema(self, mock_httpx_client):
+    def test_lead_discovery_discovery_schema(self, mock_httpx_client):
         """Test that deep research uses the correct discovery JSON schema."""
         mock_client, mock_response = mock_httpx_client
 
@@ -406,7 +406,7 @@ Let me search for current information.
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            client.deep_research("test prompt")
+            client.lead_discovery("test prompt")
 
             payload = mock_client.post.call_args[1]["json"]
             schema = payload["response_format"]["json_schema"]["schema"]
@@ -420,7 +420,7 @@ Let me search for current information.
             assert set(item_schema["required"]) == {"context"}
             assert "context" in item_schema["properties"]
 
-    def test_deep_research_without_think_tags(self, mock_httpx_client):
+    def test_lead_discovery_without_think_tags(self, mock_httpx_client):
         """Test deep research with response that doesn't have <think> tags."""
         mock_client, mock_response = mock_httpx_client
 
@@ -438,12 +438,12 @@ Let me search for current information.
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.deep_research("test prompt")
+            result = client.lead_discovery("test prompt")
 
             # Should return the full response as-is
             assert result == raw_response
 
-    def test_deep_research_timeout_configuration(self):
+    def test_lead_discovery_timeout_configuration(self):
         """Test that deep research uses longer timeout (180s)."""
         with patch("clients.perplexity_client.httpx.Client") as mock_client_class:
             mock_context_manager = MagicMock()
@@ -461,14 +461,14 @@ Let me search for current information.
 
             with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
                 client = PerplexityClient()
-                client.deep_research("test prompt")
+                client.lead_discovery("test prompt")
 
                 # Verify Client was initialized with timeout=180
                 # (longer for deep research)
                 mock_client_class.assert_called_with(timeout=180)
 
     @patch("clients.perplexity_client.logger")
-    def test_logging_deep_research(self, mock_logger, mock_httpx_client):
+    def test_logging_lead_discovery(self, mock_logger, mock_httpx_client):
         """Test that deep research logs properly."""
         mock_client, mock_response = mock_httpx_client
 
@@ -478,10 +478,10 @@ Let me search for current information.
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            client.deep_research("test prompt")
+            client.lead_discovery("test prompt")
 
             mock_logger.info.assert_called_once_with(
-                "Deep research request with %s", "sonar-deep-research"
+                "Deep research request with %s", "sonar-reasoning-pro"
             )
 
     def test_extract_json_from_reasoning_response_with_think(self):
@@ -516,7 +516,7 @@ This is reasoning content that should be removed.
             )
             assert result == '{"result": "direct json"}'
 
-    def test_deep_research_system_prompt(self, mock_httpx_client):
+    def test_lead_discovery_system_prompt(self, mock_httpx_client):
         """Test that deep research uses appropriate system prompt."""
         mock_client, mock_response = mock_httpx_client
 
@@ -526,7 +526,7 @@ This is reasoning content that should be removed.
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            client.deep_research("test prompt")
+            client.lead_discovery("test prompt")
 
             payload = mock_client.post.call_args[1]["json"]
             system_message = payload["messages"][0]["content"]
@@ -540,7 +540,7 @@ This is reasoning content that should be removed.
             assert "factual" in system_message
             assert "reputable sources" in system_message
 
-    def test_deep_research_search_context_size(self, mock_httpx_client):
+    def test_lead_discovery_search_context_size(self, mock_httpx_client):
         """Test that deep research uses the configured search context size."""
         mock_client, mock_response = mock_httpx_client
 
@@ -553,7 +553,7 @@ This is reasoning content that should be removed.
             patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
         ):
             client = PerplexityClient()
-            client.deep_research("test prompt")
+            client.lead_discovery("test prompt")
 
             payload = mock_client.post.call_args[1]["json"]
             web_search_options = payload["web_search_options"]

@@ -49,7 +49,7 @@ class TestDiscoveryService:
         self, mock_perplexity_client, sample_discovery_response
     ):
         """Test successful lead discovery."""
-        mock_perplexity_client.deep_research.return_value = sample_discovery_response
+        mock_perplexity_client.lead_discovery.return_value = sample_discovery_response
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -59,11 +59,11 @@ class TestDiscoveryService:
         assert "Earthquake Hits Pacific Region" in leads[1].context
 
         # Verify Perplexity client was called
-        mock_perplexity_client.deep_research.assert_called_once()
+        mock_perplexity_client.lead_discovery.assert_called_once()
 
     def test_discover_leads_empty_response(self, mock_perplexity_client):
         """Test discovery with empty response."""
-        mock_perplexity_client.deep_research.return_value = "[]"
+        mock_perplexity_client.lead_discovery.return_value = "[]"
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -71,7 +71,7 @@ class TestDiscoveryService:
 
     def test_discover_leads_malformed_json(self, mock_perplexity_client):
         """Test discovery with malformed JSON."""
-        mock_perplexity_client.deep_research.return_value = '{"invalid": json}'
+        mock_perplexity_client.lead_discovery.return_value = '{"invalid": json}'
 
         with patch("services.lead_discovery.logger") as mock_logger:
             leads = discover_leads(mock_perplexity_client)
@@ -83,7 +83,7 @@ class TestDiscoveryService:
         self, mock_perplexity_client, sample_leads_with_fences
     ):
         """Test discovery with JSON wrapped in markdown fences."""
-        mock_perplexity_client.deep_research.return_value = sample_leads_with_fences
+        mock_perplexity_client.lead_discovery.return_value = sample_leads_with_fences
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -92,7 +92,7 @@ class TestDiscoveryService:
 
     def test_discover_leads_non_list_response(self, mock_perplexity_client):
         """Test discovery when response is not a list."""
-        mock_perplexity_client.deep_research.return_value = json.dumps(
+        mock_perplexity_client.lead_discovery.return_value = json.dumps(
             {"error": "Not a list"}
         )
 
@@ -107,7 +107,7 @@ class TestDiscoveryService:
         self, mock_logger, mock_perplexity_client, sample_discovery_response
     ):
         """Test that discovery logs lead count."""
-        mock_perplexity_client.deep_research.return_value = sample_discovery_response
+        mock_perplexity_client.lead_discovery.return_value = sample_discovery_response
 
         discover_leads(mock_perplexity_client)
 
@@ -118,7 +118,7 @@ class TestDiscoveryService:
         response_with_formatting = json.dumps(
             [{"context": "  Spaced Title  : Summary with\nnewlines and extra   spaces"}]
         )
-        mock_perplexity_client.deep_research.return_value = response_with_formatting
+        mock_perplexity_client.lead_discovery.return_value = response_with_formatting
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -138,7 +138,7 @@ class TestDiscoveryService:
                 }
             ]
         )
-        mock_perplexity_client.deep_research.return_value = unicode_response
+        mock_perplexity_client.lead_discovery.return_value = unicode_response
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -148,7 +148,7 @@ class TestDiscoveryService:
 
     def test_discover_leads_client_error_propagation(self, mock_perplexity_client):
         """Test that client errors are properly propagated."""
-        mock_perplexity_client.deep_research.side_effect = Exception("API Error")
+        mock_perplexity_client.lead_discovery.side_effect = Exception("API Error")
 
         with pytest.raises(Exception, match="API Error"):
             discover_leads(mock_perplexity_client)
@@ -157,11 +157,11 @@ class TestDiscoveryService:
         """Test that discovery uses the correct instructions."""
         from config import DISCOVERY_INSTRUCTIONS
 
-        mock_perplexity_client.deep_research.return_value = "[]"
+        mock_perplexity_client.lead_discovery.return_value = "[]"
 
         discover_leads(mock_perplexity_client)
 
-        mock_perplexity_client.deep_research.assert_called_once_with(
+        mock_perplexity_client.lead_discovery.assert_called_once_with(
             DISCOVERY_INSTRUCTIONS
         )
 
@@ -198,7 +198,7 @@ class TestDiscoveryService:
         Not JSON
         ```
         """
-        mock_perplexity_client.deep_research.return_value = response_multiple_fences
+        mock_perplexity_client.lead_discovery.return_value = response_multiple_fences
 
         leads = discover_leads(mock_perplexity_client)
 

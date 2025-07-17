@@ -57,7 +57,7 @@ class TestResearchService:
         self, mock_perplexity_client, sample_leads, sample_research_response
     ):
         """Test successful story research."""
-        mock_perplexity_client.research.return_value = sample_research_response
+        mock_perplexity_client.lead_research.return_value = sample_research_response
 
         stories = research_story(sample_leads, perplexity_client=mock_perplexity_client)
 
@@ -72,18 +72,18 @@ class TestResearchService:
         assert stories[0].summary != ""
 
         # Verify research was called for each lead
-        assert mock_perplexity_client.research.call_count == 2
+        assert mock_perplexity_client.lead_research.call_count == 2
 
     def test_research_story_prompt_formatting(
         self, mock_perplexity_client, sample_leads, sample_research_response
     ):
         """Test that research prompts are formatted correctly."""
-        mock_perplexity_client.research.return_value = sample_research_response
+        mock_perplexity_client.lead_research.return_value = sample_research_response
 
         research_story(sample_leads, perplexity_client=mock_perplexity_client)
 
         # Verify prompts were formatted with lead context
-        call_args_list = mock_perplexity_client.research.call_args_list
+        call_args_list = mock_perplexity_client.lead_research.call_args_list
 
         # Check that both calls contain the lead context
         first_call_prompt = call_args_list[0][0][0]
@@ -101,7 +101,7 @@ class TestResearchService:
                 "sources": ["https://example.com/test"],
             }
         )
-        mock_perplexity_client.research.return_value = response
+        mock_perplexity_client.lead_research.return_value = response
 
         stories = research_story(
             sample_leads[:1], perplexity_client=mock_perplexity_client
@@ -117,7 +117,7 @@ class TestResearchService:
         self, mock_perplexity_client, sample_leads, sample_malformed_research_response
     ):
         """Test handling of malformed JSON response."""
-        mock_perplexity_client.research.return_value = (
+        mock_perplexity_client.lead_research.return_value = (
             sample_malformed_research_response
         )
 
@@ -136,7 +136,7 @@ class TestResearchService:
         stories = research_story([], perplexity_client=mock_perplexity_client)
 
         assert stories == []
-        mock_perplexity_client.research.assert_not_called()
+        mock_perplexity_client.lead_research.assert_not_called()
 
     @patch("services.story_research.logger")
     def test_research_story_logging(
@@ -147,7 +147,7 @@ class TestResearchService:
         sample_research_response,
     ):
         """Test that research logs story count."""
-        mock_perplexity_client.research.return_value = sample_research_response
+        mock_perplexity_client.lead_research.return_value = sample_research_response
 
         research_story(sample_leads, perplexity_client=mock_perplexity_client)
 
@@ -165,7 +165,7 @@ class TestResearchService:
             "sources": ["https://example.com"]
         }
         ```"""
-        mock_perplexity_client.research.return_value = fenced_response
+        mock_perplexity_client.lead_research.return_value = fenced_response
 
         stories = research_story(
             sample_leads[:1], perplexity_client=mock_perplexity_client
@@ -186,7 +186,7 @@ class TestResearchService:
                 "sources": ["https://example.com/français"],
             }
         )
-        mock_perplexity_client.research.return_value = unicode_response
+        mock_perplexity_client.lead_research.return_value = unicode_response
 
         stories = research_story(
             sample_leads[:1], perplexity_client=mock_perplexity_client
@@ -204,7 +204,7 @@ class TestResearchService:
                 # Missing summary, body, sources
             }
         )
-        mock_perplexity_client.research.return_value = response_missing_fields
+        mock_perplexity_client.lead_research.return_value = response_missing_fields
 
         stories = research_story(
             sample_leads[:1], perplexity_client=mock_perplexity_client
@@ -226,7 +226,7 @@ class TestResearchService:
                 "sources": None,
             }
         )
-        mock_perplexity_client.research.return_value = response_null_values
+        mock_perplexity_client.lead_research.return_value = response_null_values
 
         stories = research_story(
             sample_leads[:1], perplexity_client=mock_perplexity_client
@@ -244,18 +244,20 @@ class TestResearchService:
     ):
         """Test research with single lead."""
         single_lead = [Lead(context="Single Lead: Description of a single lead")]
-        mock_perplexity_client.research.return_value = sample_research_response
+        mock_perplexity_client.lead_research.return_value = sample_research_response
 
         stories = research_story(single_lead, perplexity_client=mock_perplexity_client)
 
         assert len(stories) == 1
-        assert mock_perplexity_client.research.call_count == 1
+        assert mock_perplexity_client.lead_research.call_count == 1
 
     def test_research_story_client_error_propagation(
         self, mock_perplexity_client, sample_leads
     ):
         """Test that client errors are properly propagated."""
-        mock_perplexity_client.research.side_effect = Exception("Research API Error")
+        mock_perplexity_client.lead_research.side_effect = Exception(
+            "Research API Error"
+        )
 
         with pytest.raises(Exception, match="Research API Error"):
             research_story(sample_leads, perplexity_client=mock_perplexity_client)
@@ -291,7 +293,7 @@ class TestResearchService:
         empty_response = json.dumps(
             {"headline": "", "summary": "", "body": "", "sources": []}
         )
-        mock_perplexity_client.research.return_value = empty_response
+        mock_perplexity_client.lead_research.return_value = empty_response
 
         stories = research_story(
             sample_leads[:1], perplexity_client=mock_perplexity_client
@@ -325,7 +327,7 @@ class TestResearchService:
                 "date": "2024-01-15",  # Include date in response
             }
         )
-        mock_perplexity_client.research.return_value = research_with_date
+        mock_perplexity_client.lead_research.return_value = research_with_date
 
         stories = research_story(
             [lead_with_date], perplexity_client=mock_perplexity_client

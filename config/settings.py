@@ -40,9 +40,9 @@ CURATION_MODEL: str = "o4-mini-2025-04-16"
 # ---------------------------------------------------------------------------
 # Perplexity
 # ---------------------------------------------------------------------------
-RESEARCH_MODEL: str = "sonar"
-DEEP_RESEARCH_MODEL: str = "sonar-deep-research"
-SEARCH_CONTEXT_SIZE: str = "medium"
+LEAD_RESEARCH_MODEL: str = "sonar-pro"
+LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
+SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
 # MongoDB
