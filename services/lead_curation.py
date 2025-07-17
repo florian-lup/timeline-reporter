@@ -17,10 +17,6 @@ from config.settings import (
 from models import Lead
 from utils import logger
 
-# Log Preview Length
-CONTEXT_PREVIEW_LENGTH = 50
-
-
 @dataclass
 class LeadEvaluation:
     """Comprehensive evaluation of a lead."""
@@ -419,14 +415,5 @@ def curate_leads(
     selected_leads = curator.curate_leads(leads)
 
     logger.info("Selected %d priority leads", len(selected_leads))
-
-    # Log the selected leads for transparency
-    for i, lead in enumerate(selected_leads, 1):
-        context_preview = (
-            lead.context[:CONTEXT_PREVIEW_LENGTH] + "..."
-            if len(lead.context) > CONTEXT_PREVIEW_LENGTH
-            else lead.context
-        )
-        logger.info("Priority %d: %s", i, context_preview)
 
     return selected_leads
