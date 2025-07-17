@@ -24,10 +24,12 @@ class TestDiscoveryService:
         return json.dumps(
             [
                 {
-                    "context": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies."
+                    "context": "Climate Summit Announced: World leaders gather to "
+                    "discuss climate action and environmental policies."
                 },
                 {
-                    "context": "Earthquake Hits Pacific Region: 6.2 magnitude earthquake causes minimal damage but raises tsunami concerns."
+                    "context": "Earthquake Hits Pacific Region: 6.2 magnitude "
+                    "earthquake causes minimal damage but raises tsunami concerns."
                 },
             ]
         )
@@ -37,7 +39,8 @@ class TestDiscoveryService:
         """Sample response wrapped in markdown fences."""
         response_data = [
             {
-                "context": "Climate Summit Announced: World leaders gather to discuss climate action and set new environmental targets."
+                "context": "Climate Summit Announced: World leaders gather to discuss "
+                "climate action and set new environmental targets."
             }
         ]
         return f"```json\n{json.dumps(response_data)}\n```"
@@ -130,7 +133,8 @@ class TestDiscoveryService:
         unicode_response = json.dumps(
             [
                 {
-                    "context": "🌍 Climate Summit: Conférence sur les émissions de carbone et les objectifs environnementaux"
+                    "context": "🌍 Climate Summit: Conférence sur les émissions de "
+                    "carbone et les objectifs environnementaux"
                 }
             ]
         )

@@ -21,19 +21,24 @@ class TestDecisionService:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                context="Climate Summit 2024: World leaders meet to discuss climate "
+                "change solutions and carbon reduction targets.",
             ),
             Lead(
-                context="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
+                context="Earthquake in Pacific: A 6.5 magnitude earthquake struck the "
+                "Pacific region with minimal damage reported.",
             ),
             Lead(
-                context="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
+                context="Tech Conference Announced: Major technology companies "
+                "announce new AI developments at annual conference.",
             ),
             Lead(
-                context="Economic Policy Update: Government announces new economic policies affecting global markets.",
+                context="Economic Policy Update: Government announces new economic "
+                "policies affecting global markets.",
             ),
             Lead(
-                context="Space Mission Success: NASA successfully launches new Mars exploration mission.",
+                context="Space Mission Success: NASA successfully launches new Mars "
+                "exploration mission.",
             ),
         ]
 
@@ -111,11 +116,13 @@ class TestDecisionService:
 
         # Should contain numbered events with context
         assert (
-            "1. Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets."
+            "1. Climate Summit 2024: World leaders meet to discuss climate change "
+            "solutions and carbon reduction targets."
             in call_args
         )
         assert (
-            "2. Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported."
+            "2. Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific "
+            "region with minimal damage reported."
             in call_args
         )
 
@@ -126,7 +133,7 @@ class TestDecisionService:
         """Test that logging works correctly."""
         mock_openai_client.chat_completion.return_value = sample_ai_response
 
-        result = curate_leads(sample_leads, openai_client=mock_openai_client)
+        curate_leads(sample_leads, openai_client=mock_openai_client)
 
         # Verify evaluation logging
         mock_logger.info.assert_any_call("Evaluating %d leads for priority", 5)

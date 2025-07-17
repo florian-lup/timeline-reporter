@@ -2,12 +2,17 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, prioritizes, researches, and stores stories
+    python -m main  # discovers, deduplicates, prioritizes, researches, and stores
 """
 
 from __future__ import annotations
 
-from clients import MongoDBClient, OpenAIClient, PerplexityClient, PineconeClient
+from clients import (
+    MongoDBClient,
+    OpenAIClient,
+    PerplexityClient,
+    PineconeClient,
+)
 from services import (
     curate_leads,
     deduplicate_leads,

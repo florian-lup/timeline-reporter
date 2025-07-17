@@ -44,10 +44,12 @@ class TestServicesIntegration:
         discovery_json = json.dumps(
             [
                 {
-                    "context": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."
+                    "context": "Climate Summit 2024: Global climate leaders meet to "
+                    "establish comprehensive environmental policies."
                 },
                 {
-                    "context": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."
+                    "context": "AI Breakthrough Announced: Major AI advancement in "
+                    "healthcare diagnostics revolutionizes medical practice."
                 },
             ]
         )
@@ -65,8 +67,10 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals.",
-                    "body": "In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments.",
+                    "summary": "World leaders at the 2024 Climate Summit agreed on "
+                    "unprecedented carbon reduction goals.",
+                    "body": "In a historic gathering, the 2024 Climate Summit "
+                    "concluded with ambitious commitments.",
                     "sources": [
                         "https://example.com/climate-summit",
                         "https://example.com/carbon-targets",
@@ -76,8 +80,10 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "headline": "AI Revolution in Healthcare Diagnostics",
-                    "summary": "Breakthrough AI system shows promise in medical diagnosis and drug discovery.",
-                    "body": "Researchers have developed an AI system that revolutionizes healthcare diagnostics.",
+                    "summary": "Breakthrough AI system shows promise in medical "
+                    "diagnosis and drug discovery.",
+                    "body": "Researchers have developed an AI system that "
+                    "revolutionizes healthcare diagnostics.",
                     "sources": [
                         "https://example.com/ai-health",
                         "https://example.com/medical-ai",

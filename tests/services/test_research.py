@@ -22,10 +22,12 @@ class TestResearchService:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                context="Climate Summit 2024: World leaders meet to discuss climate "
+                "change solutions and carbon reduction targets.",
             ),
             Lead(
-                context="Tech Innovation Expo: Major technology companies showcase AI and renewable energy innovations.",
+                context="Tech Innovation Expo: Major technology companies showcase AI "
+                "and renewable energy innovations.",
             ),
         ]
 
@@ -35,8 +37,10 @@ class TestResearchService:
         return json.dumps(
             {
                 "headline": "World Leaders Unite for Climate Action at Summit 2024",
-                "summary": "Global climate summit reaches historic agreements on carbon reduction targets.",
-                "body": "The Climate Summit 2024 has concluded with unprecedented cooperation between world leaders...",
+                "summary": "Global climate summit reaches historic agreements on "
+                "carbon reduction targets.",
+                "body": "The Climate Summit 2024 has concluded with unprecedented "
+                "cooperation between world leaders...",
                 "sources": [
                     "https://example.com/climate-news",
                     "https://example.com/summit-report",

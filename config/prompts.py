@@ -18,19 +18,21 @@ DISCOVERY_SYSTEM_PROMPT = (
     "\n\nStructure your response as a JSON array where each "
     "lead has a 'context' field containing a comprehensive paragraph "
     "summarizing the lead's significance and key details. Format: "
-    '[{"context": "Comprehensive paragraph describing the lead, its significance, and key details..."}]'
+    '[{"context": "Comprehensive paragraph describing the lead, its '
+    'significance, and key details..."}]'
 )
 
 DISCOVERY_INSTRUCTIONS = (
-    f"Identify significant news about climate, environment, natural disasters, major political and geopolitical "
-    f"events, global econnomy, technology, science, space and major sporting "
-    f"achievements from today "
+    f"Identify significant news about climate, environment, natural disasters, "
+    f"major political and geopolitical events, global econnomy, technology, "
+    f"science, space and major sporting achievements from today "
     f"{get_today_formatted()}. Focus on major global developments, breaking "
     "news, and important updates that would be of interest to a general "
     "audience. Return your findings as a JSON array of leads, where each "
     "lead has a 'context' field containing a comprehensive paragraph "
     "explaining the lead with all key details and implications. Example format: "
-    '[{"context": "Comprehensive paragraph describing the lead, its significance, and key details..."}]'
+    '[{"context": "Comprehensive paragraph describing the lead, its '
+    'significance, and key details..."}]'
 )
 
 # ---------------------------------------------------------------------------

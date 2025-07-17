@@ -26,13 +26,16 @@ class TestDeduplicationService:
         """Sample leads for testing."""
         return [
             Lead(
-                context="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                context="Climate Summit 2024: World leaders meet to discuss climate "
+                "change solutions and carbon reduction targets.",
             ),
             Lead(
-                context="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
+                context="Earthquake in Pacific: A 6.5 magnitude earthquake struck the "
+                "Pacific region with minimal damage reported.",
             ),
             Lead(
-                context="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
+                context="Tech Conference Announced: Major technology companies "
+                "announce new AI developments at annual conference.",
             ),
         ]
 

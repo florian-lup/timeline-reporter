@@ -60,7 +60,7 @@ class TestClientIntegration:
             )
 
             # 3. Search for similar events
-            search_results = pinecone_client.similarity_search(embedding)
+            pinecone_client.similarity_search(embedding)
 
             # Verify calls
             mock_openai_instance.embeddings.create.assert_called_once()
@@ -69,7 +69,8 @@ class TestClientIntegration:
 
             # Verify data flow
             assert len(embedding) == 1536
-            # Verify that upsert was called (specific parameter checking omitted for simplicity)
+            # Verify that upsert was called (specific parameter checking omitted for
+            # simplicity)
 
     def test_perplexity_research_integration(self):
         """Test Perplexity client research functionality."""

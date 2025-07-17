@@ -1,8 +1,15 @@
-from __future__ import annotations
+"""Service for identifying and removing duplicate leads using vector similarity."""
 
-from clients import OpenAIClient, PineconeClient
-from models import Lead
-from utils import logger
+import logging
+
+from clients.openai_client import OpenAIClient
+from clients.pinecone_client import PineconeClient
+from models.core import Lead
+
+logger = logging.getLogger(__name__)
+
+# Constants
+CONTEXT_PREVIEW_LENGTH = 50
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -31,7 +38,11 @@ def deduplicate_leads(
         if matches:
             logger.info(
                 "Skipping duplicate: '%s' (similarity: %.2f)",
-                lead.context[:50] + "..." if len(lead.context) > 50 else lead.context,
+                (
+                    lead.context[:CONTEXT_PREVIEW_LENGTH] + "..."
+                    if len(lead.context) > CONTEXT_PREVIEW_LENGTH
+                    else lead.context
+                ),
                 matches[0][1],
             )
             continue

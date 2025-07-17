@@ -52,10 +52,12 @@ def mock_perplexity_client():
     discovery_response = json.dumps(
         [
             {
-                "context": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."
+                "context": "Climate Summit 2024: World leaders meet to discuss "
+                "climate action and set ambitious targets for carbon reduction."
             },
             {
-                "context": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."
+                "context": "AI Breakthrough Announced: New AI model shows "
+                "remarkable capabilities in medical diagnosis and drug discovery."
             },
         ]
     )
@@ -87,7 +89,8 @@ def mock_mongodb_client():
 def sample_lead():
     """Sample Lead object for testing."""
     return Lead(
-        context="Sample Lead Title: This is a sample lead summary for testing purposes.",
+        context="Sample Lead Title: This is a sample lead summary for testing "
+        "purposes.",
     )
 
 
@@ -96,13 +99,16 @@ def sample_leads():
     """Sample list of Lead objects for testing."""
     return [
         Lead(
-            context="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",
+            context="Technology Breakthrough: Major advancement in artificial "
+            "intelligence technology announced.",
         ),
         Lead(
-            context="Climate Change Update: New climate research reveals important environmental findings.",
+            context="Climate Change Update: New climate research reveals important "
+            "environmental findings.",
         ),
         Lead(
-            context="Economic Development: Significant economic changes affecting global markets.",
+            context="Economic Development: Significant economic changes affecting "
+            "global markets.",
         ),
     ]
 
@@ -127,7 +133,8 @@ def sample_stories():
     return [
         Story(
             headline="Technology Breakthrough in AI",
-            summary="Researchers announce major advancement in artificial intelligence.",
+            summary="Researchers announce major advancement in artificial "
+            "intelligence.",
             body="Scientists at leading research institutions have...",
             sources=[
                 "https://example.com/tech-news",

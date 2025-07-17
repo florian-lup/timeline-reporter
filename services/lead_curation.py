@@ -8,6 +8,9 @@ from config.settings import DECISION_MODEL
 from models import Lead
 from utils import logger
 
+# Constants
+CONTEXT_PREVIEW_LENGTH = 50
+
 
 def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful leads from deduplicated list.
@@ -45,7 +48,9 @@ def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
     # Log the selected leads for transparency
     for i, lead in enumerate(selected_leads, 1):
         context_preview = (
-            lead.context[:50] + "..." if len(lead.context) > 50 else lead.context
+            lead.context[:CONTEXT_PREVIEW_LENGTH] + "..."
+            if len(lead.context) > CONTEXT_PREVIEW_LENGTH
+            else lead.context
         )
         logger.info("Priority %d: %s", i, context_preview)
 
