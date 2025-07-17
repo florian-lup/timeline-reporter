@@ -4,7 +4,6 @@ This module contains all the prompts used across different services and clients
 to maintain consistency and make updates easier.
 """
 
-from config.settings import DISCOVERY_TOPICS
 from utils import get_today_formatted
 
 # ---------------------------------------------------------------------------
@@ -23,7 +22,9 @@ DISCOVERY_SYSTEM_PROMPT = (
 )
 
 DISCOVERY_INSTRUCTIONS = (
-    f"Identify significant news about {DISCOVERY_TOPICS} from today "
+    f"Identify significant news about climate, environment, natural disasters, major political and geopolitical "
+    f"events, global econnomy, technology, science, space and major sporting "
+    f"achievements from today "
     f"{get_today_formatted()}. Focus on major global developments, breaking "
     "news, and important updates that would be of interest to a general "
     "audience. Return your findings as a JSON array of leads, where each "

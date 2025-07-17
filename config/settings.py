@@ -46,15 +46,6 @@ SEARCH_CONTEXT_SIZE: str = "medium"
 REASONING_EFFORT: str = "low"
 
 # ---------------------------------------------------------------------------
-# Discovery
-# ---------------------------------------------------------------------------
-DISCOVERY_TOPICS: str = (
-    "climate, environment, natural disasters, major political and geopolitical "
-    "events, global econnomy, technology, science, space and major sporting "
-    "achievements"
-)
-
-# ---------------------------------------------------------------------------
 # MongoDB
 # ---------------------------------------------------------------------------
 MONGODB_DATABASE_NAME: str = "breaking-news"

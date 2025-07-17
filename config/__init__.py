@@ -32,7 +32,6 @@ from .settings import (
     DECISION_MODEL,
     # OpenAI Configuration
     DEEP_RESEARCH_MODEL,
-    DISCOVERY_TOPICS,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
     METRIC,
@@ -77,8 +76,6 @@ __all__ = [
     "RESEARCH_MODEL",
     "SEARCH_CONTEXT_SIZE",
     "REASONING_EFFORT",
-    # Discovery Configuration
-    "DISCOVERY_TOPICS",
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
