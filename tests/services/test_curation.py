@@ -117,13 +117,11 @@ class TestDecisionService:
         # Should contain numbered events with context
         assert (
             "1. Climate Summit 2024: World leaders meet to discuss climate change "
-            "solutions and carbon reduction targets."
-            in call_args
+            "solutions and carbon reduction targets." in call_args
         )
         assert (
             "2. Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific "
-            "region with minimal damage reported."
-            in call_args
+            "region with minimal damage reported." in call_args
         )
 
     @patch("services.lead_curation.logger")

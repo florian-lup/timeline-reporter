@@ -233,11 +233,11 @@ class TestResearchService:
         )
 
         assert len(stories) == 1
-        # Verify handling of null values (Story constructor allows None)
+        # Verify handling of null values (converted to safe defaults)
         assert stories[0].headline == "Test Headline"
-        assert stories[0].summary is None  # None values preserved
-        assert stories[0].body is None
-        assert stories[0].sources is None
+        assert stories[0].summary == ""  # None converted to empty string
+        assert stories[0].body == ""  # None converted to empty string
+        assert stories[0].sources == []  # None converted to empty list
 
     def test_research_story_single_lead(
         self, mock_perplexity_client, sample_research_response
