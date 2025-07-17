@@ -164,7 +164,7 @@ ignore = [
 
 # Scripts and utilities
 "lint.py" = ["T201", "S603", "S607"]
-"run_tests.py" = ["T201"]
+"test_all.py" = ["T201"]
 
 [tool.ruff.lint.isort]
 # Import organization

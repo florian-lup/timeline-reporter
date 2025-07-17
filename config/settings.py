@@ -35,7 +35,7 @@ EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
 METRIC: str = "cosine"
 CHAT_MODEL: str = "gpt-4.1-mini-2025-04-14"
-DECISION_MODEL: str = "o4-mini-2025-04-16"
+CURATION_MODEL: str = "o4-mini-2025-04-16"
 
 # ---------------------------------------------------------------------------
 # Perplexity
@@ -50,3 +50,11 @@ REASONING_EFFORT: str = "low"
 # ---------------------------------------------------------------------------
 MONGODB_DATABASE_NAME: str = "breaking-news"
 MONGODB_COLLECTION_NAME: str = "stories"
+
+# ---------------------------------------------------------------------------
+# Lead Curation
+# ---------------------------------------------------------------------------
+HYBRID_MIN_WEIGHTED_SCORE: float = 6.0  # Minimum score for lead consideration
+HYBRID_MAX_LEADS: int = 5  # Maximum number of leads to select
+HYBRID_MIN_LEADS: int = 3  # Minimum number of leads to select
+HYBRID_SCORE_SIMILARITY: float = 0.5  # Score threshold for pairwise comparison

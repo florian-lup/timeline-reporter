@@ -43,22 +43,22 @@ The project includes a convenience script:
 
 ```bash
 # Run all tests
-python run_tests.py
+python test_all.py
 
 # Run only client tests
-python run_tests.py --type clients
+python test_all.py --type clients
 
 # Run only services tests
-python run_tests.py --type services
+python test_all.py --type services
 
 # Run integration tests
-python run_tests.py --type integration
+python test_all.py --type integration
 
 # Run without coverage
-python run_tests.py --no-coverage
+python test_all.py --no-coverage
 
 # Verbose output
-python run_tests.py --verbose
+python test_all.py --verbose
 ```
 
 ### Specific Test Categories

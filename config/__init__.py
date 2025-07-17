@@ -29,11 +29,16 @@ from .settings import (
     CHAT_MODEL,
     CLOUD_PROVIDER,
     CLOUD_REGION,
-    DECISION_MODEL,
+    CURATION_MODEL,
     # OpenAI Configuration
     DEEP_RESEARCH_MODEL,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
+    HYBRID_MAX_LEADS,
+    HYBRID_MIN_LEADS,
+    # Lead Curation Configuration
+    HYBRID_MIN_WEIGHTED_SCORE,
+    HYBRID_SCORE_SIMILARITY,
     METRIC,
     MONGODB_COLLECTION_NAME,
     # MongoDB Configuration
@@ -71,7 +76,7 @@ __all__ = [
     "EMBEDDING_DIMENSIONS",
     "METRIC",
     "CHAT_MODEL",
-    "DECISION_MODEL",
+    "CURATION_MODEL",
     # Perplexity Configuration
     "RESEARCH_MODEL",
     "SEARCH_CONTEXT_SIZE",
@@ -79,6 +84,11 @@ __all__ = [
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
+    # Lead Curation Configuration
+    "HYBRID_MIN_WEIGHTED_SCORE",
+    "HYBRID_MAX_LEADS",
+    "HYBRID_MIN_LEADS",
+    "HYBRID_SCORE_SIMILARITY",
     # Discovery Prompts
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_INSTRUCTIONS",

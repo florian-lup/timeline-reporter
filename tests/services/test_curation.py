@@ -1,5 +1,6 @@
-"""Test suite for decision service."""
+"""Test suite for lead curation service."""
 
+import json
 from unittest.mock import Mock, patch
 
 import pytest
@@ -8,8 +9,8 @@ from models import Lead
 from services import curate_leads
 
 
-class TestDecisionService:
-    """Test suite for decision service functions."""
+class TestLeadCuration:
+    """Test suite for lead curation service functions."""
 
     @pytest.fixture
     def mock_openai_client(self):
@@ -42,24 +43,6 @@ class TestDecisionService:
             ),
         ]
 
-    @pytest.fixture
-    def sample_ai_response(self):
-        """Sample AI response selecting events."""
-        return "1, 3, 5"  # Select events 1, 3, and 5
-
-    def test_curate_leads_basic(
-        self, mock_openai_client, sample_leads, sample_ai_response
-    ):
-        """Test basic functionality of curate_leads."""
-        mock_openai_client.chat_completion.return_value = sample_ai_response
-
-        result = curate_leads(sample_leads, openai_client=mock_openai_client)
-
-        assert len(result) == 3
-        assert result[0] == sample_leads[0]  # Index 1 -> 0
-        assert result[1] == sample_leads[2]  # Index 3 -> 2
-        assert result[2] == sample_leads[4]  # Index 5 -> 4
-
     def test_curate_leads_empty_input(self, mock_openai_client):
         """Test curate_leads with empty input."""
         result = curate_leads([], openai_client=mock_openai_client)
@@ -67,120 +50,130 @@ class TestDecisionService:
         assert result == []
         mock_openai_client.chat_completion.assert_not_called()
 
-    def test_curate_leads_no_valid_numbers(self, mock_openai_client, sample_leads):
-        """Test when AI response contains no valid numbers."""
-        mock_openai_client.chat_completion.return_value = "No leads selected"
+    def test_curate_leads_hybrid_basic(self, mock_openai_client, sample_leads):
+        """Test basic functionality of curate_leads with hybrid method."""
+        # Mock hybrid evaluation response
+        evaluation_response = json.dumps([
+            {
+                "index": 1,
+                "global_impact": 9,
+                "long_term_consequences": 8,
+                "public_interest": 8,
+                "uniqueness": 7,
+                "credibility": 9,
+                "brief_reasoning": "Major climate policy"
+            },
+            {
+                "index": 2,
+                "global_impact": 8,
+                "long_term_consequences": 6,
+                "public_interest": 9,
+                "uniqueness": 6,
+                "credibility": 9,
+                "brief_reasoning": "Natural disaster"
+            },
+            {
+                "index": 3,
+                "global_impact": 7,
+                "long_term_consequences": 7,
+                "public_interest": 8,
+                "uniqueness": 8,
+                "credibility": 8,
+                "brief_reasoning": "Tech development"
+            },
+            {
+                "index": 4,
+                "global_impact": 6,
+                "long_term_consequences": 7,
+                "public_interest": 7,
+                "uniqueness": 5,
+                "credibility": 8,
+                "brief_reasoning": "Economic policy"
+            },
+            {
+                "index": 5,
+                "global_impact": 6,
+                "long_term_consequences": 8,
+                "public_interest": 7,
+                "uniqueness": 8,
+                "credibility": 8,
+                "brief_reasoning": "Space mission"
+            }
+        ])
+
+        mock_openai_client.chat_completion.return_value = evaluation_response
 
         result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
-        # Should return first 3 leads as fallback
-        assert len(result) == 3
-        assert result == sample_leads[:3]
+        # Should return some leads (exact number depends on scoring and diversity)
+        assert len(result) >= 3
+        assert len(result) <= 5
 
-    def test_curate_leads_invalid_indices(self, mock_openai_client, sample_leads):
-        """Test when AI response contains invalid indices."""
-        mock_openai_client.chat_completion.return_value = (
-            "1, 10, 15"  # Indices 10 and 15 are out of range
-        )
+        # All returned leads should be from the original set
+        for lead in result:
+            assert lead in sample_leads
 
-        result = curate_leads(sample_leads, openai_client=mock_openai_client)
-
-        # Should only include valid index (1)
-        assert len(result) == 1
-        assert result[0] == sample_leads[0]
-
-    def test_curate_leads_mixed_valid_invalid(self, mock_openai_client, sample_leads):
-        """Test when AI response has mix of valid and invalid indices."""
-        mock_openai_client.chat_completion.return_value = (
-            "1, 3, 10, 2"  # Index 10 is invalid
-        )
-
-        result = curate_leads(sample_leads, openai_client=mock_openai_client)
-
-        # Should include only valid indices (1, 3, 2)
-        assert len(result) == 3
-        assert result[0] == sample_leads[0]  # Index 1
-        assert result[1] == sample_leads[2]  # Index 3
-        assert result[2] == sample_leads[1]  # Index 2
-
-    def test_curate_leads_formats_leads_correctly(
-        self, mock_openai_client, sample_leads
-    ):
+    def test_curate_leads_formats_correctly(self, mock_openai_client, sample_leads):
         """Test that leads are formatted correctly for AI evaluation."""
-        mock_openai_client.chat_completion.return_value = "1"
+        # Mock response
+        mock_openai_client.chat_completion.return_value = json.dumps([
+            {"index": 1, "global_impact": 8, "long_term_consequences": 8,
+             "public_interest": 8, "uniqueness": 8, "credibility": 8}
+        ])
 
         curate_leads(sample_leads, openai_client=mock_openai_client)
 
-        # Verify the prompt formatting
-        call_args = mock_openai_client.chat_completion.call_args[0][0]
+        # Verify the method was called
+        assert mock_openai_client.chat_completion.called
 
-        # Should contain numbered events with context
-        assert (
-            "1. Climate Summit 2024: World leaders meet to discuss climate change "
-            "solutions and carbon reduction targets." in call_args
-        )
-        assert (
-            "2. Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific "
-            "region with minimal damage reported." in call_args
-        )
+        # Check that the prompt contains numbered leads
+        call_args = mock_openai_client.chat_completion.call_args[0][0]
+        assert "1. Climate Summit 2024" in call_args
+        assert "2. Earthquake in Pacific" in call_args
 
     @patch("services.lead_curation.logger")
-    def test_curate_leads_logging(
-        self, mock_logger, mock_openai_client, sample_leads, sample_ai_response
-    ):
+    def test_curate_leads_logging(self, mock_logger, mock_openai_client, sample_leads):
         """Test that logging works correctly."""
-        mock_openai_client.chat_completion.return_value = sample_ai_response
+        # Mock response
+        mock_openai_client.chat_completion.return_value = json.dumps([
+            {"index": 1, "global_impact": 8, "long_term_consequences": 8,
+             "public_interest": 8, "uniqueness": 8, "credibility": 8}
+        ])
 
         curate_leads(sample_leads, openai_client=mock_openai_client)
 
         # Verify evaluation logging
         mock_logger.info.assert_any_call("Evaluating %d leads for priority", 5)
 
-        # Verify selection logging
-        mock_logger.info.assert_any_call("Selected %d priority leads", 3)
+        # Verify completion logging
+        mock_logger.info.assert_any_call("Selected %d priority leads", 1)
 
-        # Verify individual lead logging (with context preview)
-        expected_context_0 = (
-            sample_leads[0].context[:50] + "..."
-            if len(sample_leads[0].context) > 50
-            else sample_leads[0].context
-        )
-        mock_logger.info.assert_any_call("Priority %d: %s", 1, expected_context_0)
-
-    def test_curate_leads_uses_decision_model(self, mock_openai_client, sample_leads):
+    def test_curate_leads_uses_curation_model(self, mock_openai_client, sample_leads):
         """Test that the correct model is used for decision making."""
-        from config.settings import DECISION_MODEL
+        from config.settings import CURATION_MODEL
 
-        mock_openai_client.chat_completion.return_value = "1"
+        # Mock response
+        mock_openai_client.chat_completion.return_value = json.dumps([
+            {"index": 1, "global_impact": 8, "long_term_consequences": 8,
+             "public_interest": 8, "uniqueness": 8, "credibility": 8}
+        ])
 
         curate_leads(sample_leads, openai_client=mock_openai_client)
 
-        # Verify model parameter
-        call_kwargs = mock_openai_client.chat_completion.call_args[1]
-        assert call_kwargs["model"] == DECISION_MODEL
-
-    def test_filter_leads_by_indices_edge_cases(self, sample_leads):
-        """Test edge cases in _filter_leads_by_indices helper."""
-        from services.lead_curation import _filter_leads_by_indices
-
-        # Test with duplicate numbers
-        result = _filter_leads_by_indices("1, 1, 2", sample_leads)
-        assert len(result) == 3  # Should include duplicates
-        assert result[0] == sample_leads[0]
-        assert result[1] == sample_leads[0]
-        assert result[2] == sample_leads[1]
-
-        # Test with zero
-        result = _filter_leads_by_indices("0, 1", sample_leads)
-        assert len(result) == 1  # Zero is invalid (should be 1-based)
-        assert result[0] == sample_leads[0]
+        # Verify model parameter was used in at least one call
+        calls = mock_openai_client.chat_completion.call_args_list
+        assert any(
+            call.kwargs.get("model") == CURATION_MODEL
+            for call in calls if call.kwargs
+        )
 
     def test_curate_leads_fallback_behavior(self, mock_openai_client, sample_leads):
-        """Test fallback behavior when parsing fails."""
-        mock_openai_client.chat_completion.return_value = ""  # Empty response
+        """Test fallback behavior when evaluation fails."""
+        # Mock invalid JSON response
+        mock_openai_client.chat_completion.return_value = "Invalid JSON response"
 
         result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
-        # Should return top 3 as fallback
-        assert len(result) == 3
-        assert result == sample_leads[:3]
+        # Should still return minimum number of leads due to fallback scoring
+        assert len(result) >= 3
+        assert all(lead in sample_leads for lead in result)

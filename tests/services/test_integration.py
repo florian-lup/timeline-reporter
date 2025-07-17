@@ -175,8 +175,27 @@ class TestServicesIntegration:
         )
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
-        # Set up decision response - leads 1, 2, 4 from the remaining 4 unique leads
-        mock_clients["openai"].chat_completion.return_value = "1, 2, 4"
+        # Set up hybrid curator responses - evaluation and pairwise comparison
+        evaluation_response = json.dumps([
+            {"index": 1, "impact": 8, "proximity": 7, "prominence": 7,
+             "relevance": 8, "hook": 6, "novelty": 5, "conflict": 4,
+             "brief_reasoning": "High impact lead"},
+            {"index": 2, "impact": 9, "proximity": 8, "prominence": 8,
+             "relevance": 9, "hook": 7, "novelty": 6, "conflict": 5,
+             "brief_reasoning": "Very high impact lead"},
+            {"index": 3, "impact": 5, "proximity": 6, "prominence": 5,
+             "relevance": 5, "hook": 4, "novelty": 3, "conflict": 2,
+             "brief_reasoning": "Lower impact lead"},  # This should be filtered out
+            {"index": 4, "impact": 8, "proximity": 7, "prominence": 7,
+             "relevance": 8, "hook": 6, "novelty": 5, "conflict": 4,
+             "brief_reasoning": "High impact lead"}
+        ])
+        pairwise_response = json.dumps([
+            {"pair": "1vs2", "winner": 2, "confidence": "high"}
+        ])
+        mock_clients["openai"].chat_completion.side_effect = [
+            evaluation_response, pairwise_response
+        ]
 
         with patch(
             "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
@@ -198,12 +217,17 @@ class TestServicesIntegration:
         assert len(unique_leads) == 4  # One duplicate removed
         assert len(prioritized_leads) == 3  # Decision selected 3/4 leads
 
-        # Verify selected stories correspond to selected leads
-        assert (
-            "Lead 2" in prioritized_leads[0].context
-        )  # Index 1 -> Lead 2 (since Lead 1 was duplicate)
-        assert "Lead 3" in prioritized_leads[1].context  # Index 2 -> Lead 3
-        assert "Lead 5" in prioritized_leads[2].context  # Index 4 -> Lead 5
+        # Verify selected leads are the expected ones
+        # (order may vary due to hybrid scoring)
+        selected_contexts = [lead.context for lead in prioritized_leads]
+        # Lead 2 selected
+        assert any("Lead 2" in context for context in selected_contexts)
+        # Lead 3 selected
+        assert any("Lead 3" in context for context in selected_contexts)
+        # Lead 5 selected
+        assert any("Lead 5" in context for context in selected_contexts)
+        # Lead 4 filtered
+        assert not any("Lead 4" in context for context in selected_contexts)
 
     def test_pipeline_data_transformation(
         self, mock_clients, test_discovery_instructions

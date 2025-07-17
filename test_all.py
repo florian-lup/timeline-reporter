@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 
-def run_tests(
+def test_all(
     test_type: str = "all", coverage: bool = True, verbose: bool = False
 ) -> subprocess.CompletedProcess[bytes]:
     """Run tests with specified options."""
@@ -71,7 +71,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    result = run_tests(
+    result = test_all(
         test_type=args.type, coverage=not args.no_coverage, verbose=args.verbose
     )
 

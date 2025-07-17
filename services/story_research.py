@@ -52,11 +52,11 @@ def _parse_story_from_response(response_text: str) -> Story:
             sources=[],
         )
 
-    # Create Story from the JSON data, with fallbacks for missing fields
+    # Create Story from the JSON data, with fallbacks for missing fields and null values
     return Story(
-        headline=data.get("headline", ""),
-        summary=data.get("summary", ""),
-        body=data.get("body", ""),
-        sources=data.get("sources", []),
-        date=data.get("date", get_today_formatted()),  # Use date from JSON or default
+        headline=data.get("headline") or "",
+        summary=data.get("summary") or "",
+        body=data.get("body") or "",
+        sources=data.get("sources") or [],
+        date=data.get("date") or get_today_formatted(),  # Use date from JSON or default
     )
