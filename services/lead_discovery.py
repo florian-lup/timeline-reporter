@@ -1,17 +1,11 @@
 from __future__ import annotations
 
 import json
-import re
 
 from clients import PerplexityClient
 from config import DISCOVERY_INSTRUCTIONS
 from models import Lead
 from utils import logger
-
-# Older versions of the model sometimes wrap JSON in markdown fences; we keep a
-# fallback regex but expect pure JSON due to `response_format=json_object`.
-_FENCE_REGEX = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
-
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -36,13 +30,12 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 
 
 def _parse_leads_from_response(response_text: str) -> list[Lead]:
-    """Extracts JSON from the model response and maps to Lead objects."""
-    # Some models wrap JSON in markdown triple-backticks; strip them if needed.
-    match = _FENCE_REGEX.search(response_text)
-    json_blob = match.group(1) if match else response_text
+    """Extracts JSON from the model response and maps to Lead objects.
 
+    The Perplexity client uses structured output and returns clean JSON.
+    """
     try:
-        data = json.loads(json_blob)
+        data = json.loads(response_text)
     except json.JSONDecodeError as exc:  # pragma: no cover
         logger.warning("JSON parse failed: %s", exc)
         return []

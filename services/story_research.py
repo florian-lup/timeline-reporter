@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 
 from clients import PerplexityClient
 from config import RESEARCH_INSTRUCTIONS
@@ -34,14 +33,12 @@ def research_story(
 
 
 def _parse_story_from_response(response_text: str) -> Story:
-    """Parse JSON from Perplexity and return a Story object."""
-    # Some models wrap JSON in markdown triple-backticks; strip them if needed.
-    fence_regex = re.compile(r"```(?:json)?(.*?)```", re.DOTALL)
-    match = fence_regex.search(response_text)
-    json_blob = match.group(1) if match else response_text
+    """Parse JSON from Perplexity and return a Story object.
 
+    The Perplexity client uses structured output and returns clean JSON.
+    """
     try:
-        data = json.loads(json_blob)
+        data = json.loads(response_text)
     except json.JSONDecodeError as exc:  # pragma: no cover
         logger.warning("JSON parse failed: %s", exc)
         # Return a minimal Story with empty content

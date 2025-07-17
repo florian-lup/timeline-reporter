@@ -156,7 +156,11 @@ class TestResearchService:
     def test_research_story_with_fenced_json(
         self, mock_perplexity_client, sample_leads
     ):
-        """Test research with JSON wrapped in markdown fences."""
+        """Test research with JSON wrapped in markdown fences.
+
+        Since the Perplexity client now uses structured output and returns clean JSON,
+        fenced JSON should be treated as malformed input and result in an empty story.
+        """
         fenced_response = """```json
         {
             "headline": "Research Headline",
@@ -167,12 +171,18 @@ class TestResearchService:
         ```"""
         mock_perplexity_client.lead_research.return_value = fenced_response
 
-        stories = research_story(
-            sample_leads[:1], perplexity_client=mock_perplexity_client
-        )
+        with patch("services.story_research.logger") as mock_logger:
+            stories = research_story(
+                sample_leads[:1], perplexity_client=mock_perplexity_client
+            )
 
         assert len(stories) == 1
-        assert stories[0].headline == "Research Headline"
+        # Should create empty story due to JSON parse failure
+        assert stories[0].headline == ""
+        assert stories[0].summary == ""
+        assert stories[0].body == ""
+        assert stories[0].sources == []
+        mock_logger.warning.assert_called()
 
     def test_research_story_unicode_handling(
         self, mock_perplexity_client, sample_leads

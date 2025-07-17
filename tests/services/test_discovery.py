@@ -82,13 +82,18 @@ class TestDiscoveryService:
     def test_discover_leads_json_with_fences(
         self, mock_perplexity_client, sample_leads_with_fences
     ):
-        """Test discovery with JSON wrapped in markdown fences."""
+        """Test discovery with JSON wrapped in markdown fences.
+
+        Since the Perplexity client now uses structured output and returns clean JSON,
+        fenced JSON should be treated as malformed input and result in empty results.
+        """
         mock_perplexity_client.lead_discovery.return_value = sample_leads_with_fences
 
-        leads = discover_leads(mock_perplexity_client)
+        with patch("services.lead_discovery.logger") as mock_logger:
+            leads = discover_leads(mock_perplexity_client)
 
-        assert len(leads) == 1
-        assert "Climate Summit Announced" in leads[0].tip
+        assert leads == []
+        mock_logger.warning.assert_called()
 
     def test_discover_leads_non_list_response(self, mock_perplexity_client):
         """Test discovery when response is not a list."""
@@ -187,7 +192,11 @@ class TestDiscoveryService:
         assert leads[0].tip == ""
 
     def test_fence_regex_multiple_fences(self, mock_perplexity_client):
-        """Test handling of multiple markdown fences."""
+        """Test handling of multiple markdown fences.
+
+        Since the Perplexity client now uses structured output and returns clean JSON,
+        fenced JSON should be treated as malformed input and result in empty results.
+        """
         response_multiple_fences = """
         Some text here
         ```json
@@ -200,7 +209,8 @@ class TestDiscoveryService:
         """
         mock_perplexity_client.lead_discovery.return_value = response_multiple_fences
 
-        leads = discover_leads(mock_perplexity_client)
+        with patch("services.lead_discovery.logger") as mock_logger:
+            leads = discover_leads(mock_perplexity_client)
 
-        assert len(leads) == 1
-        assert leads[0].tip == "Lead 1: Summary 1"
+        assert leads == []
+        mock_logger.warning.assert_called()
