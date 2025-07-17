@@ -17,6 +17,7 @@ from config.settings import (
 from models import Lead
 from utils import logger
 
+
 @dataclass
 class LeadEvaluation:
     """Comprehensive evaluation of a lead."""
@@ -33,13 +34,13 @@ class HybridLeadCurator:
 
     # Criteria weights (must sum to 1.0)
     CRITERIA_WEIGHTS = {
-        "impact": 0.20,         # How many people are affected
-        "proximity": 0.15,      # Does it cater to a global audience
-        "prominence": 0.15,     # Does it involve well-known people
-        "relevance": 0.15,      # Is this something the audience cares about
-        "hook": 0.15,          # Could this lead grab reader's attention
-        "novelty": 0.10,       # Is the story unusual or unexpected
-        "conflict": 0.10       # Is there disagreement, controversy or drama
+        "impact": 0.20,  # How many people are affected
+        "proximity": 0.15,  # Does it cater to a global audience
+        "prominence": 0.15,  # Does it involve well-known people
+        "relevance": 0.15,  # Is this something the audience cares about
+        "hook": 0.15,  # Could this lead grab reader's attention
+        "novelty": 0.10,  # Is the story unusual or unexpected
+        "conflict": 0.10,  # Is there disagreement, controversy or drama
     }
 
     # Configuration from settings
@@ -65,8 +66,7 @@ class HybridLeadCurator:
 
         # Step 2: Filter by minimum threshold
         qualified = [
-            e for e in evaluations
-            if e.weighted_score >= self.MIN_WEIGHTED_SCORE
+            e for e in evaluations if e.weighted_score >= self.MIN_WEIGHTED_SCORE
         ]
         logger.info("%d leads passed minimum threshold", len(qualified))
 
@@ -75,10 +75,11 @@ class HybridLeadCurator:
             logger.warning(
                 "FALLBACK: No leads passed minimum threshold (%.2f), "
                 "selecting top %d by weighted score",
-                self.MIN_WEIGHTED_SCORE, self.MIN_LEADS_TO_SELECT
+                self.MIN_WEIGHTED_SCORE,
+                self.MIN_LEADS_TO_SELECT,
             )
             evaluations.sort(key=lambda x: x.weighted_score, reverse=True)
-            return [e.lead for e in evaluations[:self.MIN_LEADS_TO_SELECT]]
+            return [e.lead for e in evaluations[: self.MIN_LEADS_TO_SELECT]]
 
         # Step 3: Pairwise comparisons for close scores
         if len(qualified) > self.MAX_LEADS_TO_SELECT:
@@ -98,8 +99,7 @@ class HybridLeadCurator:
         """Step 1: Evaluate each lead on multiple criteria."""
         # Format leads for evaluation
         leads_text = "\n".join(
-            f"{i + 1}. {lead.context}"
-            for i, lead in enumerate(leads)
+            f"{i + 1}. {lead.context}" for i, lead in enumerate(leads)
         )
 
         # Batch evaluation prompt for efficiency
@@ -147,7 +147,7 @@ Return a JSON array with scores for each lead:
         try:
             # Handle potential JSON wrapped in markdown
             json_match = re.search(
-                r'```(?:json)?\s*(.*?)\s*```', response_text, re.DOTALL
+                r"```(?:json)?\s*(.*?)\s*```", response_text, re.DOTALL
             )
             if json_match:
                 response_text = json_match.group(1)
@@ -173,7 +173,7 @@ Return a JSON array with scores for each lead:
                     "hook": 7,
                     "novelty": 7,
                     "conflict": 7,
-                    "brief_reasoning": "Default scoring due to parse error"
+                    "brief_reasoning": "Default scoring due to parse error",
                 }
                 for i in range(len(leads))
             ]
@@ -201,7 +201,8 @@ Return a JSON array with scores for each lead:
                     logger.warning(
                         "FALLBACK: Lead %d missing criteria scores for %s, "
                         "using default (7.0)",
-                        i + 1, missing_criteria
+                        i + 1,
+                        missing_criteria,
                     )
 
                 # Calculate weighted score
@@ -210,24 +211,24 @@ Return a JSON array with scores for each lead:
                     for criterion, score in criteria_scores.items()
                 )
 
-                evaluations.append(LeadEvaluation(
-                    lead=lead,
-                    criteria_scores=criteria_scores,
-                    weighted_score=weighted
-                ))
+                evaluations.append(
+                    LeadEvaluation(
+                        lead=lead,
+                        criteria_scores=criteria_scores,
+                        weighted_score=weighted,
+                    )
+                )
 
                 logger.debug(
                     "Lead %d scored %.2f (reasoning: %s)",
                     i + 1,
                     weighted,
-                    lead_scores.get("brief_reasoning", "")
+                    lead_scores.get("brief_reasoning", ""),
                 )
 
         return evaluations
 
-    def _perform_pairwise_comparisons(
-        self, evaluations: list[LeadEvaluation]
-    ) -> None:
+    def _perform_pairwise_comparisons(self, evaluations: list[LeadEvaluation]) -> None:
         """Step 3: Use pairwise comparisons for close scores."""
         # Group leads with similar scores
         score_groups = self._group_by_score_similarity(evaluations)
@@ -247,13 +248,13 @@ Return a JSON array with scores for each lead:
 
         for i in range(len(group)):
             for j in range(i + 1, len(group)):
-                pair_key = f"{i+1}vs{j+1}"
+                pair_key = f"{i + 1}vs{j + 1}"
                 pair_map[pair_key] = (i, j)
 
                 comparisons_text.append(f"""
 Pair {pair_key}:
-Lead A ({i+1}): {group[i].lead.context[:200]}...
-Lead B ({j+1}): {group[j].lead.context[:200]}...
+Lead A ({i + 1}): {group[i].lead.context[:200]}...
+Lead B ({j + 1}): {group[j].lead.context[:200]}...
 """)
 
         # Batch all comparisons for efficiency
@@ -278,7 +279,7 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
         # Parse response
         try:
             json_match = re.search(
-                r'```(?:json)?\s*(.*?)\s*```', response_text, re.DOTALL
+                r"```(?:json)?\s*(.*?)\s*```", response_text, re.DOTALL
             )
             if json_match:
                 response_text = json_match.group(1)
@@ -309,7 +310,7 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
                     "Pairwise %s: winner=%s, reason=%s",
                     pair,
                     winner,
-                    result.get("reason", "")
+                    result.get("reason", ""),
                 )
 
     def _compute_final_ranking(
@@ -321,20 +322,15 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
 
         for eval in evaluations:
             # Final score = 70% weighted score + 30% pairwise performance
-            pairwise_score = (
-                (eval.pairwise_wins / max_wins) * 10 if max_wins > 0 else 0
-            )
+            pairwise_score = (eval.pairwise_wins / max_wins) * 10 if max_wins > 0 else 0
 
-            eval.final_rank = (
-                (0.7 * eval.weighted_score) + (0.3 * pairwise_score)
-            )
+            eval.final_rank = (0.7 * eval.weighted_score) + (0.3 * pairwise_score)
 
             logger.debug(
-                "Lead final ranking: weighted=%.2f, pairwise=%.2f, "
-                "final=%.2f",
+                "Lead final ranking: weighted=%.2f, pairwise=%.2f, final=%.2f",
                 eval.weighted_score,
                 pairwise_score,
-                eval.final_rank
+                eval.final_rank,
             )
 
         # Sort by final rank
@@ -347,12 +343,14 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
     ) -> list[LeadEvaluation]:
         """Step 5: Select top leads by final rank."""
         # Simply take the top N leads based on final ranking
-        selected = ranked_evaluations[:self.MAX_LEADS_TO_SELECT]
+        selected = ranked_evaluations[: self.MAX_LEADS_TO_SELECT]
 
         # Ensure minimum selection
-        if (len(selected) < self.MIN_LEADS_TO_SELECT and
-            len(ranked_evaluations) >= self.MIN_LEADS_TO_SELECT):
-            selected = ranked_evaluations[:self.MIN_LEADS_TO_SELECT]
+        if (
+            len(selected) < self.MIN_LEADS_TO_SELECT
+            and len(ranked_evaluations) >= self.MIN_LEADS_TO_SELECT
+        ):
+            selected = ranked_evaluations[: self.MIN_LEADS_TO_SELECT]
 
         return selected
 
@@ -363,9 +361,7 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
         groups = []
         used = set()
 
-        sorted_evals = sorted(
-            evaluations, key=lambda x: x.weighted_score, reverse=True
-        )
+        sorted_evals = sorted(evaluations, key=lambda x: x.weighted_score, reverse=True)
 
         for i, eval in enumerate(sorted_evals):
             if i in used:
@@ -375,11 +371,9 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
             used.add(i)
 
             # Find all evaluations within threshold
-            for j, other in enumerate(sorted_evals[i + 1:], i + 1):
+            for j, other in enumerate(sorted_evals[i + 1 :], i + 1):
                 if j not in used:
-                    score_diff = abs(
-                        eval.weighted_score - other.weighted_score
-                    )
+                    score_diff = abs(eval.weighted_score - other.weighted_score)
                     if score_diff <= self.SCORE_SIMILARITY_THRESHOLD:
                         group.append(other)
                         used.add(j)
@@ -389,15 +383,13 @@ Lead B ({j+1}): {group[j].lead.context[:200]}...
                 logger.debug(
                     "Created score group with %d leads (scores: %s)",
                     len(group),
-                    [f"{e.weighted_score:.2f}" for e in group]
+                    [f"{e.weighted_score:.2f}" for e in group],
                 )
 
         return groups
 
 
-def curate_leads(
-    leads: list[Lead], *, openai_client: OpenAIClient
-) -> list[Lead]:
+def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful leads from deduplicated list.
 
     Uses hybrid AI evaluation combining multi-criteria scoring, pairwise

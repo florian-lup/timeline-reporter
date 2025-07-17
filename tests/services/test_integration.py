@@ -176,25 +176,60 @@ class TestServicesIntegration:
         mock_clients["perplexity"].deep_research.return_value = discovery_json
 
         # Set up hybrid curator responses - evaluation and pairwise comparison
-        evaluation_response = json.dumps([
-            {"index": 1, "impact": 8, "proximity": 7, "prominence": 7,
-             "relevance": 8, "hook": 6, "novelty": 5, "conflict": 4,
-             "brief_reasoning": "High impact lead"},
-            {"index": 2, "impact": 9, "proximity": 8, "prominence": 8,
-             "relevance": 9, "hook": 7, "novelty": 6, "conflict": 5,
-             "brief_reasoning": "Very high impact lead"},
-            {"index": 3, "impact": 5, "proximity": 6, "prominence": 5,
-             "relevance": 5, "hook": 4, "novelty": 3, "conflict": 2,
-             "brief_reasoning": "Lower impact lead"},  # This should be filtered out
-            {"index": 4, "impact": 8, "proximity": 7, "prominence": 7,
-             "relevance": 8, "hook": 6, "novelty": 5, "conflict": 4,
-             "brief_reasoning": "High impact lead"}
-        ])
-        pairwise_response = json.dumps([
-            {"pair": "1vs2", "winner": 2, "confidence": "high"}
-        ])
+        evaluation_response = json.dumps(
+            [
+                {
+                    "index": 1,
+                    "impact": 8,
+                    "proximity": 7,
+                    "prominence": 7,
+                    "relevance": 8,
+                    "hook": 6,
+                    "novelty": 5,
+                    "conflict": 4,
+                    "brief_reasoning": "High impact lead",
+                },
+                {
+                    "index": 2,
+                    "impact": 9,
+                    "proximity": 8,
+                    "prominence": 8,
+                    "relevance": 9,
+                    "hook": 7,
+                    "novelty": 6,
+                    "conflict": 5,
+                    "brief_reasoning": "Very high impact lead",
+                },
+                {
+                    "index": 3,
+                    "impact": 5,
+                    "proximity": 6,
+                    "prominence": 5,
+                    "relevance": 5,
+                    "hook": 4,
+                    "novelty": 3,
+                    "conflict": 2,
+                    "brief_reasoning": "Lower impact lead",
+                },  # This should be filtered out
+                {
+                    "index": 4,
+                    "impact": 8,
+                    "proximity": 7,
+                    "prominence": 7,
+                    "relevance": 8,
+                    "hook": 6,
+                    "novelty": 5,
+                    "conflict": 4,
+                    "brief_reasoning": "High impact lead",
+                },
+            ]
+        )
+        pairwise_response = json.dumps(
+            [{"pair": "1vs2", "winner": 2, "confidence": "high"}]
+        )
         mock_clients["openai"].chat_completion.side_effect = [
-            evaluation_response, pairwise_response
+            evaluation_response,
+            pairwise_response,
         ]
 
         with patch(

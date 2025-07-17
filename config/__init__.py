@@ -50,7 +50,6 @@ from .settings import (
     PINECONE_API_KEY,
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
-    REASONING_EFFORT,
     # Perplexity Configuration
     RESEARCH_MODEL,
     SEARCH_CONTEXT_SIZE,
@@ -80,7 +79,6 @@ __all__ = [
     # Perplexity Configuration
     "RESEARCH_MODEL",
     "SEARCH_CONTEXT_SIZE",
-    "REASONING_EFFORT",
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",

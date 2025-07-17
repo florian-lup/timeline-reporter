@@ -1,9 +1,4 @@
-"""Simple client for interacting with the Perplexity API.
-
-The public Perplexity API is currently in beta/private; this client assumes you
-have an API key granting access. If not, you can stub the `research` method or
-swap for another provider.
-"""
+"""Simple client for interacting with the Perplexity API."""
 
 from __future__ import annotations
 
@@ -13,7 +8,6 @@ from config import (
     DEEP_RESEARCH_MODEL,
     DISCOVERY_SYSTEM_PROMPT,
     PERPLEXITY_API_KEY,
-    REASONING_EFFORT,
     RESEARCH_MODEL,
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_CONTEXT_SIZE,
@@ -62,16 +56,15 @@ class PerplexityClient:
         "required": ["headline", "summary", "body", "sources"],
     }
 
-    # JSON schema for Discovery structured output (array of events)
+    # JSON schema for Discovery structured output (array of leads)
     _DISCOVERY_JSON_SCHEMA = {
         "type": "array",
         "items": {
             "type": "object",
             "properties": {
-                "title": {"type": "string"},
-                "summary": {"type": "string"},
+                "context": {"type": "string"},
             },
-            "required": ["title", "summary"],
+            "required": ["context"],
         },
     }
 
@@ -142,7 +135,6 @@ class PerplexityClient:
             "web_search_options": {
                 "search_context_size": SEARCH_CONTEXT_SIZE,
             },
-            "reasoning_effort": REASONING_EFFORT,
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {"schema": self._DISCOVERY_JSON_SCHEMA},

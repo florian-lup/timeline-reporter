@@ -43,7 +43,6 @@ CURATION_MODEL: str = "o4-mini-2025-04-16"
 RESEARCH_MODEL: str = "sonar"
 DEEP_RESEARCH_MODEL: str = "sonar-deep-research"
 SEARCH_CONTEXT_SIZE: str = "medium"
-REASONING_EFFORT: str = "low"
 
 # ---------------------------------------------------------------------------
 # MongoDB

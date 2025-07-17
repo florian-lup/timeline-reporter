@@ -331,12 +331,12 @@ Let me search for current information.
 </think>
 [
   {
-    "title": "Climate Summit Reaches Agreement",
-    "summary": "World leaders at COP29 reach historic agreement on climate funding."
+    "context": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "reach historic agreement on climate funding."
   },
   {
-    "title": "Geopolitical Tensions Rise",
-    "summary": "Recent diplomatic developments show increasing tensions."
+    "context": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "increasing tensions."
   }
 ]"""
 
@@ -354,12 +354,12 @@ Let me search for current information.
             # Should extract JSON after <think> section
             expected_json = """[
   {
-    "title": "Climate Summit Reaches Agreement",
-    "summary": "World leaders at COP29 reach historic agreement on climate funding."
+    "context": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "reach historic agreement on climate funding."
   },
   {
-    "title": "Geopolitical Tensions Rise",
-    "summary": "Recent diplomatic developments show increasing tensions."
+    "context": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "increasing tensions."
   }
 ]"""
             assert result == expected_json
@@ -377,7 +377,6 @@ Let me search for current information.
             patch(
                 "clients.perplexity_client.DEEP_RESEARCH_MODEL", "sonar-deep-research"
             ),
-            patch("clients.perplexity_client.REASONING_EFFORT", "medium"),
         ):
             client = PerplexityClient()
             client.deep_research("test prompt")
@@ -389,7 +388,6 @@ Let me search for current information.
             # Check payload structure
             payload = call_args[1]["json"]
             assert payload["model"] == "sonar-deep-research"
-            assert payload["reasoning_effort"] == "medium"
             assert len(payload["messages"]) == 2
             assert payload["messages"][0]["role"] == "system"
             assert payload["messages"][1]["role"] == "user"
@@ -413,15 +411,14 @@ Let me search for current information.
             payload = mock_client.post.call_args[1]["json"]
             schema = payload["response_format"]["json_schema"]["schema"]
 
-            # Verify discovery schema structure (array of events)
+            # Verify discovery schema structure (array of leads)
             assert schema["type"] == "array"
             assert "items" in schema
 
             item_schema = schema["items"]
             assert item_schema["type"] == "object"
-            assert set(item_schema["required"]) == {"title", "summary"}
-            assert "title" in item_schema["properties"]
-            assert "summary" in item_schema["properties"]
+            assert set(item_schema["required"]) == {"context"}
+            assert "context" in item_schema["properties"]
 
     def test_deep_research_without_think_tags(self, mock_httpx_client):
         """Test deep research with response that doesn't have <think> tags."""
@@ -430,8 +427,7 @@ Let me search for current information.
         # Response without <think> tags
         raw_response = """[
   {
-    "title": "Direct Response",
-    "summary": "This response doesn't have think tags."
+    "context": "Direct Response: This response doesn't have think tags."
   }
 ]"""
 
