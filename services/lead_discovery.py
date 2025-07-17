@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 
 from clients import PerplexityClient
-from config import DISCOVERY_INSTRUCTIONS
+from config import (
+    DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
+    DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
+    DISCOVERY_POLITICS_INSTRUCTIONS,
+)
 from models import Lead
 from utils import logger
 
@@ -13,15 +17,42 @@ from utils import logger
 
 
 def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
-    """Discovers events for multiple topics in a single API call.
+    """Discovers events for multiple topics using separate API calls for each category.
 
-    Returns the combined list of events.
+    Makes three API calls for:
+    1. Politics, geopolitics, governments
+    2. Environment, climate, natural disasters
+    3. Celebrities, entertainment, sports
+
+    Returns the combined list of events from all categories.
     """
-    response_text = perplexity_client.lead_discovery(DISCOVERY_INSTRUCTIONS)
-    leads = _parse_leads_from_response(response_text)
+    all_leads = []
+    
+    # Define categories with their respective instructions
+    categories = [
+        ("politics", DISCOVERY_POLITICS_INSTRUCTIONS),
+        ("environment", DISCOVERY_ENVIRONMENT_INSTRUCTIONS),
+        ("entertainment", DISCOVERY_ENTERTAINMENT_INSTRUCTIONS),
+    ]
+    
+    # Make separate API calls for each category
+    for category_name, instructions in categories:
+        logger.info("Discovering leads for category: %s", category_name)
+        
+        try:
+            response_text = perplexity_client.lead_discovery(instructions)
+            category_leads = _parse_leads_from_response(response_text)
+            
+            logger.info("Discovered %d leads for %s", len(category_leads), category_name)
+            all_leads.extend(category_leads)
+            
+        except Exception as exc:
+            logger.error("Failed to discover leads for %s: %s", category_name, exc)
+            # Continue with other categories even if one fails
+            continue
 
-    logger.info("Discovered %d leads", len(leads))
-    return leads
+    logger.info("Total leads discovered across all categories: %d", len(all_leads))
+    return all_leads
 
 
 # ---------------------------------------------------------------------------

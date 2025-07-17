@@ -35,6 +35,42 @@ class TestDiscoveryService:
         )
 
     @pytest.fixture
+    def sample_politics_response(self):
+        """Sample politics category response."""
+        return json.dumps(
+            [
+                {
+                    "tip": "Presidential Election Update: Major political shift as "
+                    "new candidate enters the race with strong support."
+                }
+            ]
+        )
+
+    @pytest.fixture
+    def sample_environment_response(self):
+        """Sample environment category response."""
+        return json.dumps(
+            [
+                {
+                    "tip": "Climate Summit Announced: World leaders gather to "
+                    "discuss climate action and environmental policies."
+                }
+            ]
+        )
+
+    @pytest.fixture
+    def sample_entertainment_response(self):
+        """Sample entertainment category response."""
+        return json.dumps(
+            [
+                {
+                    "tip": "World Cup Final: Historic victory as underdog team "
+                    "wins championship in dramatic overtime."
+                }
+            ]
+        )
+
+    @pytest.fixture
     def sample_leads_with_fences(self):
         """Sample response wrapped in markdown fences."""
         response_data = [
@@ -46,37 +82,79 @@ class TestDiscoveryService:
         return f"```json\n{json.dumps(response_data)}\n```"
 
     def test_discover_leads_success(
-        self, mock_perplexity_client, sample_discovery_response
+        self,
+        mock_perplexity_client,
+        sample_politics_response,
+        sample_environment_response,
+        sample_entertainment_response,
     ):
-        """Test successful lead discovery."""
-        mock_perplexity_client.lead_discovery.return_value = sample_discovery_response
+        """Test successful lead discovery across all categories."""
+        # Mock the three API calls
+        mock_perplexity_client.lead_discovery.side_effect = [
+            sample_politics_response,
+            sample_environment_response,
+            sample_entertainment_response,
+        ]
 
         leads = discover_leads(mock_perplexity_client)
 
-        assert len(leads) == 2
-        assert "Climate Summit Announced" in leads[0].tip
-        assert "World leaders gather" in leads[0].tip
-        assert "Earthquake Hits Pacific Region" in leads[1].tip
+        assert len(leads) == 3
+        assert "Presidential Election Update" in leads[0].tip
+        assert "Climate Summit Announced" in leads[1].tip
+        assert "World Cup Final" in leads[2].tip
 
-        # Verify Perplexity client was called
-        mock_perplexity_client.lead_discovery.assert_called_once()
+        # Verify Perplexity client was called three times
+        assert mock_perplexity_client.lead_discovery.call_count == 3
 
-    def test_discover_leads_empty_response(self, mock_perplexity_client):
-        """Test discovery with empty response."""
-        mock_perplexity_client.lead_discovery.return_value = "[]"
+    def test_discover_leads_empty_responses(self, mock_perplexity_client):
+        """Test discovery with empty responses from all categories."""
+        mock_perplexity_client.lead_discovery.side_effect = ["[]", "[]", "[]"]
 
         leads = discover_leads(mock_perplexity_client)
 
         assert leads == []
+        assert mock_perplexity_client.lead_discovery.call_count == 3
 
-    def test_discover_leads_malformed_json(self, mock_perplexity_client):
-        """Test discovery with malformed JSON."""
-        mock_perplexity_client.lead_discovery.return_value = '{"invalid": json}'
+    def test_discover_leads_partial_failure(
+        self,
+        mock_perplexity_client,
+        sample_politics_response,
+        sample_entertainment_response,
+    ):
+        """Test discovery when one category fails but others succeed."""
+        # Middle category fails
+        mock_perplexity_client.lead_discovery.side_effect = [
+            sample_politics_response,
+            Exception("API Error"),
+            sample_entertainment_response,
+        ]
 
         with patch("services.lead_discovery.logger") as mock_logger:
             leads = discover_leads(mock_perplexity_client)
 
-        assert leads == []
+        assert len(leads) == 2
+        assert "Presidential Election Update" in leads[0].tip
+        assert "World Cup Final" in leads[1].tip
+        
+        # Verify error was logged
+        mock_logger.error.assert_called()
+        assert mock_perplexity_client.lead_discovery.call_count == 3
+
+    def test_discover_leads_malformed_json(
+        self, mock_perplexity_client, sample_politics_response
+    ):
+        """Test discovery with malformed JSON in one category."""
+        mock_perplexity_client.lead_discovery.side_effect = [
+            sample_politics_response,
+            '{"invalid": json}',
+            "[]",
+        ]
+
+        with patch("services.lead_discovery.logger") as mock_logger:
+            leads = discover_leads(mock_perplexity_client)
+
+        assert len(leads) == 1
+        assert "Presidential Election Update" in leads[0].tip
         mock_logger.warning.assert_called()
 
     def test_discover_leads_json_with_fences(
@@ -87,7 +165,11 @@ class TestDiscoveryService:
         Since the Perplexity client now uses structured output and returns clean JSON,
         fenced JSON should be treated as malformed input and result in empty results.
         """
-        mock_perplexity_client.lead_discovery.return_value = sample_leads_with_fences
+        mock_perplexity_client.lead_discovery.side_effect = [
+            sample_leads_with_fences,
+            "[]",
+            "[]",
+        ]
 
         with patch("services.lead_discovery.logger") as mock_logger:
             leads = discover_leads(mock_perplexity_client)
@@ -97,9 +179,11 @@ class TestDiscoveryService:
 
     def test_discover_leads_non_list_response(self, mock_perplexity_client):
         """Test discovery when response is not a list."""
-        mock_perplexity_client.lead_discovery.return_value = json.dumps(
-            {"error": "Not a list"}
-        )
+        mock_perplexity_client.lead_discovery.side_effect = [
+            json.dumps({"error": "Not a list"}),
+            "[]",
+            "[]",
+        ]
 
         with patch("services.lead_discovery.logger") as mock_logger:
             leads = discover_leads(mock_perplexity_client)
@@ -109,21 +193,38 @@ class TestDiscoveryService:
 
     @patch("services.lead_discovery.logger")
     def test_discover_leads_logging(
-        self, mock_logger, mock_perplexity_client, sample_discovery_response
+        self,
+        mock_logger,
+        mock_perplexity_client,
+        sample_politics_response,
+        sample_environment_response,
+        sample_entertainment_response,
     ):
-        """Test that discovery logs lead count."""
-        mock_perplexity_client.lead_discovery.return_value = sample_discovery_response
+        """Test that discovery logs lead counts for each category."""
+        mock_perplexity_client.lead_discovery.side_effect = [
+            sample_politics_response,
+            sample_environment_response,
+            sample_entertainment_response,
+        ]
 
         discover_leads(mock_perplexity_client)
 
-        mock_logger.info.assert_called_with("Discovered %d leads", 2)
+        # Verify category-specific logging
+        assert mock_logger.info.call_count >= 7  # 3 for "Discovering", 3 for "Discovered", 1 for total
+        mock_logger.info.assert_any_call("Discovering leads for category: %s", "politics")
+        mock_logger.info.assert_any_call("Discovered %d leads for %s", 1, "politics")
+        mock_logger.info.assert_any_call("Total leads discovered across all categories: %d", 3)
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
         """Test that discovery preserves original formatting in tip."""
         response_with_formatting = json.dumps(
             [{"tip": "  Spaced Title  : Summary with\nnewlines and extra   spaces"}]
         )
-        mock_perplexity_client.lead_discovery.return_value = response_with_formatting
+        mock_perplexity_client.lead_discovery.side_effect = [
+            response_with_formatting,
+            "[]",
+            "[]",
+        ]
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -143,7 +244,11 @@ class TestDiscoveryService:
                 }
             ]
         )
-        mock_perplexity_client.lead_discovery.return_value = unicode_response
+        mock_perplexity_client.lead_discovery.side_effect = [
+            "[]",
+            unicode_response,
+            "[]",
+        ]
 
         leads = discover_leads(mock_perplexity_client)
 
@@ -151,24 +256,37 @@ class TestDiscoveryService:
         assert "🌍" in leads[0].tip
         assert "émissions" in leads[0].tip
 
-    def test_discover_leads_client_error_propagation(self, mock_perplexity_client):
-        """Test that client errors are properly propagated."""
-        mock_perplexity_client.lead_discovery.side_effect = Exception("API Error")
+    def test_discover_leads_all_categories_fail(self, mock_perplexity_client):
+        """Test when all category API calls fail."""
+        mock_perplexity_client.lead_discovery.side_effect = [
+            Exception("API Error 1"),
+            Exception("API Error 2"),
+            Exception("API Error 3"),
+        ]
 
-        with pytest.raises(Exception, match="API Error"):
-            discover_leads(mock_perplexity_client)
+        with patch("services.lead_discovery.logger") as mock_logger:
+            leads = discover_leads(mock_perplexity_client)
 
-    def test_discover_leads_uses_discovery_instructions(self, mock_perplexity_client):
-        """Test that discovery uses the correct instructions."""
-        from config import DISCOVERY_INSTRUCTIONS
+        assert leads == []
+        assert mock_logger.error.call_count == 3
 
-        mock_perplexity_client.lead_discovery.return_value = "[]"
+    def test_discover_leads_uses_correct_instructions(self, mock_perplexity_client):
+        """Test that discovery uses the correct category-specific instructions."""
+        from config import (
+            DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
+            DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
+            DISCOVERY_POLITICS_INSTRUCTIONS,
+        )
+
+        mock_perplexity_client.lead_discovery.side_effect = ["[]", "[]", "[]"]
 
         discover_leads(mock_perplexity_client)
 
-        mock_perplexity_client.lead_discovery.assert_called_once_with(
-            DISCOVERY_INSTRUCTIONS
-        )
+        # Verify each category instruction was used
+        calls = mock_perplexity_client.lead_discovery.call_args_list
+        assert calls[0][0][0] == DISCOVERY_POLITICS_INSTRUCTIONS
+        assert calls[1][0][0] == DISCOVERY_ENVIRONMENT_INSTRUCTIONS
+        assert calls[2][0][0] == DISCOVERY_ENTERTAINMENT_INSTRUCTIONS
 
     def test_parse_leads_from_response_edge_cases(self):
         """Test edge cases in lead parsing."""

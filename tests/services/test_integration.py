@@ -40,30 +40,61 @@ class TestServicesIntegration:
         mock_pinecone = Mock()
         mock_mongodb = Mock()
 
-        # Set up discovery response
-        discovery_json = json.dumps(
+        # Set up discovery responses for three categories
+        politics_response = json.dumps(
+            [
+                {
+                    "tip": "Political Summit 2024: World leaders discuss global "
+                    "governance and international cooperation."
+                }
+            ]
+        )
+        environment_response = json.dumps(
             [
                 {
                     "tip": "Climate Summit 2024: Global climate leaders meet to "
                     "establish comprehensive environmental policies."
-                },
+                }
+            ]
+        )
+        entertainment_response = json.dumps(
+            [
                 {
                     "tip": "AI Breakthrough Announced: Major AI advancement in "
                     "healthcare diagnostics revolutionizes medical practice."
-                },
+                }
             ]
         )
-        mock_perplexity.lead_discovery.return_value = discovery_json
+        
+        # Set lead_discovery to return different responses for each call
+        mock_perplexity.lead_discovery.side_effect = [
+            politics_response,
+            environment_response,
+            entertainment_response,
+        ]
 
         # Set up deduplication (no duplicates)
         mock_openai.embed_text.return_value = [0.1] * 1536
         mock_pinecone.similarity_search.return_value = []
 
         # Set up decision response
-        mock_openai.chat_completion.return_value = "1, 2"
+        mock_openai.chat_completion.return_value = "1, 2, 3"
 
         # Set up research response
         research_responses = [
+            json.dumps(
+                {
+                    "headline": "World Leaders Unite at Political Summit",
+                    "summary": "Political leaders agree on new international "
+                    "cooperation framework.",
+                    "body": "In a historic gathering, world leaders came together "
+                    "to discuss global governance.",
+                    "sources": [
+                        "https://example.com/political-summit",
+                        "https://example.com/governance",
+                    ],
+                }
+            ),
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
@@ -107,47 +138,44 @@ class TestServicesIntegration:
     def test_complete_pipeline_success(self, mock_clients, test_discovery_instructions):
         """Test complete pipeline from discovery to storage."""
 
-        with patch(
-            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
-            test_discovery_instructions,
-        ):
-            # Execute complete pipeline
-            leads = discover_leads(mock_clients["perplexity"])
-            unique_leads = deduplicate_leads(
-                leads,
-                openai_client=mock_clients["openai"],
-                pinecone_client=mock_clients["pinecone"],
-            )
-            prioritized_leads = curate_leads(
-                unique_leads, openai_client=mock_clients["openai"]
-            )
-            stories = research_story(
-                prioritized_leads, perplexity_client=mock_clients["perplexity"]
-            )
-            persist_stories(stories, mongodb_client=mock_clients["mongodb"])
+        # No need to patch DISCOVERY_INSTRUCTIONS anymore since we're using category-specific ones
+        # Execute complete pipeline
+        leads = discover_leads(mock_clients["perplexity"])
+        unique_leads = deduplicate_leads(
+            leads,
+            openai_client=mock_clients["openai"],
+            pinecone_client=mock_clients["pinecone"],
+        )
+        prioritized_leads = curate_leads(
+            unique_leads, openai_client=mock_clients["openai"]
+        )
+        stories = research_story(
+            prioritized_leads, perplexity_client=mock_clients["perplexity"]
+        )
+        persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
         # Verify pipeline flow
-        assert len(leads) == 2
-        assert len(unique_leads) == 2  # No duplicates removed
-        assert len(prioritized_leads) == 2  # Decision selected both leads
-        assert len(stories) == 2
+        assert len(leads) == 3  # One from each category
+        assert len(unique_leads) == 3  # No duplicates removed
+        assert len(prioritized_leads) == 3  # Decision selected all leads
+        assert len(stories) == 3
 
         # Verify data flow through pipeline
         # Leads from discovery
-        assert "Climate Summit 2024" in leads[0].tip
-        assert "AI Breakthrough Announced" in leads[1].tip
+        assert "Political Summit 2024" in leads[0].tip
+        assert "Climate Summit 2024" in leads[1].tip
+        assert "AI Breakthrough Announced" in leads[2].tip
 
         # Stories from research
-        assert (
-            stories[0].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
-        )
-        assert stories[1].headline == "AI Revolution in Healthcare Diagnostics"
+        assert stories[0].headline == "World Leaders Unite at Political Summit"
+        assert stories[1].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
+        assert stories[2].headline == "AI Revolution in Healthcare Diagnostics"
 
         # Verify clients were called appropriately
-        mock_clients["perplexity"].lead_discovery.assert_called_once()
-        assert mock_clients["openai"].embed_text.call_count == 2  # One per lead
-        assert mock_clients["perplexity"].lead_research.call_count == 2  # One per story
-        assert mock_clients["mongodb"].insert_story.call_count == 2
+        assert mock_clients["perplexity"].lead_discovery.call_count == 3  # Three category calls
+        assert mock_clients["openai"].embed_text.call_count == 3  # One per lead
+        assert mock_clients["perplexity"].lead_research.call_count == 3  # One per story
+        assert mock_clients["mongodb"].insert_story.call_count == 3
 
     @pytest.mark.integration
     def test_pipeline_with_deduplication(
@@ -163,17 +191,29 @@ class TestServicesIntegration:
             [],  # Fifth lead is unique
         ]
 
-        # Set up discovery with duplicate leads
-        discovery_json = json.dumps(
+        # Set up discovery with multiple leads per category
+        politics_json = json.dumps(
             [
-                {"tip": "Lead 1: First lead description"},
-                {"tip": "Lead 2: Second lead description"},
-                {"tip": "Lead 3: Similar to Lead 1"},
-                {"tip": "Lead 4: Fourth lead description"},
-                {"tip": "Lead 5: Fifth lead description"},
+                {"tip": "Lead 1: First political lead description"},
+                {"tip": "Lead 2: Second political lead description"},
             ]
         )
-        mock_clients["perplexity"].lead_discovery.return_value = discovery_json
+        environment_json = json.dumps(
+            [
+                {"tip": "Lead 3: Environmental lead description"},
+            ]
+        )
+        entertainment_json = json.dumps(
+            [
+                {"tip": "Lead 4: Entertainment lead description"},
+                {"tip": "Lead 5: Sports lead description"},
+            ]
+        )
+        mock_clients["perplexity"].lead_discovery.side_effect = [
+            politics_json,
+            environment_json,
+            entertainment_json,
+        ]
 
         # Set up hybrid curator responses - evaluation and pairwise comparison
         evaluation_response = json.dumps(
@@ -232,23 +272,19 @@ class TestServicesIntegration:
             pairwise_response,
         ]
 
-        with patch(
-            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
-            test_discovery_instructions,
-        ):
-            # Execute pipeline
-            leads = discover_leads(mock_clients["perplexity"])
-            unique_leads = deduplicate_leads(
-                leads,
-                openai_client=mock_clients["openai"],
-                pinecone_client=mock_clients["pinecone"],
-            )
-            prioritized_leads = curate_leads(
-                unique_leads, openai_client=mock_clients["openai"]
-            )
+        # Execute pipeline
+        leads = discover_leads(mock_clients["perplexity"])
+        unique_leads = deduplicate_leads(
+            leads,
+            openai_client=mock_clients["openai"],
+            pinecone_client=mock_clients["pinecone"],
+        )
+        prioritized_leads = curate_leads(
+            unique_leads, openai_client=mock_clients["openai"]
+        )
 
         # Verify deduplication worked
-        assert len(leads) == 5  # Original count
+        assert len(leads) == 5  # Original count across all categories
         assert len(unique_leads) == 4  # One duplicate removed
         assert len(prioritized_leads) == 3  # Decision selected 3/4 leads
 
@@ -269,9 +305,16 @@ class TestServicesIntegration:
     ):
         """Test data transformation through pipeline stages."""
 
-        # Mock simple discovery response
-        discovery_json = json.dumps([{"tip": "Original Lead: Original summary"}])
-        mock_clients["perplexity"].lead_discovery.return_value = discovery_json
+        # Mock simple discovery response - one lead per category
+        politics_json = json.dumps([{"tip": "Political Lead: Political news"}])
+        environment_json = json.dumps([{"tip": "Environmental Lead: Climate news"}])
+        entertainment_json = json.dumps([{"tip": "Entertainment Lead: Celebrity news"}])
+        
+        mock_clients["perplexity"].lead_discovery.side_effect = [
+            politics_json,
+            environment_json,
+            entertainment_json,
+        ]
 
         # Override the global mock with specific response for this test
         research_json = json.dumps(
@@ -285,29 +328,25 @@ class TestServicesIntegration:
         mock_clients["perplexity"].lead_research.return_value = research_json
         mock_clients["perplexity"].lead_research.side_effect = None  # Reset side_effect
 
-        # Set up decision response for single lead
+        # Set up decision response for multiple leads
         mock_clients["openai"].chat_completion.return_value = "1"
 
-        with patch(
-            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
-            test_discovery_instructions,
-        ):
-            # Execute pipeline and track transformations
-            leads = discover_leads(mock_clients["perplexity"])
-            unique_leads = deduplicate_leads(
-                leads,
-                openai_client=mock_clients["openai"],
-                pinecone_client=mock_clients["pinecone"],
-            )
-            prioritized_leads = curate_leads(
-                unique_leads, openai_client=mock_clients["openai"]
-            )
-            stories = research_story(
-                prioritized_leads, perplexity_client=mock_clients["perplexity"]
-            )
+        # Execute pipeline and track transformations
+        leads = discover_leads(mock_clients["perplexity"])
+        unique_leads = deduplicate_leads(
+            leads,
+            openai_client=mock_clients["openai"],
+            pinecone_client=mock_clients["pinecone"],
+        )
+        prioritized_leads = curate_leads(
+            unique_leads, openai_client=mock_clients["openai"]
+        )
+        stories = research_story(
+            prioritized_leads, perplexity_client=mock_clients["perplexity"]
+        )
 
-            # Store final stories
-            persist_stories(stories, mongodb_client=mock_clients["mongodb"])
+        # Store final stories
+        persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
         # Verify data transformations
         # Lead -> Lead (deduplication preserves structure)
@@ -317,7 +356,7 @@ class TestServicesIntegration:
 
         # Lead -> Lead (decision preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].tip == unique_leads[0].tip
+        assert prioritized_leads[0].tip in [l.tip for l in unique_leads]
 
         # Lead -> Story (research transforms and enhances)
         assert isinstance(stories[0], Story)
@@ -328,10 +367,16 @@ class TestServicesIntegration:
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline performance with larger data volume."""
 
-        # Create large discovery response
-        discovery_data = [{"tip": f"Lead {i}: Summary {i}"} for i in range(1, 11)]
-        discovery_json = json.dumps(discovery_data)
-        mock_clients["perplexity"].lead_discovery.return_value = discovery_json
+        # Create large discovery responses across categories
+        politics_data = [{"tip": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
+        environment_data = [{"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
+        entertainment_data = [{"tip": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
+        
+        mock_clients["perplexity"].lead_discovery.side_effect = [
+            json.dumps(politics_data),
+            json.dumps(environment_data),
+            json.dumps(entertainment_data),
+        ]
 
         # Set up decision to select subset
         mock_clients["openai"].chat_completion.return_value = "1, 3, 5, 7, 9"
@@ -350,26 +395,22 @@ class TestServicesIntegration:
         ]
         mock_clients["perplexity"].lead_research.side_effect = research_responses
 
-        with patch(
-            "services.lead_discovery.DISCOVERY_INSTRUCTIONS",
-            test_discovery_instructions,
-        ):
-            # Execute pipeline
-            leads = discover_leads(mock_clients["perplexity"])
-            unique_leads = deduplicate_leads(
-                leads,
-                openai_client=mock_clients["openai"],
-                pinecone_client=mock_clients["pinecone"],
-            )
-            prioritized_leads = curate_leads(
-                unique_leads, openai_client=mock_clients["openai"]
-            )
-            stories = research_story(
-                prioritized_leads, perplexity_client=mock_clients["perplexity"]
-            )
+        # Execute pipeline
+        leads = discover_leads(mock_clients["perplexity"])
+        unique_leads = deduplicate_leads(
+            leads,
+            openai_client=mock_clients["openai"],
+            pinecone_client=mock_clients["pinecone"],
+        )
+        prioritized_leads = curate_leads(
+            unique_leads, openai_client=mock_clients["openai"]
+        )
+        stories = research_story(
+            prioritized_leads, perplexity_client=mock_clients["perplexity"]
+        )
 
         # Verify scalability
-        assert len(leads) == 10
+        assert len(leads) == 10  # 4 + 3 + 3 from three categories
         assert len(unique_leads) == 10  # No duplicates
         assert len(prioritized_leads) == 5  # Decision selected 5
         assert len(stories) == 5
