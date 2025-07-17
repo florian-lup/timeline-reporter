@@ -8,8 +8,7 @@ This package provides the core pipeline services:
 - Storage: Saving stories to MongoDB
 """
 
-from .hybrid_curator import HybridLeadCurator
-from .lead_curation import curate_leads
+from .lead_curation import HybridLeadCurator, curate_leads
 from .lead_deduplication import deduplicate_leads
 from .lead_discovery import discover_leads
 from .story_persistence import persist_stories
