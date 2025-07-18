@@ -7,12 +7,18 @@ import re
 from dataclasses import dataclass
 
 from clients import OpenAIClient
-from config.settings import (
+from config.curation_config import (
+    CRITERIA_EVALUATION_PROMPT_TEMPLATE,
+    CRITERIA_WEIGHTS,
     CURATION_MODEL,
     MAX_LEADS,
+    MIN_GROUP_SIZE_FOR_PAIRWISE,
     MIN_LEADS,
     MIN_WEIGHTED_SCORE,
+    PAIRWISE_COMPARISON_PROMPT_TEMPLATE,
+    PAIRWISE_SCORE_WEIGHT,
     SCORE_SIMILARITY,
+    WEIGHTED_SCORE_WEIGHT,
 )
 from models import Lead
 from utils import logger
@@ -32,23 +38,13 @@ class LeadEvaluation:
 class LeadCurator:
     """Advanced lead curation using multiple evaluation techniques."""
 
-    # Criteria weights (must sum to 1.0)
-    CRITERIA_WEIGHTS = {
-        "impact": 0.20,  # How many people are affected
-        "proximity": 0.15,  # Does it cater to a global audience
-        "prominence": 0.15,  # Does it involve well-known people
-        "relevance": 0.15,  # Is this something the audience cares about
-        "hook": 0.15,  # Could this lead grab reader's attention
-        "novelty": 0.10,  # Is the story unusual or unexpected
-        "conflict": 0.10,  # Is there disagreement, controversy or drama
-    }
-
-    # Configuration from settings
+    # Configuration from centralized curation config
+    CRITERIA_WEIGHTS = CRITERIA_WEIGHTS
     MIN_WEIGHTED_SCORE = MIN_WEIGHTED_SCORE
     MAX_LEADS_TO_SELECT = MAX_LEADS
     MIN_LEADS_TO_SELECT = MIN_LEADS
     SCORE_SIMILARITY_THRESHOLD = SCORE_SIMILARITY
-    MIN_GROUP_SIZE_FOR_PAIRWISE = 2  # Minimum leads needed for pairwise comparison
+    MIN_GROUP_SIZE_FOR_PAIRWISE = MIN_GROUP_SIZE_FOR_PAIRWISE
 
     def __init__(self, openai_client: OpenAIClient):
         """Initialize the curator with an OpenAI client."""
@@ -100,41 +96,8 @@ class LeadCurator:
         # Format leads for evaluation
         leads_text = "\n".join(f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads))
 
-        # Batch evaluation prompt for efficiency
-        prompt = f"""You are evaluating news leads for their newsworthiness using
-specific journalistic criteria.
-
-Evaluate each lead on these criteria (1-10 scale):
-
-1. Impact: How many people are affected? (1=few individuals, 10=millions globally)
-2. Proximity: Does it cater to a global audience?
-   (1=hyper-local interest only, 10=universally relevant)
-3. Prominence: Does it involve well-known people?
-   (1=unknown individuals, 10=world leaders/A-list celebrities)
-4. Relevance: Is this something the audience cares about?
-   (1=obscure topic, 10=hot-button issue everyone discusses)
-5. Hook: Could this lead grab reader's attention?
-   (1=boring/predictable, 10=instantly compelling)
-6. Novelty: Is the story unusual or unexpected?
-   (1=routine occurrence, 10=unprecedented/shocking)
-7. Conflict: Is there disagreement, controversy or drama?
-   (1=harmonious/consensual, 10=major dispute/scandal)
-
-Leads to evaluate:
-{leads_text}
-
-Return a JSON array with scores for each lead:
-[{{
-    "index": 1,
-    "impact": 8,
-    "proximity": 7,
-    "prominence": 6,
-    "relevance": 9,
-    "hook": 8,
-    "novelty": 5,
-    "conflict": 7,
-    "brief_reasoning": "Major event affecting millions with global implications..."
-}}]"""
+        # Use centralized prompt template
+        prompt = CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text)
 
         response_text = self.openai_client.chat_completion(
             prompt,
@@ -255,18 +218,9 @@ Lead A ({i + 1}): {group[i].lead.tip[:200]}...
 Lead B ({j + 1}): {group[j].lead.tip[:200]}...
 """)
 
-        # Batch all comparisons for efficiency
-        prompt = (
-            f"For each pair of leads below, determine which is more "
-            f"newsworthy and impactful.\n"
-            f"Consider all evaluation criteria but focus on real-world "
-            f"impact and reader interest.\n\n"
-            f"{chr(10).join(comparisons_text)}\n\n"
-            f"Return a JSON array with your decisions:\n"
-            f'[{{"pair": "1vs2", "winner": 1, "confidence": "high",'
-            f'"reason": "Lead A has broader global impact"}}]\n\n'
-            f"Note: winner should be either the first or second number "
-            f"from the pair."
+        # Use centralized prompt template
+        prompt = PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(
+            comparisons_text=chr(10).join(comparisons_text)
         )
 
         response_text = self.openai_client.chat_completion(
@@ -319,10 +273,12 @@ Lead B ({j + 1}): {group[j].lead.tip[:200]}...
         max_wins = max((e.pairwise_wins for e in evaluations), default=0)
 
         for eval in evaluations:
-            # Final score = 70% weighted score + 30% pairwise performance
+            # Use centralized weights for final scoring
             pairwise_score = (eval.pairwise_wins / max_wins) * 10 if max_wins > 0 else 0
 
-            eval.final_rank = (0.7 * eval.weighted_score) + (0.3 * pairwise_score)
+            eval.final_rank = (WEIGHTED_SCORE_WEIGHT * eval.weighted_score) + (
+                PAIRWISE_SCORE_WEIGHT * pairwise_score
+            )
 
             logger.debug(
                 "Lead final ranking: weighted=%.2f, pairwise=%.2f, final=%.2f",

@@ -37,7 +37,6 @@ EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
 METRIC: str = "cosine"
 CHAT_MODEL: str = "gpt-4.1-mini-2025-04-14"
-CURATION_MODEL: str = "o4-mini-2025-04-16"
 
 # ---------------------------------------------------------------------------
 # Perplexity
@@ -45,11 +44,3 @@ CURATION_MODEL: str = "o4-mini-2025-04-16"
 LEAD_RESEARCH_MODEL: str = "sonar-pro"
 LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
-
-# ---------------------------------------------------------------------------
-# Lead Curation
-# ---------------------------------------------------------------------------
-MIN_WEIGHTED_SCORE: float = 6.0  # Minimum score for lead consideration
-MAX_LEADS: int = 5  # Maximum number of leads to select
-MIN_LEADS: int = 3  # Minimum number of leads to select
-SCORE_SIMILARITY: float = 0.5  # Score threshold for pairwise comparison

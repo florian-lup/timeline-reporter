@@ -61,34 +61,7 @@ DISCOVERY_ENTERTAINMENT_INSTRUCTIONS = (
 
 
 
-# ---------------------------------------------------------------------------
-# Decision Prompts
-# ---------------------------------------------------------------------------
 
-DECISION_SYSTEM_PROMPT = (
-    "You are an expert news editor with decades of experience in editorial "
-    "decision-making. Your role is to evaluate and prioritize news events "
-    "based on their impact, significance, and newsworthiness. Focus on "
-    "quality over quantity, selecting only the most important stories that "
-    "deserve in-depth coverage."
-)
-
-DECISION_INSTRUCTIONS = (
-    "Below are deduplicated news leads discovered today. Your task is to "
-    "select the most impactful stories.\n\nLeads to evaluate:\n{leads}\n\n"
-    "Evaluation criteria (in order of importance):\n"
-    "1. Global impact and significance\n"
-    "2. Potential long-term consequences\n"
-    "3. Public interest and relevance\n"
-    "4. Uniqueness and newsworthiness\n"
-    "5. Credibility and verifiability\n\n"
-    "Select the top 3-5 most impactful events that warrant comprehensive "
-    "research and reporting.\n\n"
-    "Return only the numbers of the events you want to keep "
-    '(e.g., "1, 3, 5" or "2, 4, 7").\n'
-    "Focus on stories that will have the greatest impact on your audience "
-    "and society."
-)
 
 # ---------------------------------------------------------------------------
 # Research & Story Generation Prompts
@@ -128,11 +101,6 @@ DISCOVERY_PROMPTS = {
     "entertainment": DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
 }
 
-DECISION_PROMPTS = {
-    "system": DECISION_SYSTEM_PROMPT,
-    "instructions": DECISION_INSTRUCTIONS,
-}
-
 RESEARCH_PROMPTS = {
     "system": RESEARCH_SYSTEM_PROMPT,
     "instructions": RESEARCH_INSTRUCTIONS,
@@ -141,6 +109,5 @@ RESEARCH_PROMPTS = {
 # All prompts for easy iteration/management
 ALL_PROMPTS = {
     "discovery": DISCOVERY_PROMPTS,
-    "decision": DECISION_PROMPTS,
     "research": RESEARCH_PROMPTS,
 }

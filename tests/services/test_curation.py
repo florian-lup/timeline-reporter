@@ -192,7 +192,7 @@ class TestLeadCuration:
 
     def test_curate_leads_uses_curation_model(self, mock_openai_client, sample_leads):
         """Test that the correct model is used for decision making."""
-        from config.settings import CURATION_MODEL
+        from config.curation_config import CURATION_MODEL
 
         # Mock response
         mock_openai_client.chat_completion.return_value = json.dumps(
