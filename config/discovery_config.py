@@ -84,20 +84,3 @@ DISCOVERY_CATEGORY_INSTRUCTIONS = {
     "environment": DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
     "entertainment": DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
 }
-
-# ---------------------------------------------------------------------------
-# Prompt Collections for Easy Access
-# ---------------------------------------------------------------------------
-DISCOVERY_PROMPTS = {
-    "system": DISCOVERY_SYSTEM_PROMPT,
-    "politics": DISCOVERY_POLITICS_INSTRUCTIONS,
-    "environment": DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
-    "entertainment": DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
-}
-
-# All discovery prompts for easy iteration/management
-ALL_DISCOVERY_PROMPTS = {
-    "system": DISCOVERY_SYSTEM_PROMPT,
-    "categories": DISCOVERY_CATEGORY_INSTRUCTIONS,
-    "prompts": DISCOVERY_PROMPTS,
-}

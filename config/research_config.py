@@ -8,7 +8,6 @@ related to lead research and story generation.
 # Research Model Configuration
 # ---------------------------------------------------------------------------
 LEAD_RESEARCH_MODEL: str = "sonar-pro"
-STORY_WRITING_MODEL: str = "gpt-4.1-mini-2025-04-14"
 
 # ---------------------------------------------------------------------------
 # Research System Prompt
@@ -40,33 +39,6 @@ RESEARCH_INSTRUCTIONS = (
 )
 
 # ---------------------------------------------------------------------------
-# Story Quality Guidelines
-# ---------------------------------------------------------------------------
-STORY_QUALITY_GUIDELINES = {
-    "headline_max_words": 20,
-    "summary_word_range": (80, 120),
-    "body_word_range": (400, 600),
-    "min_sources": 1,
-    "max_sources": 10,
-}
-
-# ---------------------------------------------------------------------------
 # Research Timeouts and Limits
 # ---------------------------------------------------------------------------
-RESEARCH_TIMEOUT_SECONDS: int = 120
-MAX_RESEARCH_RETRIES: int = 3
-
-# ---------------------------------------------------------------------------
-# Prompt Collections for Easy Access
-# ---------------------------------------------------------------------------
-RESEARCH_PROMPTS = {
-    "system": RESEARCH_SYSTEM_PROMPT,
-    "instructions": RESEARCH_INSTRUCTIONS,
-}
-
-# All research prompts for easy iteration/management
-ALL_RESEARCH_PROMPTS = {
-    "system": RESEARCH_SYSTEM_PROMPT,
-    "instructions": RESEARCH_INSTRUCTIONS,
-    "prompts": RESEARCH_PROMPTS,
-}
+RESEARCH_TIMEOUT_SECONDS: int = 240

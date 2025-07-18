@@ -218,8 +218,8 @@ class TestPerplexityClient:
                 client = PerplexityClient()
                 client.lead_research("test prompt")
 
-                # Verify Client was initialized with timeout=120
-                mock_client_class.assert_called_with(timeout=120)
+                # Verify Client was initialized with timeout=240
+                mock_client_class.assert_called_with(timeout=240)
 
     @pytest.mark.parametrize(
         "prompt",
