@@ -94,8 +94,11 @@ class LeadCurator:
 
     def _evaluate_all_criteria(self, leads: list[Lead]) -> list[LeadEvaluation]:
         """Step 1: Evaluate each lead on multiple criteria."""
-        # Format leads for evaluation
-        leads_text = "\n".join(f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads))
+        # Format leads for evaluation using researched context
+        leads_text = "\n".join(
+            f"{i + 1}. {lead.context}"
+            for i, lead in enumerate(leads)
+        )
 
         # Use centralized prompt template with JSON format instruction
         prompt = (
@@ -225,8 +228,8 @@ class LeadCurator:
 
                 comparisons_text.append(f"""
 Pair {pair_key}:
-Lead A ({i + 1}): {group[i].lead.tip[:200]}...
-Lead B ({j + 1}): {group[j].lead.tip[:200]}...
+Lead A ({i + 1}): {group[i].lead.context[:200]}...
+Lead B ({j + 1}): {group[j].lead.context[:200]}...
 """)
 
         # Use centralized prompt template with JSON format instruction

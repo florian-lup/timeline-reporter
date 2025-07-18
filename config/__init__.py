@@ -68,6 +68,18 @@ from .settings import (
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
 )
+from .verification_config import (
+    MIN_CONTEXT_RELEVANCE_SCORE,
+    MIN_SOURCE_CREDIBILITY_SCORE,
+    MIN_TOTAL_SCORE,
+    VERIFICATION_INSTRUCTIONS,
+    VERIFICATION_JSON_FORMAT,
+    # Verification Configuration
+    VERIFICATION_MODEL,
+    # Verification Prompts
+    VERIFICATION_SYSTEM_PROMPT,
+    VERIFICATION_TEMPERATURE,
+)
 
 __all__ = [
     # API Keys
@@ -100,6 +112,12 @@ __all__ = [
     # Research Configuration
     "LEAD_RESEARCH_MODEL",
     "RESEARCH_TIMEOUT_SECONDS",
+    # Verification Configuration
+    "VERIFICATION_MODEL",
+    "VERIFICATION_TEMPERATURE",
+    "MIN_SOURCE_CREDIBILITY_SCORE",
+    "MIN_CONTEXT_RELEVANCE_SCORE",
+    "MIN_TOTAL_SCORE",
     # Deduplication Configuration
     "SIMILARITY_THRESHOLD",
     "TOP_K_RESULTS",
@@ -120,4 +138,8 @@ __all__ = [
     # Research Prompts
     "RESEARCH_SYSTEM_PROMPT",
     "RESEARCH_INSTRUCTIONS",
+    # Verification Prompts
+    "VERIFICATION_SYSTEM_PROMPT",
+    "VERIFICATION_INSTRUCTIONS",
+    "VERIFICATION_JSON_FORMAT",
 ]

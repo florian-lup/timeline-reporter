@@ -46,8 +46,9 @@ PAIRWISE_SCORE_WEIGHT: float = 0.3  # Weight for pairwise comparison results
 # ---------------------------------------------------------------------------
 
 CRITERIA_EVALUATION_PROMPT_TEMPLATE = (
-    """You are evaluating news leads for their newsworthiness using """
-    """specific journalistic criteria.
+    """You are evaluating researched news leads for their newsworthiness using """
+    """specific journalistic criteria. Each lead includes context and background """
+    """research to help you make an informed evaluation.
 
 Evaluate each lead on these criteria (1-10 scale):
 
@@ -94,8 +95,8 @@ CRITERIA_JSON_FORMAT = (
 # ---------------------------------------------------------------------------
 
 PAIRWISE_COMPARISON_PROMPT_TEMPLATE = (
-    """For each pair of leads below, determine which is more newsworthy """
-    """and impactful.
+    """For each pair of researched leads below, determine which is more newsworthy """
+    """and impactful. Each lead includes researched context and background information.
 Consider all evaluation criteria but focus on real-world impact and reader interest.
 
 {comparisons_text}"""

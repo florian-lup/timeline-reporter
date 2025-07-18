@@ -23,33 +23,106 @@ class TestLeadCuration:
         """Sample leads for testing."""
         return [
             Lead(
-                tip="Climate Summit 2024: World leaders meet to discuss climate "
-                "change solutions and carbon reduction targets with major implications "
-                "for global policy and economy.",
+                tip=(
+                    "Climate Summit 2024: World leaders meet to discuss climate "
+                    "change solutions and carbon reduction targets with major "
+                    "implications for global policy and economy."
+                ),
+                context=(
+                    "Climate Summit 2024: World leaders from 195 countries "
+                    "gathered in Dubai for a critical climate summit to address "
+                    "unprecedented global warming challenges. The summit focused "
+                    "on binding carbon reduction targets, renewable energy "
+                    "transitions, and climate adaptation strategies. Key outcomes "
+                    "include a $100 billion climate fund commitment and new "
+                    "international frameworks for carbon pricing. The event marks "
+                    "a pivotal moment in international climate diplomacy with "
+                    "implications for global environmental policy."
+                ),
             ),
             Lead(
-                tip="Major earthquake in Pacific: A 7.5 magnitude earthquake "
-                "struck the Pacific region causing widespread damage and triggering "
-                "tsunami warnings across multiple countries.",
+                tip=(
+                    "Major earthquake in Pacific: A 7.5 magnitude earthquake "
+                    "struck the Pacific region causing widespread damage and "
+                    "triggering tsunami warnings across multiple countries."
+                ),
+                context=(
+                    "Major earthquake in Pacific: A devastating 7.5 magnitude "
+                    "earthquake struck the Pacific Ring of Fire, causing "
+                    "widespread destruction across multiple island nations. "
+                    "The earthquake triggered tsunami warnings for Japan, "
+                    "Philippines, and Indonesia, forcing mass evacuations of "
+                    "coastal communities. Emergency response teams are "
+                    "coordinating international rescue efforts while assessing "
+                    "infrastructure damage estimated in billions of dollars."
+                ),
             ),
             Lead(
-                tip="Tech breakthrough: Scientists announce revolutionary AI "
-                "system that can predict diseases years before symptoms appear, "
-                "potentially saving millions of lives.",
+                tip=(
+                    "Tech breakthrough: Scientists announce revolutionary AI "
+                    "system that can predict diseases years before symptoms "
+                    "appear, potentially saving millions of lives."
+                ),
+                context=(
+                    "Tech breakthrough in medical AI: Researchers at Stanford "
+                    "Medical Center announced a breakthrough artificial "
+                    "intelligence system capable of predicting onset of diseases "
+                    "including cancer, diabetes, and heart disease up to 5 years "
+                    "before clinical symptoms appear. The system achieved 94% "
+                    "accuracy in clinical trials involving 100,000 patients. "
+                    "This innovation could revolutionize preventive healthcare "
+                    "and save millions of lives through early intervention."
+                ),
             ),
             Lead(
-                tip="Economic crisis deepens: Global markets tumble as inflation "
-                "reaches 40-year high, central banks struggle to respond effectively "
-                "to the growing financial instability.",
+                tip=(
+                    "Economic crisis deepens: Global markets tumble as inflation "
+                    "reaches 40-year high, central banks struggle to respond "
+                    "effectively to the growing financial instability."
+                ),
+                context=(
+                    "Economic crisis deepens globally: Financial markets "
+                    "experienced massive selloffs as inflation reached 8.9%, "
+                    "the highest level in 40 years. The Federal Reserve and "
+                    "European Central Bank face difficult decisions between "
+                    "aggressive rate hikes and recession risks. Consumer "
+                    "confidence plummeted while energy and food prices continue "
+                    "surging, creating a perfect storm of economic challenges "
+                    "affecting millions worldwide."
+                ),
             ),
             Lead(
-                tip="Space milestone: First commercial space station successfully "
-                "launches, opening new era of private space exploration and research "
-                "opportunities.",
+                tip=(
+                    "Space milestone: First commercial space station successfully "
+                    "launches, opening new era of private space exploration and "
+                    "research opportunities."
+                ),
+                context=(
+                    "Space milestone achieved: Axiom Space successfully launched "
+                    "the first commercially operated space station, marking a "
+                    "historic shift from government-led to private sector space "
+                    "exploration. The station will conduct scientific research, "
+                    "manufacturing experiments, and space tourism operations. "
+                    "This achievement opens new frontiers for commercial space "
+                    "activities and represents a $2 billion investment in space "
+                    "infrastructure."
+                ),
             ),
             Lead(
-                tip="Local sports team wins championship after 50 years, bringing "
-                "joy to fans and boosting local economy through celebrations.",
+                tip=(
+                    "Local sports team wins championship after 50 years, bringing "
+                    "joy to fans and boosting local economy through celebrations."
+                ),
+                context=(
+                    "Local sports championship victory: The city's professional "
+                    "baseball team won their first championship in 50 years, "
+                    "triggering massive celebrations that boosted the local "
+                    "economy by an estimated $50 million. Over 2 million fans "
+                    "participated in victory parades while local businesses "
+                    "reported record sales. The victory has united the community "
+                    "and provided significant economic benefits through tourism "
+                    "and merchandise sales."
+                ),
             ),
         ]
 
