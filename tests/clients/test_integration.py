@@ -82,9 +82,9 @@ class TestClientIntegration:
             mock_http_client = Mock()
             mock_response = Mock()
             research_data = {
-                "headline": "Test Research Story",
-                "summary": "This is a test research summary",
-                "body": "This is the full test research story...",
+                "context": (
+                    "Comprehensive research context about breaking technology news"
+                ),
                 "sources": [
                     "https://example.com/source1",
                     "https://example.com/source2",
@@ -106,13 +106,15 @@ class TestClientIntegration:
             mock_http_client.post.assert_called_once()
             call_args = mock_http_client.post.call_args
             assert (
-                "investigative journalist"
+                "investigative research assistant"
                 in call_args[1]["json"]["messages"][0]["content"]
             )
 
-            # Verify result parsing
+            # Verify result parsing - lead research returns context + sources
             result_data = json.loads(result)
-            assert result_data["headline"] == "Test Research Story"
+            assert result_data["context"] == (
+                "Comprehensive research context about breaking technology news"
+            )
             assert len(result_data["sources"]) == 2
 
     def test_mongodb_story_storage_integration(self):
@@ -184,24 +186,36 @@ class TestClientIntegration:
         with (
             patch("clients.perplexity_client.httpx.Client") as mock_httpx,
             patch("clients.mongodb_client.MongoClient") as mock_mongo,
+            patch("clients.openai_client.OpenAI") as mock_openai,
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-key"),
             patch("clients.mongodb_client.MONGODB_URI", "test-uri"),
+            patch("clients.openai_client.OPENAI_API_KEY", "test-openai-key"),
         ):
-            # Setup Perplexity mock (research)
+            # Setup Perplexity mock (lead research)
             mock_http_client = Mock()
             mock_response = Mock()
-            story_data = {
-                "headline": "Breaking News",
-                "summary": "Important lead summary",
-                "body": "Full story details...",
+            research_data = {
+                "context": "Enhanced context about breaking news from research",
                 "sources": ["https://source.com"],
             }
             mock_response.json.return_value = {
-                "choices": [{"message": {"content": json.dumps(story_data)}}]
+                "choices": [{"message": {"content": json.dumps(research_data)}}]
             }
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
+
+            # Setup OpenAI mock (story writing)
+            mock_openai_instance = Mock()
+            mock_openai.return_value = mock_openai_instance
+            story_data = {
+                "headline": "Breaking News",
+                "summary": "Important lead summary",
+                "body": "Full story details...",
+            }
+            mock_openai_instance.chat.completions.create.return_value = Mock(
+                choices=[Mock(message=Mock(content=json.dumps(story_data)))]
+            )
 
             # MongoDB storage
             mock_mongo_instance = Mock()
@@ -215,33 +229,51 @@ class TestClientIntegration:
             mock_collection.insert_one.return_value = mock_result
 
             # Execute full pipeline
+            from clients import OpenAIClient
             from models import Lead
-            from services import research_lead
+            from services import research_lead, write_stories
 
             perplexity_client = PerplexityClient()
             mongodb_client = MongoDBClient()
+            openai_client = OpenAIClient()
 
-            # 1. Research phase
+            # 1. Research phase - enhance leads with context
             test_leads = [Lead(tip="Breaking News: Important lead")]
-            stories = research_lead(test_leads, perplexity_client=perplexity_client)
+            researched_leads = research_lead(
+                test_leads, perplexity_client=perplexity_client
+            )
 
-            # 2. Storage phase
+            # 2. Writing phase - convert enhanced leads to stories
+            stories = write_stories(researched_leads, openai_client=openai_client)
+
+            # 3. Storage phase
             for story in stories:
                 mongodb_client.insert_story(story.__dict__)
 
             # Verify end-to-end pipeline
+            assert len(researched_leads) == 1
             assert len(stories) == 1
-            final_story = stories[0]
 
-            # Check research data is preserved
+            # Check research enhanced the lead
+            researched_lead = researched_leads[0]
+            assert researched_lead.context == (
+                "Enhanced context about breaking news from research"
+            )
+            assert researched_lead.sources == ["https://source.com"]
+
+            # Check story was created from researched lead
+            final_story = stories[0]
             assert final_story.headline == "Breaking News"
             assert final_story.summary == "Important lead summary"
             assert final_story.body == "Full story details..."
+            # Sources preserved from research
             assert final_story.sources == ["https://source.com"]
 
             # Verify all services were called
             # Perplexity research
             mock_http_client.post.assert_called_once()
+            # OpenAI story writing
+            mock_openai_instance.chat.completions.create.assert_called_once()
             # MongoDB storage
             mock_collection.insert_one.assert_called_once()
 

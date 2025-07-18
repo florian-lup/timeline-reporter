@@ -37,8 +37,9 @@ class TestResearchService:
         return json.dumps(
             {
                 "context": "The Climate Summit 2024 brings together world leaders from "
-                "over 190 countries to address the escalating climate crisis. The summit "
-                "focuses on implementing concrete measures to limit global warming to 1.5°C, "
+                "over 190 countries to address the escalating climate crisis. "
+                "The summit focuses on implementing concrete measures to limit "
+                "global warming to 1.5°C, "
                 "with major discussions on renewable energy transition, carbon capture "
                 "technologies, and climate finance for developing nations.",
                 "sources": [
@@ -59,7 +60,9 @@ class TestResearchService:
         """Test successful lead research."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
-        enhanced_leads = research_lead(sample_leads, perplexity_client=mock_perplexity_client)
+        enhanced_leads = research_lead(
+            sample_leads, perplexity_client=mock_perplexity_client
+        )
 
         assert len(enhanced_leads) == 2
         assert isinstance(enhanced_leads[0], Lead)
@@ -96,7 +99,9 @@ class TestResearchService:
         """Test JSON parsing from research response."""
         response = json.dumps(
             {
-                "context": "Detailed context about the lead including background information",
+                "context": (
+                    "Detailed context about the lead including background information"
+                ),
                 "sources": ["https://example.com/test", "https://example.com/analysis"],
             }
         )
@@ -107,8 +112,13 @@ class TestResearchService:
         )
 
         assert len(enhanced_leads) == 1
-        assert enhanced_leads[0].context == "Detailed context about the lead including background information"
-        assert enhanced_leads[0].sources == ["https://example.com/test", "https://example.com/analysis"]
+        assert enhanced_leads[0].context == (
+            "Detailed context about the lead including background information"
+        )
+        assert enhanced_leads[0].sources == [
+            "https://example.com/test",
+            "https://example.com/analysis",
+        ]
         # Original tip should be preserved
         assert enhanced_leads[0].tip == sample_leads[0].tip
 
@@ -158,7 +168,8 @@ class TestResearchService:
         """Test research with JSON wrapped in markdown fences.
 
         Since the Perplexity client now uses structured output and returns clean JSON,
-        fenced JSON should be treated as malformed input and result in the original lead.
+        fenced JSON should be treated as malformed input and result in the original
+        lead.
         """
         fenced_response = """```json
         {
@@ -182,14 +193,10 @@ class TestResearchService:
 
     def test_research_preserves_date(self, mock_perplexity_client):
         """Test that research preserves the original lead date."""
-        lead_with_date = Lead(
-            tip="Test lead",
-            date="2024-01-15"
+        lead_with_date = Lead(tip="Test lead", date="2024-01-15")
+        response = json.dumps(
+            {"context": "Context text", "sources": ["https://example.com"]}
         )
-        response = json.dumps({
-            "context": "Context text",
-            "sources": ["https://example.com"]
-        })
         mock_perplexity_client.lead_research.return_value = response
 
         enhanced_leads = research_lead(
@@ -226,7 +233,9 @@ class TestResearchService:
         single_lead = [Lead(tip="Single Lead: Description of a single lead")]
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
-        enhanced_leads = research_lead(single_lead, perplexity_client=mock_perplexity_client)
+        enhanced_leads = research_lead(
+            single_lead, perplexity_client=mock_perplexity_client
+        )
 
         assert len(enhanced_leads) == 1
         assert mock_perplexity_client.lead_research.call_count == 1

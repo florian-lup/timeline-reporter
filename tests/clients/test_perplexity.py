@@ -172,8 +172,8 @@ class TestPerplexityClient:
             assert "properties" in schema
             assert "required" in schema
 
-            # Verify required fields
-            required_fields = ["headline", "summary", "body", "sources"]
+            # Verify required fields for lead research (context + sources)
+            required_fields = ["context", "sources"]
             assert set(schema["required"]) == set(required_fields)
 
             # Verify properties
@@ -266,7 +266,7 @@ class TestPerplexityClient:
             client.lead_research("test prompt")
 
             mock_logger.info.assert_called_once_with(
-                "Story research request with %s", "sonar-pro"
+                "Lead research request with %s", "sonar-pro"
             )
 
     def test_system_message_content(self, mock_httpx_client, sample_response_data):
@@ -282,10 +282,10 @@ class TestPerplexityClient:
             payload = mock_client.post.call_args[1]["json"]
             system_message = payload["messages"][0]["content"]
 
-            assert "investigative journalist" in system_message
-            assert "current events analysis" in system_message
-            assert "accuracy" in system_message
-            assert "factual reporting" in system_message
+            assert "investigative research assistant" in system_message
+            assert "current events" in system_message
+            assert "credible sources" in system_message
+            assert "background information" in system_message
 
     def test_response_content_extraction(self, mock_httpx_client):
         """Test that response content is properly extracted."""

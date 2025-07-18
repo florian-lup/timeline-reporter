@@ -39,8 +39,12 @@ class OpenAIClient:
     # Public helpers
     # ---------------------------------------------------------------------
     def chat_completion(
-        self, prompt: str, *, model: str, temperature: float | None = None,
-        response_format: dict[str, Any] | None = None
+        self,
+        prompt: str,
+        *,
+        model: str,
+        temperature: float | None = None,
+        response_format: dict[str, Any] | None = None,
     ) -> str:
         """Generate text using the chat completion model.
 
@@ -62,7 +66,7 @@ class OpenAIClient:
 
         if temperature is not None:
             kwargs["temperature"] = temperature
-            
+
         if response_format is not None:
             kwargs["response_format"] = response_format
 

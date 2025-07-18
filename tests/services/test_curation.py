@@ -337,7 +337,9 @@ class TestLeadCurator:
                         "hook": 7,  # Strong headline potential
                         "novelty": 6,  # Somewhat expected
                         "conflict": 7,  # Political disagreements
-                        "brief_reasoning": "Major global climate policy with world leaders",
+                        "brief_reasoning": (
+                            "Major global climate policy with world leaders"
+                        ),
                     },
                     {
                         "index": 2,

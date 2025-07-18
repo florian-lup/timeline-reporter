@@ -12,6 +12,7 @@ from services import (
     discover_leads,
     persist_stories,
     research_lead,
+    write_stories,
 )
 
 
@@ -80,15 +81,14 @@ class TestServicesIntegration:
         # Set up decision response
         mock_openai.chat_completion.return_value = "1, 2, 3"
 
-        # Set up research response
-        research_responses = [
+        # Set up lead research responses (context + sources)
+        lead_research_responses = [
             json.dumps(
                 {
-                    "headline": "World Leaders Unite at Political Summit",
-                    "summary": "Political leaders agree on new international "
-                    "cooperation framework.",
-                    "body": "In a historic gathering, world leaders came together "
-                    "to discuss global governance.",
+                    "context": (
+                        "Political leaders from around the world gathered to discuss "
+                        "international cooperation and global governance frameworks."
+                    ),
                     "sources": [
                         "https://example.com/political-summit",
                         "https://example.com/governance",
@@ -97,11 +97,11 @@ class TestServicesIntegration:
             ),
             json.dumps(
                 {
-                    "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": "World leaders at the 2024 Climate Summit agreed on "
-                    "unprecedented carbon reduction goals.",
-                    "body": "In a historic gathering, the 2024 Climate Summit "
-                    "concluded with ambitious commitments.",
+                    "context": (
+                        "The 2024 Climate Summit brought together world leaders to "
+                        "establish comprehensive environmental policies and carbon "
+                        "reduction goals."
+                    ),
                     "sources": [
                         "https://example.com/climate-summit",
                         "https://example.com/carbon-targets",
@@ -110,11 +110,10 @@ class TestServicesIntegration:
             ),
             json.dumps(
                 {
-                    "headline": "AI Revolution in Healthcare Diagnostics",
-                    "summary": "Breakthrough AI system shows promise in medical "
-                    "diagnosis and drug discovery.",
-                    "body": "Researchers have developed an AI system that "
-                    "revolutionizes healthcare diagnostics.",
+                    "context": (
+                        "Researchers have developed breakthrough AI technology that "
+                        "revolutionizes healthcare diagnostics and medical practice."
+                    ),
                     "sources": [
                         "https://example.com/ai-health",
                         "https://example.com/medical-ai",
@@ -122,7 +121,52 @@ class TestServicesIntegration:
                 }
             ),
         ]
-        mock_perplexity.lead_research.side_effect = research_responses
+        mock_perplexity.lead_research.side_effect = lead_research_responses
+
+        # Set up story writing responses (headline + summary + body)
+        story_writing_responses = [
+            json.dumps(
+                {
+                    "headline": "World Leaders Unite at Political Summit",
+                    "summary": (
+                        "Political leaders agree on new international cooperation "
+                        "framework."
+                    ),
+                    "body": (
+                        "In a historic gathering, world leaders came together to "
+                        "discuss global governance."
+                    ),
+                }
+            ),
+            json.dumps(
+                {
+                    "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
+                    "summary": (
+                        "World leaders at the 2024 Climate Summit agreed on "
+                        "unprecedented carbon reduction goals."
+                    ),
+                    "body": (
+                        "In a historic gathering, the 2024 Climate Summit "
+                        "concluded with ambitious commitments."
+                    ),
+                }
+            ),
+            json.dumps(
+                {
+                    "headline": "AI Revolution in Healthcare Diagnostics",
+                    "summary": (
+                        "Breakthrough AI system shows promise in medical "
+                        "diagnosis and drug discovery."
+                    ),
+                    "body": (
+                        "Researchers have developed an AI system that "
+                        "revolutionizes healthcare diagnostics."
+                    ),
+                }
+            ),
+        ]
+        # Override the chat_completion setup for story writing
+        mock_openai.chat_completion.side_effect = ["1, 2, 3"] + story_writing_responses
 
         # Set up storage
         mock_mongodb.insert_story.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
@@ -150,16 +194,18 @@ class TestServicesIntegration:
         prioritized_leads = curate_leads(
             unique_leads, openai_client=mock_clients["openai"]
         )
-        stories = research_lead(
+        researched_leads = research_lead(
             prioritized_leads, perplexity_client=mock_clients["perplexity"]
         )
+        stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
         # Verify pipeline flow
         assert len(leads) == 3  # One from each category
         assert len(unique_leads) == 3  # No duplicates removed
         assert len(prioritized_leads) == 3  # Decision selected all leads
-        assert len(stories) == 3
+        assert len(researched_leads) == 3  # All leads researched
+        assert len(stories) == 3  # All leads converted to stories
 
         # Verify data flow through pipeline
         # Leads from discovery
@@ -167,10 +213,15 @@ class TestServicesIntegration:
         assert "Climate Summit 2024" in leads[1].tip
         assert "AI Breakthrough Announced" in leads[2].tip
 
-        # Stories from research
+        # Researched leads have context
+        assert "international cooperation" in researched_leads[0].context
+        assert "environmental policies" in researched_leads[1].context
+        assert "breakthrough AI technology" in researched_leads[2].context
+
+        # Stories from writing
         assert stories[0].headline == "World Leaders Unite at Political Summit"
-        assert (
-            stories[1].headline == "Global Climate Summit Sets Ambitious 2030 Targets"
+        assert stories[1].headline == (
+            "Global Climate Summit Sets Ambitious 2030 Targets"
         )
         assert stories[2].headline == "AI Revolution in Healthcare Diagnostics"
 
@@ -178,8 +229,12 @@ class TestServicesIntegration:
         assert (
             mock_clients["perplexity"].lead_discovery.call_count == 3
         )  # Three category calls
-        assert mock_clients["openai"].embed_text.call_count == 3  # One per lead
-        assert mock_clients["perplexity"].lead_research.call_count == 3  # One per story
+        # One per lead for deduplication
+        assert mock_clients["openai"].embed_text.call_count == 3
+        # One per lead for research
+        assert mock_clients["perplexity"].lead_research.call_count == 3
+        # 1 for curation + 3 for story writing
+        assert mock_clients["openai"].chat_completion.call_count == 4
         assert mock_clients["mongodb"].insert_story.call_count == 3
 
     @pytest.mark.integration
@@ -322,19 +377,32 @@ class TestServicesIntegration:
         ]
 
         # Override the global mock with specific response for this test
-        research_json = json.dumps(
+        lead_research_json = json.dumps(
+            {
+                "context": "Enhanced context with research details",
+                "sources": ["https://source1.com", "https://source2.com"],
+            }
+        )
+        mock_clients["perplexity"].lead_research.return_value = lead_research_json
+        # Reset side_effect
+        mock_clients["perplexity"].lead_research.side_effect = None
+
+        # Set up story writing response
+        story_writing_json = json.dumps(
             {
                 "headline": "Transformed Headline",
                 "summary": "Enhanced summary",
                 "body": "Detailed story body",
-                "sources": ["https://source1.com", "https://source2.com"],
             }
         )
-        mock_clients["perplexity"].lead_research.return_value = research_json
-        mock_clients["perplexity"].lead_research.side_effect = None  # Reset side_effect
 
-        # Set up decision response for multiple leads
-        mock_clients["openai"].chat_completion.return_value = "1"
+        # Set up decision response and story writing response (3 leads selected)
+        mock_clients["openai"].chat_completion.side_effect = [
+            "1",
+            story_writing_json,
+            story_writing_json,
+            story_writing_json,
+        ]
 
         # Execute pipeline and track transformations
         leads = discover_leads(mock_clients["perplexity"])
@@ -346,9 +414,10 @@ class TestServicesIntegration:
         prioritized_leads = curate_leads(
             unique_leads, openai_client=mock_clients["openai"]
         )
-        stories = research_lead(
+        researched_leads = research_lead(
             prioritized_leads, perplexity_client=mock_clients["perplexity"]
         )
+        stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
 
         # Store final stories
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
@@ -359,15 +428,23 @@ class TestServicesIntegration:
         assert isinstance(unique_leads[0], Lead)
         assert leads[0].tip == unique_leads[0].tip
 
-        # Lead -> Lead (decision preserves structure, filters by impact)
+        # Lead -> Lead (curation preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
         assert prioritized_leads[0].tip in [lead.tip for lead in unique_leads]
 
-        # Lead -> Story (research transforms and enhances)
+        # Lead -> Enhanced Lead (research adds context and sources)
+        assert len(researched_leads) == 3
+        assert isinstance(researched_leads[0], Lead)
+        assert researched_leads[0].context == ("Enhanced context with research details")
+        assert len(researched_leads[0].sources) == 2
+
+        # Enhanced Lead -> Story (writing transforms to full story)
+        assert len(stories) == 3
         assert isinstance(stories[0], Story)
         assert stories[0].headline == "Transformed Headline"
-        assert stories[0].summary != prioritized_leads[0].tip  # Enhanced by research
-        assert len(stories[0].sources) == 2
+        assert stories[0].summary == "Enhanced summary"
+        # Sources preserved from research
+        assert stories[0].sources == researched_leads[0].sources
 
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline performance with larger data volume."""

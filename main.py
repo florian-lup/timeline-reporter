@@ -2,7 +2,8 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, prioritizes, researches, writes, and stores
+    python -m main  # discovers, deduplicates, prioritizes, researches,
+                   # writes, and stores
 """
 
 from __future__ import annotations
@@ -46,7 +47,9 @@ def run_pipeline() -> None:  # noqa: D401
     prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
 
     # 4️⃣ Research (enhance leads with context and sources)
-    researched_leads = research_lead(prioritized_leads, perplexity_client=perplexity_client)
+    researched_leads = research_lead(
+        prioritized_leads, perplexity_client=perplexity_client
+    )
 
     # 5️⃣ Writing (create stories from researched leads)
     stories = write_stories(researched_leads, openai_client=openai_client)

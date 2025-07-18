@@ -93,7 +93,7 @@ class PerplexityClient:
     # ---------------------------------------------------------------------------
 
     def lead_research(self, prompt: str) -> str:
-        """Executes research for a lead and returns structured JSON with context and sources.
+        """Executes research for a lead and returns structured JSON.
 
         Uses structured output for consistent JSON responses.
 

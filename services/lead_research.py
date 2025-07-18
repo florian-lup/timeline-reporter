@@ -15,9 +15,7 @@ def research_lead(
     enhanced_leads: list[Lead] = []
 
     for lead in leads:
-        prompt = RESEARCH_INSTRUCTIONS.format(
-            lead_tip=lead.tip, lead_date=lead.date
-        )
+        prompt = RESEARCH_INSTRUCTIONS.format(lead_tip=lead.tip, lead_date=lead.date)
         response_text = perplexity_client.lead_research(prompt)
         enhanced_lead = _enhance_lead_from_response(lead, response_text)
         enhanced_leads.append(enhanced_lead)

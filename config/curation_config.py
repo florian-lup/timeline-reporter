@@ -72,9 +72,9 @@ Leads to evaluate:
 # JSON format instruction for criteria evaluation
 CRITERIA_JSON_FORMAT = (
     "\n\nProvide your response as a JSON object with an 'evaluations' array:\n"
-    '{\n'
+    "{\n"
     '  "evaluations": [\n'
-    '    {\n'
+    "    {\n"
     '      "index": 1,\n'
     '      "impact": 8,\n'
     '      "proximity": 7,\n'
@@ -84,9 +84,9 @@ CRITERIA_JSON_FORMAT = (
     '      "novelty": 5,\n'
     '      "conflict": 7,\n'
     '      "brief_reasoning": "Major event affecting millions..."\n'
-    '    }\n'
-    '  ]\n'
-    '}'
+    "    }\n"
+    "  ]\n"
+    "}"
 )
 
 # ---------------------------------------------------------------------------
@@ -104,15 +104,15 @@ Consider all evaluation criteria but focus on real-world impact and reader inter
 # JSON format instruction for pairwise comparison
 PAIRWISE_JSON_FORMAT = (
     "\n\nProvide your response as a JSON object with a 'comparisons' array:\n"
-    '{\n'
+    "{\n"
     '  "comparisons": [\n'
-    '    {\n'
+    "    {\n"
     '      "pair": "1vs2",\n'
     '      "winner": 1,\n'
     '      "confidence": "high",\n'
     '      "reason": "Lead A has broader global impact"\n'
-    '    }\n'
-    '  ]\n'
-    '}\n\n'
-    'Note: winner should be either the first or second number from the pair.'
+    "    }\n"
+    "  ]\n"
+    "}\n\n"
+    "Note: winner should be either the first or second number from the pair."
 )

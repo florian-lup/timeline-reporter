@@ -98,35 +98,36 @@ class LeadCurator:
         leads_text = "\n".join(f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads))
 
         # Use centralized prompt template with JSON format instruction
-        prompt = CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text) + CRITERIA_JSON_FORMAT
+        prompt = (
+            CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text)
+            + CRITERIA_JSON_FORMAT
+        )
 
         response_text = self.openai_client.chat_completion(
-            prompt,
-            model=CURATION_MODEL,
-            response_format={"type": "json_object"}
+            prompt, model=CURATION_MODEL, response_format={"type": "json_object"}
         )
 
         # Parse response
         try:
             scores_data = json.loads(response_text)
-            
+
             # Handle both object with 'evaluations' array and direct array
             if isinstance(scores_data, dict) and "evaluations" in scores_data:
                 scores_data = scores_data["evaluations"]
             elif isinstance(scores_data, dict):
                 # If it's a dict but not with 'evaluations', try to extract array
                 # Look for any key that contains a list
-                for key, value in scores_data.items():
+                for value in scores_data.values():
                     if isinstance(value, list):
                         scores_data = value
                         break
                 else:
                     raise ValueError("No array found in response")
-            
+
             # Ensure scores_data is a list
             if not isinstance(scores_data, list):
                 raise ValueError(f"Expected list, got {type(scores_data)}")
-                
+
         except (json.JSONDecodeError, ValueError) as exc:
             logger.error("Failed to parse JSON response: %s", exc)
             # Fallback: treat all leads equally
@@ -229,26 +230,27 @@ Lead B ({j + 1}): {group[j].lead.tip[:200]}...
 """)
 
         # Use centralized prompt template with JSON format instruction
-        prompt = PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(
-            comparisons_text=chr(10).join(comparisons_text)
-        ) + PAIRWISE_JSON_FORMAT
+        prompt = (
+            PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(
+                comparisons_text=chr(10).join(comparisons_text)
+            )
+            + PAIRWISE_JSON_FORMAT
+        )
 
         response_text = self.openai_client.chat_completion(
-            prompt,
-            model=CURATION_MODEL,
-            response_format={"type": "json_object"}
+            prompt, model=CURATION_MODEL, response_format={"type": "json_object"}
         )
 
         # Parse response
         try:
             data = json.loads(response_text)
-            
+
             # Handle both object with 'comparisons' array and direct array
             if isinstance(data, dict) and "comparisons" in data:
                 results = data["comparisons"]
             elif isinstance(data, dict):
                 # Look for any key that contains a list
-                for key, value in data.items():
+                for value in data.values():
                     if isinstance(value, list):
                         results = value
                         break
@@ -256,7 +258,7 @@ Lead B ({j + 1}): {group[j].lead.tip[:200]}...
                     results = []
             else:
                 results = data if isinstance(data, list) else []
-                
+
         except json.JSONDecodeError as exc:
             logger.warning("Failed to parse pairwise comparison results: %s", exc)
             logger.warning(
