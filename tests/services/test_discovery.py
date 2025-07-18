@@ -279,7 +279,7 @@ class TestDiscoveryService:
 
     def test_discover_leads_uses_correct_instructions(self, mock_perplexity_client):
         """Test that discovery uses the correct category-specific instructions."""
-        from config import (
+        from config.discovery_config import (
             DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
             DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
             DISCOVERY_POLITICS_INSTRUCTIONS,

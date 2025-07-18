@@ -7,7 +7,7 @@ This package provides centralized configuration including:
 - All prompts used across the pipeline
 """
 
-# Import all settings, prompts, and curation configuration
+# Import all settings, prompts, curation and discovery configuration
 from .curation_config import (
     ALL_CURATION_PROMPTS,
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
@@ -28,8 +28,10 @@ from .curation_config import (
     SCORE_SIMILARITY,
     WEIGHTED_SCORE_WEIGHT,
 )
-from .prompts import (
-    ALL_PROMPTS,
+from .discovery_config import (
+    ALL_DISCOVERY_PROMPTS,
+    DISCOVERY_CATEGORIES,
+    DISCOVERY_CATEGORY_INSTRUCTIONS,
     DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
     DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
     DISCOVERY_POLITICS_INSTRUCTIONS,
@@ -37,6 +39,12 @@ from .prompts import (
     DISCOVERY_PROMPTS,
     # Discovery Prompts
     DISCOVERY_SYSTEM_PROMPT,
+    # Discovery Configuration
+    LEAD_DISCOVERY_MODEL,
+    SEARCH_CONTEXT_SIZE,
+)
+from .prompts import (
+    ALL_PROMPTS,
     RESEARCH_INSTRUCTIONS,
     RESEARCH_PROMPTS,
     # Research Prompts
@@ -49,9 +57,8 @@ from .settings import (
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
     # OpenAI Configuration
-    LEAD_DISCOVERY_MODEL,
-    # Perplexity Configuration
     LEAD_RESEARCH_MODEL,
+    # Perplexity Configuration
     METRIC,
     MONGODB_COLLECTION_NAME,
     # MongoDB Configuration
@@ -63,7 +70,6 @@ from .settings import (
     PINECONE_API_KEY,
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
-    SEARCH_CONTEXT_SIZE,
     SIMILARITY_THRESHOLD,
     TOP_K_RESULTS,
 )
@@ -81,17 +87,20 @@ __all__ = [
     "CLOUD_PROVIDER",
     "CLOUD_REGION",
     # OpenAI Configuration
-    "LEAD_DISCOVERY_MODEL",
     "EMBEDDING_MODEL",
     "EMBEDDING_DIMENSIONS",
     "METRIC",
     "CHAT_MODEL",
     # Perplexity Configuration
     "LEAD_RESEARCH_MODEL",
-    "SEARCH_CONTEXT_SIZE",
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
+    # Discovery Configuration
+    "LEAD_DISCOVERY_MODEL",
+    "SEARCH_CONTEXT_SIZE",
+    "DISCOVERY_CATEGORIES",
+    "DISCOVERY_CATEGORY_INSTRUCTIONS",
     # Curation Configuration
     "CURATION_MODEL",
     "MIN_WEIGHTED_SCORE",
@@ -122,4 +131,5 @@ __all__ = [
     "CURATION_PROMPTS",
     "ALL_PROMPTS",
     "ALL_CURATION_PROMPTS",
+    "ALL_DISCOVERY_PROMPTS",
 ]

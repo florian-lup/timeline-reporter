@@ -5,11 +5,13 @@ from __future__ import annotations
 import httpx
 
 from config import (
-    DISCOVERY_SYSTEM_PROMPT,
-    LEAD_DISCOVERY_MODEL,
     LEAD_RESEARCH_MODEL,
     PERPLEXITY_API_KEY,
     RESEARCH_SYSTEM_PROMPT,
+)
+from config.discovery_config import (
+    DISCOVERY_SYSTEM_PROMPT,
+    LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE,
 )
 from utils import logger
@@ -68,14 +70,22 @@ class PerplexityClient:
         },
     }
 
-    def lead_research(self, prompt: str) -> str:
-        """Executes a chat completion request forcing JSON structured output.
+    # ---------------------------------------------------------------------------
+    # Public methods
+    # ---------------------------------------------------------------------------
 
-        Utilises Perplexity's `response_format` parameter (see official guide:
-        https://docs.perplexity.ai/guides/structured-outputs) to guarantee the
-        model returns a valid JSON object matching the story schema.
+    def story_research(self, prompt: str) -> str:
+        """Executes research for a story and returns structured JSON.
+
+        Uses structured output for consistent JSON responses.
+
+        Args:
+            prompt: The research query/prompt
+
+        Returns:
+            JSON string containing the structured research results
         """
-        logger.info("Research request with %s", LEAD_RESEARCH_MODEL)
+        logger.info("Story research request with %s", LEAD_RESEARCH_MODEL)
 
         payload = {
             "model": LEAD_RESEARCH_MODEL,
@@ -95,16 +105,14 @@ class PerplexityClient:
             },
         }
 
-        with httpx.Client(timeout=90) as client:
+        with httpx.Client(timeout=120) as client:
             response = client.post(
                 _PERPLEXITY_ENDPOINT, json=payload, headers=self._headers
             )
             response.raise_for_status()
             data = response.json()
 
-        # Response is OpenAI-compatible; content is pure JSON string.
-        content: str = data["choices"][0]["message"]["content"]
-        return content
+        return data["choices"][0]["message"]["content"]
 
     def lead_discovery(self, prompt: str) -> str:
         """Executes a research for leads.
@@ -154,23 +162,27 @@ class PerplexityClient:
         # Extract JSON content after <think> section as per documentation
         return self._extract_json_from_reasoning_response(raw_content)
 
-    def _extract_json_from_reasoning_response(self, response: str) -> str:
-        """Extract JSON content from a reasoning model response.
+    # ---------------------------------------------------------------------------
+    # Helpers
+    # ---------------------------------------------------------------------------
 
-        Reasoning models wrap their reasoning in <think> tags
-        followed by the actual structured output. This method extracts just the JSON.
+    def _extract_json_from_reasoning_response(self, raw_content: str) -> str:
+        """Extract JSON from response with reasoning tokens.
 
-        Args:
-            response: Raw response from the reasoning model
-
-        Returns:
-            JSON string without the <think> section
+        Perplexity Pro models return reasoning tokens in <think> tags,
+        followed by the actual JSON response.
         """
-        # Look for the end of the <think> section
-        think_end = response.find("</think>")
-        if think_end != -1:
-            # Extract everything after </think>
-            return response[think_end + 8 :].strip()
-        # Fallback: if no <think> tags found, return the full response
-        logger.warning("No reasoning tags found, using full response")
-        return response.strip()
+        import re
+
+        # Split by </think> to get the JSON part
+        if "</think>" in raw_content:
+            json_part = raw_content.split("</think>", 1)[1].strip()
+        else:
+            # Fallback: assume entire content is JSON
+            json_part = raw_content.strip()
+
+        # Clean up any remaining markdown or XML-like tags
+        json_part = re.sub(r"```(?:json)?\n?", "", json_part)
+        json_part = re.sub(r"\n?```", "", json_part)
+
+        return json_part

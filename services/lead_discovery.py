@@ -3,10 +3,9 @@ from __future__ import annotations
 import json
 
 from clients import PerplexityClient
-from config import (
-    DISCOVERY_ENTERTAINMENT_INSTRUCTIONS,
-    DISCOVERY_ENVIRONMENT_INSTRUCTIONS,
-    DISCOVERY_POLITICS_INSTRUCTIONS,
+from config.discovery_config import (
+    DISCOVERY_CATEGORIES,
+    DISCOVERY_CATEGORY_INSTRUCTIONS,
 )
 from models import Lead
 from utils import logger
@@ -28,18 +27,12 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
     """
     all_leads = []
 
-    # Define categories with their respective instructions
-    categories = [
-        ("politics", DISCOVERY_POLITICS_INSTRUCTIONS),
-        ("environment", DISCOVERY_ENVIRONMENT_INSTRUCTIONS),
-        ("entertainment", DISCOVERY_ENTERTAINMENT_INSTRUCTIONS),
-    ]
-
-    # Make separate API calls for each category
-    for category_name, instructions in categories:
+    # Use centralized category configuration
+    for category_name in DISCOVERY_CATEGORIES:
         logger.info("Discovering leads for category: %s", category_name)
 
         try:
+            instructions = DISCOVERY_CATEGORY_INSTRUCTIONS[category_name]
             response_text = perplexity_client.lead_discovery(instructions)
             category_leads = _parse_leads_from_response(response_text)
 
