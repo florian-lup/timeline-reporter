@@ -11,8 +11,8 @@ This package provides the core pipeline services:
 from .lead_curation import LeadCurator, curate_leads
 from .lead_deduplication import deduplicate_leads
 from .lead_discovery import discover_leads
-from .story_persistence import persist_stories
 from .lead_research import research_lead
+from .story_persistence import persist_stories
 
 __all__ = [
     # Core pipeline services

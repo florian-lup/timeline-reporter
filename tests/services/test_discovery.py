@@ -215,9 +215,7 @@ class TestDiscoveryService:
         mock_logger.info.assert_any_call(
             "Discovering leads for category: %s", "politics"
         )
-        mock_logger.info.assert_any_call(
-            "Discovered %d leads for %s", 1, "politics"
-        )
+        mock_logger.info.assert_any_call("Discovered %d leads for %s", 1, "politics")
         mock_logger.info.assert_any_call(
             "Total leads discovered across all categories: %d", 3
         )

@@ -40,7 +40,7 @@ REQUIRED_METADATA_FIELDS = [
 
 OPTIONAL_METADATA_FIELDS = [
     "source",
-    "category", 
+    "category",
     "confidence",
 ]
 

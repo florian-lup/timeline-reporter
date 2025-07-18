@@ -42,9 +42,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
             all_leads.extend(category_leads)
 
         except Exception as exc:
-            logger.error(
-                "Failed to discover leads for %s: %s", category_name, exc
-            )
+            logger.error("Failed to discover leads for %s: %s", category_name, exc)
             # Continue with other categories even if one fails
             continue
 

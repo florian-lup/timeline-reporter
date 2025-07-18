@@ -4,7 +4,6 @@ This module contains all settings, prompts, and configuration data
 related to lead curation and evaluation.
 """
 
-
 # ---------------------------------------------------------------------------
 # Curation Model Configuration
 # ---------------------------------------------------------------------------

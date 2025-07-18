@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import httpx
 
 from config import (
@@ -115,7 +117,7 @@ class PerplexityClient:
             response.raise_for_status()
             data = response.json()
 
-        return data["choices"][0]["message"]["content"]
+        return cast("str", data["choices"][0]["message"]["content"])
 
     def lead_discovery(self, prompt: str) -> str:
         """Executes a research for leads.
@@ -186,6 +188,4 @@ class PerplexityClient:
 
         # Clean up any remaining markdown or XML-like tags
         json_part = re.sub(r"```(?:json)?\n?", "", json_part)
-        json_part = re.sub(r"\n?```", "", json_part)
-
-        return json_part
+        return re.sub(r"\n?```", "", json_part)

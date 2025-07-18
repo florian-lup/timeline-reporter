@@ -135,9 +135,7 @@ class TestServicesIntegration:
         }
 
     @pytest.mark.integration
-    def test_complete_pipeline_success(
-        self, mock_clients, test_discovery_instructions
-    ):
+    def test_complete_pipeline_success(self, mock_clients, test_discovery_instructions):
         """Test complete pipeline from discovery to storage."""
 
         # No need to patch DISCOVERY_INSTRUCTIONS anymore since we're using
@@ -181,9 +179,7 @@ class TestServicesIntegration:
             mock_clients["perplexity"].lead_discovery.call_count == 3
         )  # Three category calls
         assert mock_clients["openai"].embed_text.call_count == 3  # One per lead
-        assert (
-            mock_clients["perplexity"].lead_research.call_count == 3
-        )  # One per story
+        assert mock_clients["perplexity"].lead_research.call_count == 3  # One per story
         assert mock_clients["mongodb"].insert_story.call_count == 3
 
     @pytest.mark.integration
@@ -384,8 +380,7 @@ class TestServicesIntegration:
             {"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)
         ]
         entertainment_data = [
-            {"tip": f"Entertainment Lead {i}: Celebrity news {i}"}
-            for i in range(8, 11)
+            {"tip": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)
         ]
 
         mock_clients["perplexity"].lead_discovery.side_effect = [

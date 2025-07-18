@@ -153,9 +153,7 @@ class TestResearchService:
 
         mock_logger.info.assert_called_with("Generated %d stories", 2)
 
-    def test_research_lead_with_fenced_json(
-        self, mock_perplexity_client, sample_leads
-    ):
+    def test_research_lead_with_fenced_json(self, mock_perplexity_client, sample_leads):
         """Test research with JSON wrapped in markdown fences.
 
         Since the Perplexity client now uses structured output and returns clean JSON,
@@ -184,9 +182,7 @@ class TestResearchService:
         assert stories[0].sources == []
         mock_logger.warning.assert_called()
 
-    def test_research_lead_unicode_handling(
-        self, mock_perplexity_client, sample_leads
-    ):
+    def test_research_lead_unicode_handling(self, mock_perplexity_client, sample_leads):
         """Test research with Unicode characters."""
         unicode_response = json.dumps(
             {

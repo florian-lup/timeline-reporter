@@ -6,7 +6,6 @@ from clients.openai_client import OpenAIClient
 from clients.pinecone_client import PineconeClient
 from config.deduplication_config import (
     INCLUDE_METADATA,
-    PRESERVE_ORIGINAL_ORDER,
     REQUIRED_METADATA_FIELDS,
     VECTOR_ID_PREFIX,
 )
@@ -30,7 +29,7 @@ def deduplicate_leads(
 
     Each lead's context is embedded and compared against existing vectors in
     Pinecone. Anything with a similarity ≥ threshold is dropped.
-    
+
     Uses centralized configuration for similarity thresholds, vector storage,
     and metadata handling.
     """
@@ -52,7 +51,7 @@ def deduplicate_leads(
 
         # Generate vector ID using centralized configuration
         vector_id = f"{VECTOR_ID_PREFIX}-{idx}"
-        
+
         # Prepare metadata using centralized configuration
         metadata = _prepare_metadata(lead) if INCLUDE_METADATA else {}
 
@@ -75,16 +74,16 @@ def deduplicate_leads(
 
 def _prepare_metadata(lead: Lead) -> dict[str, str]:
     """Prepare metadata for vector storage using centralized configuration.
-    
+
     Only includes fields specified in the required metadata configuration.
     """
     metadata = {}
-    
+
     # Add required fields
     for field in REQUIRED_METADATA_FIELDS:
         if hasattr(lead, field):
             value = getattr(lead, field)
             # Convert to string for Pinecone storage
             metadata[field] = str(value) if value is not None else ""
-    
+
     return metadata

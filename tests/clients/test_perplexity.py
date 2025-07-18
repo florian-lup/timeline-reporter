@@ -218,8 +218,8 @@ class TestPerplexityClient:
                 client = PerplexityClient()
                 client.lead_research("test prompt")
 
-                # Verify Client was initialized with timeout=90
-                mock_client_class.assert_called_with(timeout=90)
+                # Verify Client was initialized with timeout=120
+                mock_client_class.assert_called_with(timeout=120)
 
     @pytest.mark.parametrize(
         "prompt",
@@ -266,7 +266,7 @@ class TestPerplexityClient:
             client.lead_research("test prompt")
 
             mock_logger.info.assert_called_once_with(
-                "Research request with %s", "sonar-pro"
+                "Story research request with %s", "sonar-pro"
             )
 
     def test_system_message_content(self, mock_httpx_client, sample_response_data):

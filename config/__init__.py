@@ -7,7 +7,8 @@ This package provides centralized configuration including:
 - All prompts used across the pipeline
 """
 
-# Import all settings, prompts, curation, discovery, research and deduplication configuration
+# Import all settings, prompts, curation, discovery, research and deduplication
+# configuration
 from .curation_config import (
     ALL_CURATION_PROMPTS,
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
