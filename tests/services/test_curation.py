@@ -725,3 +725,224 @@ class TestLeadCurator:
         # Verify logging calls
         mock_logger.info.assert_any_call("Starting curation for %d leads", 1)
         mock_logger.info.assert_any_call("Selected %d leads through curation", 1)
+
+
+class TestLeadCurationEdgeCases:
+    """Test suite for lead curation edge cases and error handling."""
+
+    @pytest.fixture
+    def mock_openai_client(self):
+        """Mock OpenAI client for testing."""
+        return Mock()
+
+    @pytest.fixture
+    def sample_lead(self):
+        """Single sample lead for testing."""
+        return Lead(
+            tip="Test lead for edge case testing",
+            context="Test context for edge case scenarios",
+        )
+
+    @patch("services.lead_curation.logger")
+    def test_json_parsing_dict_without_evaluations(
+        self, mock_logger, mock_openai_client, sample_lead
+    ):
+        """Test JSON parsing when response is dict without 'evaluations' key
+        but contains a list."""
+        # Response is a dict with a list value, not in 'evaluations' key
+        mock_response = {
+            "data": [
+                {
+                    "index": 1,
+                    "impact": 8,
+                    "proximity": 8,
+                    "prominence": 8,
+                    "relevance": 8,
+                    "hook": 8,
+                    "novelty": 8,
+                    "conflict": 8,
+                }
+            ],
+            "metadata": "some info",
+        }
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+        result = curator.curate_leads([sample_lead])
+
+        assert len(result) == 1
+
+    @patch("services.lead_curation.logger")
+    def test_json_parsing_dict_no_array_found(
+        self, mock_logger, mock_openai_client, sample_lead
+    ):
+        """Test JSON parsing when response is dict with no list values."""
+        # Response is a dict with no list values
+        mock_response = {"message": "No evaluations available", "status": "error"}
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+
+        # Should fall back to original leads when parsing fails
+        result = curator.curate_leads([sample_lead])
+
+        # Should return the original leads when evaluation fails
+        assert len(result) == 1
+        mock_logger.error.assert_called()
+
+    @patch("services.lead_curation.logger")
+    def test_json_parsing_invalid_type(
+        self, mock_logger, mock_openai_client, sample_lead
+    ):
+        """Test JSON parsing when response is neither list nor dict."""
+        # Response is a string, not list or dict
+        mock_openai_client.chat_completion.return_value = '"Invalid response type"'
+
+        curator = LeadCurator(mock_openai_client)
+        result = curator.curate_leads([sample_lead])
+
+        # Should return original leads when parsing fails
+        assert len(result) == 1
+        mock_logger.error.assert_called()
+
+    @patch("services.lead_curation.logger")
+    def test_missing_criteria_scores_warning(
+        self, mock_logger, mock_openai_client, sample_lead
+    ):
+        """Test warning is logged when criteria scores are missing from evaluation."""
+        # Response missing some criteria (e.g., missing 'novelty' and 'conflict')
+        mock_response = [
+            {
+                "index": 1,
+                "impact": 8,
+                "proximity": 7,
+                "prominence": 6,
+                "relevance": 8,
+                "hook": 7,
+                # Missing 'novelty' and 'conflict'
+            }
+        ]
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+        curator.curate_leads([sample_lead])
+
+        # Should log warning about missing criteria
+        mock_logger.warning.assert_called()
+        warning_call = mock_logger.warning.call_args[0]
+        assert "FALLBACK" in warning_call[0]
+        assert "missing criteria scores" in warning_call[0]
+
+    def test_pairwise_comparison_enabled(self, mock_openai_client):
+        """Test pairwise comparison is triggered when group size meets minimum."""
+        # Create enough leads to trigger pairwise comparison
+        leads = [
+            Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}")
+            for i in range(6)  # More than MIN_GROUP_SIZE_FOR_PAIRWISE (usually 4-5)
+        ]
+
+        # Mock response with similar scores to trigger grouping
+        mock_response = [
+            {
+                "index": i + 1,
+                "impact": 8,  # All have similar scores
+                "proximity": 8,
+                "prominence": 8,
+                "relevance": 8,
+                "hook": 8,
+                "novelty": 8,
+                "conflict": 8,
+            }
+            for i in range(6)
+        ]
+
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+
+        # Mock the _compare_group_pairwise method to verify it's called
+        with patch.object(curator, "_compare_group_pairwise") as mock_pairwise:
+            curator.curate_leads(leads)
+
+            # Should call pairwise comparison for the group
+            mock_pairwise.assert_called()
+
+    def test_minimum_leads_selection_fallback(self, mock_openai_client):
+        """Test fallback to minimum leads selection when not enough leads pass
+        thresholds."""
+        # Create more leads than minimum required
+        leads = [
+            Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}")
+            for i in range(6)
+        ]
+
+        # Mock response with low scores that won't pass normal selection
+        mock_response = [
+            {
+                "index": i + 1,
+                "impact": 3,  # Low scores
+                "proximity": 3,
+                "prominence": 3,
+                "relevance": 3,
+                "hook": 3,
+                "novelty": 3,
+                "conflict": 3,
+            }
+            for i in range(6)
+        ]
+
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+        result = curator.curate_leads(leads)
+
+        # Should fall back to selecting minimum number of leads
+        assert len(result) == curator.MIN_LEADS_TO_SELECT
+
+    def test_pairwise_comparison_skipped_small_group(self, mock_openai_client):
+        """Test pairwise comparison is skipped when group is too small."""
+        # Create few leads - less than MIN_GROUP_SIZE_FOR_PAIRWISE
+        leads = [
+            Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}")
+            for i in range(2)  # Less than minimum group size
+        ]
+
+        mock_response = [
+            {
+                "index": i + 1,
+                "impact": 8,
+                "proximity": 8,
+                "prominence": 8,
+                "relevance": 8,
+                "hook": 8,
+                "novelty": 8,
+                "conflict": 8,
+            }
+            for i in range(2)
+        ]
+
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+
+        # Mock the _compare_group_pairwise method to verify it's not called
+        with patch.object(curator, "_compare_group_pairwise") as mock_pairwise:
+            curator.curate_leads(leads)
+
+            # Should not call pairwise comparison for small group
+            mock_pairwise.assert_not_called()
+
+    @patch("services.lead_curation.logger")
+    def test_json_decode_error_handling(
+        self, mock_logger, mock_openai_client, sample_lead
+    ):
+        """Test handling of invalid JSON response."""
+        # Return invalid JSON
+        mock_openai_client.chat_completion.return_value = "Invalid JSON {"
+
+        curator = LeadCurator(mock_openai_client)
+        result = curator.curate_leads([sample_lead])
+
+        # Should log error and return original leads
+        mock_logger.error.assert_called()
+        assert len(result) == 1

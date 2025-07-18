@@ -45,9 +45,7 @@ def run_pipeline() -> None:  # noqa: D401
     )
 
     # 3️⃣ Research (enhance leads with context and sources)
-    researched_leads = research_lead(
-        unique_leads, perplexity_client=perplexity_client
-    )
+    researched_leads = research_lead(unique_leads, perplexity_client=perplexity_client)
 
     # 4️⃣ Verification (check lead credibility)
     verified_leads = verify_leads(researched_leads, openai_client=openai_client)

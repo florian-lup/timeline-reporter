@@ -44,14 +44,17 @@ def verify_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
         else:
             logger.info(
                 "Lead discarded due to low credibility: %s",
-                (lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..."
-                 if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH else lead.tip)
+                (
+                    lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..."
+                    if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH
+                    else lead.tip
+                ),
             )
 
     logger.info(
         "Verification complete: %d/%d leads passed credibility check",
         len(verified_leads),
-        len(leads)
+        len(leads),
     )
 
     return verified_leads
@@ -75,8 +78,8 @@ def _verify_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> bool:
         # Error occurred during evaluation
         return False
 
-    source_score = scores['source_credibility']
-    context_score = scores['context_relevance']
+    source_score = scores["source_credibility"]
+    context_score = scores["context_relevance"]
 
     # Calculate total score
     total_score = source_score + context_score
@@ -86,7 +89,7 @@ def _verify_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> bool:
         "Lead verification scores - Source: %.1f, Context: %.1f, Total: %.1f",
         source_score,
         context_score,
-        total_score
+        total_score,
     )
 
     # Check if lead passes all thresholds
@@ -94,9 +97,9 @@ def _verify_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> bool:
     passes_context_threshold = context_score >= MIN_CONTEXT_RELEVANCE_SCORE
     passes_total_threshold = total_score >= MIN_TOTAL_SCORE
 
-    return (passes_source_threshold and
-            passes_context_threshold and
-            passes_total_threshold)
+    return (
+        passes_source_threshold and passes_context_threshold and passes_total_threshold
+    )
 
 
 def _evaluate_lead_credibility(
@@ -115,7 +118,8 @@ def _evaluate_lead_credibility(
     # Format sources for the prompt
     sources_text = (
         "\n".join(f"- {source}" for source in lead.sources)
-        if lead.sources else "No sources provided"
+        if lead.sources
+        else "No sources provided"
     )
 
     # Create the verification prompt
@@ -123,7 +127,7 @@ def _evaluate_lead_credibility(
         lead_tip=lead.tip,
         lead_date=lead.date,
         lead_context=lead.context,
-        lead_sources=sources_text
+        lead_sources=sources_text,
     )
 
     # Add JSON format instructions
@@ -137,7 +141,7 @@ def _evaluate_lead_credibility(
             prompt=full_prompt,
             model=VERIFICATION_MODEL,
             temperature=VERIFICATION_TEMPERATURE,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
 
         # Parse the JSON response
@@ -153,8 +157,8 @@ def _evaluate_lead_credibility(
 
         # Ensure scores are within valid range
         return {
-            'source_credibility': max(0.0, min(10.0, source_score)),
-            'context_relevance': max(0.0, min(10.0, context_score))
+            "source_credibility": max(0.0, min(10.0, source_score)),
+            "context_relevance": max(0.0, min(10.0, context_score)),
         }
 
     except (json.JSONDecodeError, KeyError, ValueError) as e:

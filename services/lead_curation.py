@@ -96,8 +96,7 @@ class LeadCurator:
         """Step 1: Evaluate each lead on multiple criteria."""
         # Format leads for evaluation using researched context
         leads_text = "\n".join(
-            f"{i + 1}. {lead.context}"
-            for i, lead in enumerate(leads)
+            f"{i + 1}. {lead.context}" for i, lead in enumerate(leads)
         )
 
         # Use centralized prompt template with JSON format instruction

@@ -222,3 +222,81 @@ class TestPineconeClient:
 
             # Debug logging was removed - no assertion needed
             pass
+
+    def test_init_missing_index_name(self, mock_pinecone):
+        """Test initialization fails when PINECONE_INDEX_NAME is missing."""
+        mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
+
+        with (
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
+            patch("clients.pinecone_client.PINECONE_INDEX_NAME", ""),  # Empty string
+            patch("clients.pinecone_client.CLOUD_PROVIDER", "aws"),
+            patch("clients.pinecone_client.CLOUD_REGION", "us-east-1"),
+            pytest.raises(ValueError, match="PINECONE_INDEX_NAME is missing"),
+        ):
+            PineconeClient()
+
+    def test_init_missing_cloud_provider(self, mock_pinecone):
+        """Test initialization fails when CLOUD_PROVIDER is missing."""
+        mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
+
+        with (
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
+            patch("clients.pinecone_client.PINECONE_INDEX_NAME", "timeline-events"),
+            patch("clients.pinecone_client.CLOUD_PROVIDER", ""),  # Empty string
+            patch("clients.pinecone_client.CLOUD_REGION", "us-east-1"),
+            pytest.raises(ValueError, match="CLOUD_PROVIDER is missing"),
+        ):
+            PineconeClient()
+
+    def test_init_missing_cloud_region(self, mock_pinecone):
+        """Test initialization fails when CLOUD_REGION is missing."""
+        mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
+
+        with (
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
+            patch("clients.pinecone_client.PINECONE_INDEX_NAME", "timeline-events"),
+            patch("clients.pinecone_client.CLOUD_PROVIDER", "aws"),
+            patch("clients.pinecone_client.CLOUD_REGION", ""),  # Empty string
+            pytest.raises(ValueError, match="CLOUD_REGION is missing"),
+        ):
+            PineconeClient()
+
+    def test_init_none_index_name(self, mock_pinecone):
+        """Test initialization fails when PINECONE_INDEX_NAME is None."""
+        mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
+
+        with (
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
+            patch("clients.pinecone_client.PINECONE_INDEX_NAME", None),
+            patch("clients.pinecone_client.CLOUD_PROVIDER", "aws"),
+            patch("clients.pinecone_client.CLOUD_REGION", "us-east-1"),
+            pytest.raises(ValueError, match="PINECONE_INDEX_NAME is missing"),
+        ):
+            PineconeClient()
+
+    def test_init_none_cloud_provider(self, mock_pinecone):
+        """Test initialization fails when CLOUD_PROVIDER is None."""
+        mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
+
+        with (
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
+            patch("clients.pinecone_client.PINECONE_INDEX_NAME", "timeline-events"),
+            patch("clients.pinecone_client.CLOUD_PROVIDER", None),
+            patch("clients.pinecone_client.CLOUD_REGION", "us-east-1"),
+            pytest.raises(ValueError, match="CLOUD_PROVIDER is missing"),
+        ):
+            PineconeClient()
+
+    def test_init_none_cloud_region(self, mock_pinecone):
+        """Test initialization fails when CLOUD_REGION is None."""
+        mock_pc_class, mock_pc, mock_index, mock_spec = mock_pinecone
+
+        with (
+            patch("clients.pinecone_client.PINECONE_API_KEY", "test-api-key"),
+            patch("clients.pinecone_client.PINECONE_INDEX_NAME", "timeline-events"),
+            patch("clients.pinecone_client.CLOUD_PROVIDER", "aws"),
+            patch("clients.pinecone_client.CLOUD_REGION", None),
+            pytest.raises(ValueError, match="CLOUD_REGION is missing"),
+        ):
+                PineconeClient()

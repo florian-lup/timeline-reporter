@@ -186,3 +186,51 @@ class TestMongoDBClient:
             # Verify database and collection access
             mock_instance.__getitem__.assert_called_with("breaking-news")
             mock_db.__getitem__.assert_called_with("stories")
+
+    def test_init_missing_database_name(self, mock_mongo_client):
+        """Test initialization fails when MONGODB_DATABASE_NAME is missing."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+
+        with (
+            patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
+            patch("clients.mongodb_client.MONGODB_DATABASE_NAME", ""),  # Empty string
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "stories"),
+            pytest.raises(ValueError, match="MONGODB_DATABASE_NAME is missing"),
+        ):
+            MongoDBClient()
+
+    def test_init_missing_collection_name(self, mock_mongo_client):
+        """Test initialization fails when MONGODB_COLLECTION_NAME is missing."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+
+        with (
+            patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
+            patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "breaking-news"),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", ""),  # Empty string
+            pytest.raises(ValueError, match="MONGODB_COLLECTION_NAME is missing"),
+        ):
+            MongoDBClient()
+
+    def test_init_none_database_name(self, mock_mongo_client):
+        """Test initialization fails when MONGODB_DATABASE_NAME is None."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+
+        with (
+            patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
+            patch("clients.mongodb_client.MONGODB_DATABASE_NAME", None),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "stories"),
+            pytest.raises(ValueError, match="MONGODB_DATABASE_NAME is missing"),
+        ):
+            MongoDBClient()
+
+    def test_init_none_collection_name(self, mock_mongo_client):
+        """Test initialization fails when MONGODB_COLLECTION_NAME is None."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+
+        with (
+            patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
+            patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "breaking-news"),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", None),
+            pytest.raises(ValueError, match="MONGODB_COLLECTION_NAME is missing"),
+        ):
+                MongoDBClient()
