@@ -7,7 +7,7 @@ This package provides centralized configuration including:
 - All prompts used across the pipeline
 """
 
-# Import all settings, prompts, curation, discovery and research configuration
+# Import all settings, prompts, curation, discovery, research and deduplication configuration
 from .curation_config import (
     ALL_CURATION_PROMPTS,
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
@@ -27,6 +27,25 @@ from .curation_config import (
     PAIRWISE_SCORE_WEIGHT,
     SCORE_SIMILARITY,
     WEIGHTED_SCORE_WEIGHT,
+)
+from .deduplication_config import (
+    ALL_DEDUPLICATION_CONFIG,
+    BATCH_SIZE,
+    # Deduplication Configuration
+    EMBEDDING_DIMENSIONS,
+    EMBEDDING_MODEL,
+    EMBEDDING_TIMEOUT_SECONDS,
+    INCLUDE_METADATA,
+    MAX_RETRIES,
+    METRIC,
+    OPTIONAL_METADATA_FIELDS,
+    PRESERVE_ORIGINAL_ORDER,
+    REQUIRED_METADATA_FIELDS,
+    SIMILARITY_SEARCH_TIMEOUT_SECONDS,
+    SIMILARITY_THRESHOLD,
+    TOP_K_RESULTS,
+    UPSERT_TIMEOUT_SECONDS,
+    VECTOR_ID_PREFIX,
 )
 from .discovery_config import (
     ALL_DISCOVERY_PROMPTS,
@@ -60,10 +79,6 @@ from .research_config import (
 from .settings import (
     CLOUD_PROVIDER,
     CLOUD_REGION,
-    EMBEDDING_DIMENSIONS,
-    EMBEDDING_MODEL,
-    # OpenAI Configuration
-    METRIC,
     MONGODB_COLLECTION_NAME,
     # MongoDB Configuration
     MONGODB_DATABASE_NAME,
@@ -74,8 +89,6 @@ from .settings import (
     PINECONE_API_KEY,
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
-    SIMILARITY_THRESHOLD,
-    TOP_K_RESULTS,
 )
 
 __all__ = [
@@ -86,14 +99,8 @@ __all__ = [
     "MONGODB_URI",
     # Pinecone Configuration
     "PINECONE_INDEX_NAME",
-    "SIMILARITY_THRESHOLD",
-    "TOP_K_RESULTS",
     "CLOUD_PROVIDER",
     "CLOUD_REGION",
-    # OpenAI Configuration
-    "EMBEDDING_MODEL",
-    "EMBEDDING_DIMENSIONS",
-    "METRIC",
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
@@ -118,6 +125,23 @@ __all__ = [
     "RESEARCH_TIMEOUT_SECONDS",
     "MAX_RESEARCH_RETRIES",
     "STORY_QUALITY_GUIDELINES",
+    # Deduplication Configuration
+    "SIMILARITY_THRESHOLD",
+    "TOP_K_RESULTS",
+    "EMBEDDING_MODEL",
+    "EMBEDDING_DIMENSIONS",
+    "METRIC",
+    "VECTOR_ID_PREFIX",
+    "BATCH_SIZE",
+    "MAX_RETRIES",
+    "PRESERVE_ORIGINAL_ORDER",
+    "INCLUDE_METADATA",
+    "REQUIRED_METADATA_FIELDS",
+    "OPTIONAL_METADATA_FIELDS",
+    "EMBEDDING_TIMEOUT_SECONDS",
+    "SIMILARITY_SEARCH_TIMEOUT_SECONDS",
+    "UPSERT_TIMEOUT_SECONDS",
+    "ALL_DEDUPLICATION_CONFIG",
     # Discovery Prompts
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_POLITICS_INSTRUCTIONS",

@@ -23,16 +23,3 @@ MONGODB_COLLECTION_NAME = os.getenv("MONGODB_COLLECTION_NAME")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 CLOUD_PROVIDER = os.getenv("CLOUD_PROVIDER")
 CLOUD_REGION = os.getenv("CLOUD_REGION")
-
-# ---------------------------------------------------------------------------
-# Pinecone
-# ---------------------------------------------------------------------------
-SIMILARITY_THRESHOLD: float = 0.8
-TOP_K_RESULTS: int = 5
-
-# ---------------------------------------------------------------------------
-# OpenAI
-# ---------------------------------------------------------------------------
-EMBEDDING_MODEL: str = "text-embedding-3-small"
-EMBEDDING_DIMENSIONS: int = 1536
-METRIC: str = "cosine"
