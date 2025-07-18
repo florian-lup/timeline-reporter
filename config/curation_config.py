@@ -66,20 +66,27 @@ Evaluate each lead on these criteria (1-10 scale):
    (1=harmonious/consensual, 10=major dispute/scandal)
 
 Leads to evaluate:
-{leads_text}
+{leads_text}"""
+)
 
-Return a JSON array with scores for each lead:
-[{{
-    "index": 1,
-    "impact": 8,
-    "proximity": 7,
-    "prominence": 6,
-    "relevance": 9,
-    "hook": 8,
-    "novelty": 5,
-    "conflict": 7,
-    "brief_reasoning": "Major event affecting millions with global implications..."
-}}]"""
+# JSON format instruction for criteria evaluation
+CRITERIA_JSON_FORMAT = (
+    "\n\nProvide your response as a JSON object with an 'evaluations' array:\n"
+    '{\n'
+    '  "evaluations": [\n'
+    '    {\n'
+    '      "index": 1,\n'
+    '      "impact": 8,\n'
+    '      "proximity": 7,\n'
+    '      "prominence": 6,\n'
+    '      "relevance": 9,\n'
+    '      "hook": 8,\n'
+    '      "novelty": 5,\n'
+    '      "conflict": 7,\n'
+    '      "brief_reasoning": "Major event affecting millions..."\n'
+    '    }\n'
+    '  ]\n'
+    '}'
 )
 
 # ---------------------------------------------------------------------------
@@ -91,11 +98,21 @@ PAIRWISE_COMPARISON_PROMPT_TEMPLATE = (
     """and impactful.
 Consider all evaluation criteria but focus on real-world impact and reader interest.
 
-{comparisons_text}
+{comparisons_text}"""
+)
 
-Return a JSON array with your decisions:
-[{{"pair": "1vs2", "winner": 1, "confidence": "high",
-  "reason": "Lead A has broader global impact"}}]
-
-Note: winner should be either the first or second number from the pair."""
+# JSON format instruction for pairwise comparison
+PAIRWISE_JSON_FORMAT = (
+    "\n\nProvide your response as a JSON object with a 'comparisons' array:\n"
+    '{\n'
+    '  "comparisons": [\n'
+    '    {\n'
+    '      "pair": "1vs2",\n'
+    '      "winner": 1,\n'
+    '      "confidence": "high",\n'
+    '      "reason": "Lead A has broader global impact"\n'
+    '    }\n'
+    '  ]\n'
+    '}\n\n'
+    'Note: winner should be either the first or second number from the pair.'
 )

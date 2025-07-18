@@ -64,66 +64,96 @@ class TestLeadCuration:
         """Test basic functionality of curate_leads."""
         # Mock evaluation response
         evaluation_response = json.dumps(
-            [
-                {
-                    "index": 1,
-                    "impact": 9,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 7,
-                    "novelty": 6,
-                    "conflict": 7,
-                    "brief_reasoning": "Major climate policy",
-                },
-                {
-                    "index": 2,
-                    "impact": 8,
-                    "proximity": 7,
-                    "prominence": 4,
-                    "relevance": 9,
-                    "hook": 9,
-                    "novelty": 7,
-                    "conflict": 3,
-                    "brief_reasoning": "Natural disaster",
-                },
-                {
-                    "index": 3,
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 5,
-                    "relevance": 9,
-                    "hook": 8,
-                    "novelty": 9,
-                    "conflict": 4,
-                    "brief_reasoning": "Tech development",
-                },
-                {
-                    "index": 4,
-                    "impact": 9,
-                    "proximity": 9,
-                    "prominence": 6,
-                    "relevance": 9,
-                    "hook": 8,
-                    "novelty": 5,
-                    "conflict": 8,
-                    "brief_reasoning": "Economic policy",
-                },
-                {
-                    "index": 5,
-                    "impact": 5,
-                    "proximity": 6,
-                    "prominence": 6,
-                    "relevance": 6,
-                    "hook": 7,
-                    "novelty": 8,
-                    "conflict": 3,
-                    "brief_reasoning": "Space mission",
-                },
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 9,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 7,
+                        "novelty": 6,
+                        "conflict": 7,
+                        "brief_reasoning": "Major climate policy",
+                    },
+                    {
+                        "index": 2,
+                        "impact": 8,
+                        "proximity": 7,
+                        "prominence": 4,
+                        "relevance": 9,
+                        "hook": 9,
+                        "novelty": 7,
+                        "conflict": 3,
+                        "brief_reasoning": "Natural disaster",
+                    },
+                    {
+                        "index": 3,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 5,
+                        "relevance": 9,
+                        "hook": 8,
+                        "novelty": 9,
+                        "conflict": 4,
+                        "brief_reasoning": "Medical breakthrough",
+                    },
+                    {
+                        "index": 4,
+                        "impact": 9,
+                        "proximity": 9,
+                        "prominence": 6,
+                        "relevance": 9,
+                        "hook": 8,
+                        "novelty": 5,
+                        "conflict": 8,
+                        "brief_reasoning": "Economic crisis",
+                    },
+                    {
+                        "index": 5,
+                        "impact": 5,
+                        "proximity": 6,
+                        "prominence": 6,
+                        "relevance": 6,
+                        "hook": 7,
+                        "novelty": 8,
+                        "conflict": 3,
+                        "brief_reasoning": "Space milestone",
+                    },
+                    {
+                        "index": 6,
+                        "impact": 3,
+                        "proximity": 2,
+                        "prominence": 3,
+                        "relevance": 4,
+                        "hook": 5,
+                        "novelty": 6,
+                        "conflict": 2,
+                        "brief_reasoning": "Local sports",
+                    },
+                ]
+            }
         )
 
-        mock_openai_client.chat_completion.return_value = evaluation_response
+        # Mock pairwise response
+        pairwise_response = json.dumps(
+            {
+                "comparisons": [
+                    {
+                        "pair": "1vs4",
+                        "winner": 1,
+                        "confidence": "high",
+                        "reason": "Climate policy more impactful",
+                    }
+                ]
+            }
+        )
+
+        mock_openai_client.chat_completion.side_effect = [
+            evaluation_response,
+            pairwise_response,
+        ]
 
         result = curate_leads(sample_leads[:5], openai_client=mock_openai_client)
 
@@ -139,18 +169,20 @@ class TestLeadCuration:
         """Test that leads are formatted correctly for AI evaluation."""
         # Mock response
         mock_openai_client.chat_completion.return_value = json.dumps(
-            [
-                {
-                    "index": 1,
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 8,
-                    "conflict": 8,
-                }
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                    }
+                ]
+            }
         )
 
         curate_leads(sample_leads, openai_client=mock_openai_client)
@@ -168,27 +200,29 @@ class TestLeadCuration:
         """Test that logging works correctly."""
         # Mock response
         mock_openai_client.chat_completion.return_value = json.dumps(
-            [
-                {
-                    "index": 1,
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 8,
-                    "conflict": 8,
-                }
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": i + 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": f"Lead {i + 1}",
+                    }
+                    for i in range(6)
+                ]
+            }
         )
 
-        curate_leads(sample_leads, openai_client=mock_openai_client)
+        result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
-        # Verify evaluation logging
+        # Check logging calls
         mock_logger.info.assert_any_call("Evaluating %d leads for priority", 6)
-
-        # Verify completion logging
-        mock_logger.info.assert_any_call("Selected %d priority leads", 1)
+        mock_logger.info.assert_any_call("Selected %d priority leads", len(result))
 
     def test_curate_leads_uses_curation_model(self, mock_openai_client, sample_leads):
         """Test that the correct model is used for decision making."""
@@ -292,74 +326,76 @@ class TestLeadCurator:
         """Test multi-criteria evaluation step."""
         # Mock response for criteria evaluation
         evaluation_response = json.dumps(
-            [
-                {
-                    "index": 1,
-                    "impact": 9,  # High global impact
-                    "proximity": 9,  # Global relevance
-                    "prominence": 8,  # World leaders
-                    "relevance": 8,  # Hot topic
-                    "hook": 7,  # Strong headline potential
-                    "novelty": 6,  # Somewhat expected
-                    "conflict": 7,  # Political disagreements
-                    "brief_reasoning": "Major global climate policy with world leaders",
-                },
-                {
-                    "index": 2,
-                    "impact": 8,  # Affects many people
-                    "proximity": 7,  # Regional but significant
-                    "prominence": 4,  # No celebrities
-                    "relevance": 9,  # Disasters always relevant
-                    "hook": 9,  # Very attention-grabbing
-                    "novelty": 7,  # Earthquakes are shocking
-                    "conflict": 3,  # Natural disaster, no conflict
-                    "brief_reasoning": "Major natural disaster affecting thousands",
-                },
-                {
-                    "index": 3,
-                    "impact": 8,  # Potential to help millions
-                    "proximity": 8,  # Global healthcare impact
-                    "prominence": 5,  # Scientists not celebrities
-                    "relevance": 9,  # Health is universal concern
-                    "hook": 8,  # Breakthrough grabs attention
-                    "novelty": 9,  # Revolutionary technology
-                    "conflict": 4,  # Some ethical debates
-                    "brief_reasoning": "Revolutionary medical breakthrough",
-                },
-                {
-                    "index": 4,
-                    "impact": 9,  # Global economic impact
-                    "proximity": 9,  # Affects everyone
-                    "prominence": 6,  # Central banks mentioned
-                    "relevance": 9,  # Money matters to all
-                    "hook": 8,  # Crisis headlines work
-                    "novelty": 5,  # Economic crises happen
-                    "conflict": 8,  # Policy disagreements
-                    "brief_reasoning": "Global economic crisis",
-                },
-                {
-                    "index": 5,
-                    "impact": 5,  # Limited immediate impact
-                    "proximity": 6,  # Space interests some
-                    "prominence": 6,  # Known companies
-                    "relevance": 6,  # Niche interest
-                    "hook": 7,  # Space is cool
-                    "novelty": 8,  # First of its kind
-                    "conflict": 3,  # No controversy
-                    "brief_reasoning": "Space exploration milestone",
-                },
-                {
-                    "index": 6,
-                    "impact": 3,  # Local impact only
-                    "proximity": 2,  # Very local story
-                    "prominence": 3,  # Unknown players
-                    "relevance": 4,  # Limited audience
-                    "hook": 5,  # Feel-good but limited
-                    "novelty": 6,  # 50 years is notable
-                    "conflict": 2,  # Sports victory, no conflict
-                    "brief_reasoning": "Local sports victory",
-                },
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 9,  # High global impact
+                        "proximity": 9,  # Global relevance
+                        "prominence": 8,  # World leaders
+                        "relevance": 8,  # Hot topic
+                        "hook": 7,  # Strong headline potential
+                        "novelty": 6,  # Somewhat expected
+                        "conflict": 7,  # Political disagreements
+                        "brief_reasoning": "Major global climate policy with world leaders",
+                    },
+                    {
+                        "index": 2,
+                        "impact": 8,  # Affects many people
+                        "proximity": 7,  # Regional but significant
+                        "prominence": 4,  # No celebrities
+                        "relevance": 9,  # Disasters always relevant
+                        "hook": 9,  # Very attention-grabbing
+                        "novelty": 7,  # Earthquakes are shocking
+                        "conflict": 3,  # Natural disaster, no conflict
+                        "brief_reasoning": "Major natural disaster affecting thousands",
+                    },
+                    {
+                        "index": 3,
+                        "impact": 8,  # Potential to help millions
+                        "proximity": 8,  # Global healthcare impact
+                        "prominence": 5,  # Scientists not celebrities
+                        "relevance": 9,  # Health is universal concern
+                        "hook": 8,  # Breakthrough grabs attention
+                        "novelty": 9,  # Revolutionary technology
+                        "conflict": 4,  # Some ethical debates
+                        "brief_reasoning": "Revolutionary medical breakthrough",
+                    },
+                    {
+                        "index": 4,
+                        "impact": 9,  # Global economic impact
+                        "proximity": 9,  # Affects everyone
+                        "prominence": 6,  # Central banks mentioned
+                        "relevance": 9,  # Money matters to all
+                        "hook": 8,  # Crisis headlines work
+                        "novelty": 5,  # Economic crises happen
+                        "conflict": 8,  # Policy disagreements
+                        "brief_reasoning": "Global economic crisis",
+                    },
+                    {
+                        "index": 5,
+                        "impact": 5,  # Limited immediate impact
+                        "proximity": 6,  # Space interests some
+                        "prominence": 6,  # Known companies
+                        "relevance": 6,  # Niche interest
+                        "hook": 7,  # Space is cool
+                        "novelty": 8,  # First of its kind
+                        "conflict": 3,  # No controversy
+                        "brief_reasoning": "Space exploration milestone",
+                    },
+                    {
+                        "index": 6,
+                        "impact": 3,  # Local impact only
+                        "proximity": 2,  # Very local story
+                        "prominence": 3,  # Unknown players
+                        "relevance": 4,  # Limited audience
+                        "hook": 5,  # Feel-good but limited
+                        "novelty": 6,  # 50 years is notable
+                        "conflict": 2,  # Sports victory, no conflict
+                        "brief_reasoning": "Local sports victory",
+                    },
+                ]
+            }
         )
 
         mock_openai_client.chat_completion.return_value = evaluation_response
@@ -425,26 +461,28 @@ class TestLeadCurator:
 
         # Mock pairwise comparison response
         pairwise_response = json.dumps(
-            [
-                {
-                    "pair": "1vs2",
-                    "winner": 1,
-                    "confidence": "high",
-                    "reason": "Climate more impactful",
-                },
-                {
-                    "pair": "1vs3",
-                    "winner": 1,
-                    "confidence": "medium",
-                    "reason": "Climate affects more people",
-                },
-                {
-                    "pair": "2vs3",
-                    "winner": 3,
-                    "confidence": "high",
-                    "reason": "Tech breakthrough more novel",
-                },
-            ]
+            {
+                "comparisons": [
+                    {
+                        "pair": "1vs2",
+                        "winner": 1,
+                        "confidence": "high",
+                        "reason": "Climate more impactful",
+                    },
+                    {
+                        "pair": "1vs3",
+                        "winner": 1,
+                        "confidence": "medium",
+                        "reason": "Climate affects more people",
+                    },
+                    {
+                        "pair": "2vs3",
+                        "winner": 3,
+                        "confidence": "high",
+                        "reason": "Tech breakthrough more novel",
+                    },
+                ]
+            }
         )
 
         mock_openai_client.chat_completion.return_value = pairwise_response
@@ -457,7 +495,7 @@ class TestLeadCurator:
         assert evaluations[1].pairwise_wins == 0  # Lost both
         assert evaluations[2].pairwise_wins == 1  # Won against 2
 
-    def test_final_ranking_computation(self, mock_openai_client):
+    def test_final_ranking_calculation(self, mock_openai_client, sample_leads):
         """Test final ranking calculation."""
         evaluations = [
             LeadEvaluation(

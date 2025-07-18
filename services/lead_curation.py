@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 
 from clients import OpenAIClient
 from config.curation_config import (
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
+    CRITERIA_JSON_FORMAT,
     CRITERIA_WEIGHTS,
     CURATION_MODEL,
     MAX_LEADS,
@@ -16,6 +16,7 @@ from config.curation_config import (
     MIN_LEADS,
     MIN_WEIGHTED_SCORE,
     PAIRWISE_COMPARISON_PROMPT_TEMPLATE,
+    PAIRWISE_JSON_FORMAT,
     PAIRWISE_SCORE_WEIGHT,
     SCORE_SIMILARITY,
     WEIGHTED_SCORE_WEIGHT,
@@ -96,29 +97,38 @@ class LeadCurator:
         # Format leads for evaluation
         leads_text = "\n".join(f"{i + 1}. {lead.tip}" for i, lead in enumerate(leads))
 
-        # Use centralized prompt template
-        prompt = CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text)
+        # Use centralized prompt template with JSON format instruction
+        prompt = CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text) + CRITERIA_JSON_FORMAT
 
         response_text = self.openai_client.chat_completion(
             prompt,
             model=CURATION_MODEL,
+            response_format={"type": "json_object"}
         )
 
         # Parse response
         try:
-            # Handle potential JSON wrapped in markdown
-            json_match = re.search(
-                r"```(?:json)?\s*(.*?)\s*```", response_text, re.DOTALL
-            )
-            if json_match:
-                response_text = json_match.group(1)
-
             scores_data = json.loads(response_text)
+            
+            # Handle both object with 'evaluations' array and direct array
+            if isinstance(scores_data, dict) and "evaluations" in scores_data:
+                scores_data = scores_data["evaluations"]
+            elif isinstance(scores_data, dict):
+                # If it's a dict but not with 'evaluations', try to extract array
+                # Look for any key that contains a list
+                for key, value in scores_data.items():
+                    if isinstance(value, list):
+                        scores_data = value
+                        break
+                else:
+                    raise ValueError("No array found in response")
+            
             # Ensure scores_data is a list
             if not isinstance(scores_data, list):
                 raise ValueError(f"Expected list, got {type(scores_data)}")
-        except (json.JSONDecodeError, ValueError):
-            logger.error("Failed to parse JSON response: %s", response_text)
+                
+        except (json.JSONDecodeError, ValueError) as exc:
+            logger.error("Failed to parse JSON response: %s", exc)
             # Fallback: treat all leads equally
             logger.warning(
                 "FALLBACK: Using default scores (7.0) for all criteria "
@@ -218,27 +228,37 @@ Lead A ({i + 1}): {group[i].lead.tip[:200]}...
 Lead B ({j + 1}): {group[j].lead.tip[:200]}...
 """)
 
-        # Use centralized prompt template
+        # Use centralized prompt template with JSON format instruction
         prompt = PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(
             comparisons_text=chr(10).join(comparisons_text)
-        )
+        ) + PAIRWISE_JSON_FORMAT
 
         response_text = self.openai_client.chat_completion(
             prompt,
             model=CURATION_MODEL,
+            response_format={"type": "json_object"}
         )
 
         # Parse response
         try:
-            json_match = re.search(
-                r"```(?:json)?\s*(.*?)\s*```", response_text, re.DOTALL
-            )
-            if json_match:
-                response_text = json_match.group(1)
-
-            results = json.loads(response_text)
-        except json.JSONDecodeError:
-            logger.warning("Failed to parse pairwise comparison results")
+            data = json.loads(response_text)
+            
+            # Handle both object with 'comparisons' array and direct array
+            if isinstance(data, dict) and "comparisons" in data:
+                results = data["comparisons"]
+            elif isinstance(data, dict):
+                # Look for any key that contains a list
+                for key, value in data.items():
+                    if isinstance(value, list):
+                        results = value
+                        break
+                else:
+                    results = []
+            else:
+                results = data if isinstance(data, list) else []
+                
+        except json.JSONDecodeError as exc:
+            logger.warning("Failed to parse pairwise comparison results: %s", exc)
             logger.warning(
                 "FALLBACK: Skipping pairwise comparisons, using only "
                 "weighted scores for ranking"
