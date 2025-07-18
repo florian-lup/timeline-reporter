@@ -4,27 +4,26 @@ import json
 
 from clients import PerplexityClient
 from config.research_config import RESEARCH_INSTRUCTIONS
-from models import Lead, Story
+from models import Lead
 from utils import logger
-from utils.date import get_today_formatted
 
 
 def research_lead(
     leads: list[Lead], *, perplexity_client: PerplexityClient
-) -> list[Story]:
-    """Calls Perplexity once per lead to generate full stories."""
-    stories: list[Story] = []
+) -> list[Lead]:
+    """Calls Perplexity once per lead to gather context and sources."""
+    enhanced_leads: list[Lead] = []
 
     for lead in leads:
         prompt = RESEARCH_INSTRUCTIONS.format(
-            lead_summary=lead.tip, lead_date=lead.date
+            lead_tip=lead.tip, lead_date=lead.date
         )
         response_text = perplexity_client.lead_research(prompt)
-        story = _parse_lead_from_response(response_text)
-        stories.append(story)
+        enhanced_lead = _enhance_lead_from_response(lead, response_text)
+        enhanced_leads.append(enhanced_lead)
 
-    logger.info("Generated %d stories", len(stories))
-    return stories
+    logger.info("Enhanced %d leads with research", len(enhanced_leads))
+    return enhanced_leads
 
 
 # ---------------------------------------------------------------------------
@@ -32,8 +31,8 @@ def research_lead(
 # ---------------------------------------------------------------------------
 
 
-def _parse_lead_from_response(response_text: str) -> Story:
-    """Parse JSON from Perplexity and return a Story object.
+def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead:
+    """Parse JSON from Perplexity and enhance the Lead object.
 
     The Perplexity client uses structured output and returns clean JSON.
     """
@@ -41,19 +40,13 @@ def _parse_lead_from_response(response_text: str) -> Story:
         data = json.loads(response_text)
     except json.JSONDecodeError as exc:  # pragma: no cover
         logger.warning("JSON parse failed: %s", exc)
-        # Return a minimal Story with empty content
-        return Story(
-            headline="",
-            summary="",
-            body="",
-            sources=[],
-        )
+        # Return the original lead unchanged
+        return original_lead
 
-    # Create Story from the JSON data, with fallbacks for missing fields and null values
-    return Story(
-        headline=data.get("headline") or "",
-        summary=data.get("summary") or "",
-        body=data.get("body") or "",
+    # Create enhanced Lead with context and sources from the JSON data
+    return Lead(
+        tip=original_lead.tip,
+        context=data.get("context") or "",
         sources=data.get("sources") or [],
-        date=data.get("date") or get_today_formatted(),  # Use date from JSON or default
+        date=original_lead.date,
     )

@@ -2,7 +2,7 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, prioritizes, researches, and stores
+    python -m main  # discovers, deduplicates, prioritizes, researches, writes, and stores
 """
 
 from __future__ import annotations
@@ -19,12 +19,13 @@ from services import (
     discover_leads,
     persist_stories,
     research_lead,
+    write_stories,
 )
 from utils import logger  # noqa: F401 – configure logging first
 
 
 def run_pipeline() -> None:  # noqa: D401
-    """Run the 5-step AI reporter pipeline."""
+    """Run the 6-step AI reporter pipeline."""
     logger.info("Starting pipeline")
 
     # Initialise clients
@@ -41,13 +42,16 @@ def run_pipeline() -> None:  # noqa: D401
         leads, openai_client=openai_client, pinecone_client=pinecone_client
     )
 
-    # 3️⃣ Decision (new step: prioritize most impactful leads)
+    # 3️⃣ Decision (prioritize most impactful leads)
     prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
 
-    # 4️⃣ Research
-    stories = research_lead(prioritized_leads, perplexity_client=perplexity_client)
+    # 4️⃣ Research (enhance leads with context and sources)
+    researched_leads = research_lead(prioritized_leads, perplexity_client=perplexity_client)
 
-    # 5️⃣ Storage
+    # 5️⃣ Writing (create stories from researched leads)
+    stories = write_stories(researched_leads, openai_client=openai_client)
+
+    # 6️⃣ Storage
     persist_stories(stories, mongodb_client=mongodb_client)
 
     logger.info(

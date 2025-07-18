@@ -63,6 +63,19 @@ class PerplexityClient:
         "required": ["headline", "summary", "body", "sources"],
     }
 
+    # JSON schema for Lead Research structured output
+    _LEAD_RESEARCH_JSON_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "context": {"type": "string"},
+            "sources": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        "required": ["context", "sources"],
+    }
+
     # JSON schema for Discovery structured output (array of leads)
     _LEAD_JSON_SCHEMA = {
         "type": "array",
@@ -80,7 +93,7 @@ class PerplexityClient:
     # ---------------------------------------------------------------------------
 
     def lead_research(self, prompt: str) -> str:
-        """Executes research for a story and returns structured JSON.
+        """Executes research for a lead and returns structured JSON with context and sources.
 
         Uses structured output for consistent JSON responses.
 
@@ -90,7 +103,7 @@ class PerplexityClient:
         Returns:
             JSON string containing the structured research results
         """
-        logger.info("Story research request with %s", LEAD_RESEARCH_MODEL)
+        logger.info("Lead research request with %s", LEAD_RESEARCH_MODEL)
 
         payload = {
             "model": LEAD_RESEARCH_MODEL,
@@ -106,7 +119,7 @@ class PerplexityClient:
             },
             "response_format": {
                 "type": "json_schema",
-                "json_schema": {"schema": self._STORY_JSON_SCHEMA},
+                "json_schema": {"schema": self._LEAD_RESEARCH_JSON_SCHEMA},
             },
         }
 
