@@ -18,15 +18,17 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 MONGODB_URI = os.getenv("MONGODB_URI")
+MONGODB_DATABASE_NAME = os.getenv("MONGODB_DATABASE_NAME")
+MONGODB_COLLECTION_NAME = os.getenv("MONGODB_COLLECTION_NAME")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
+CLOUD_PROVIDER = os.getenv("CLOUD_PROVIDER")
+CLOUD_REGION = os.getenv("CLOUD_REGION")
 
 # ---------------------------------------------------------------------------
 # Pinecone
 # ---------------------------------------------------------------------------
-PINECONE_INDEX_NAME: str = "timeline-events"
 SIMILARITY_THRESHOLD: float = 0.8
 TOP_K_RESULTS: int = 5
-CLOUD_PROVIDER: str = "aws"
-CLOUD_REGION: str = "us-east-1"
 
 # ---------------------------------------------------------------------------
 # OpenAI
@@ -43,12 +45,6 @@ CURATION_MODEL: str = "o4-mini-2025-04-16"
 LEAD_RESEARCH_MODEL: str = "sonar-pro"
 LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
-
-# ---------------------------------------------------------------------------
-# MongoDB
-# ---------------------------------------------------------------------------
-MONGODB_DATABASE_NAME: str = "breaking-news"
-MONGODB_COLLECTION_NAME: str = "stories"
 
 # ---------------------------------------------------------------------------
 # Lead Curation

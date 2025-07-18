@@ -37,6 +37,18 @@ class PineconeClient:
             raise ValueError(
                 "PINECONE_API_KEY is missing, cannot initialise Pinecone client."
             )
+        if not PINECONE_INDEX_NAME:
+            raise ValueError(
+                "PINECONE_INDEX_NAME is missing, cannot initialise Pinecone client."
+            )
+        if not CLOUD_PROVIDER:
+            raise ValueError(
+                "CLOUD_PROVIDER is missing, cannot initialise Pinecone client."
+            )
+        if not CLOUD_REGION:
+            raise ValueError(
+                "CLOUD_REGION is missing, cannot initialise Pinecone client."
+            )
 
         logger.info("Initializing Pinecone")
         self._pc = Pinecone(api_key=api_key)
