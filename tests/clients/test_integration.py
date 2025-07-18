@@ -216,14 +216,14 @@ class TestClientIntegration:
 
             # Execute full pipeline
             from models import Lead
-            from services import research_story
+            from services import research_lead
 
             perplexity_client = PerplexityClient()
             mongodb_client = MongoDBClient()
 
             # 1. Research phase
             test_leads = [Lead(tip="Breaking News: Important lead")]
-            stories = research_story(test_leads, perplexity_client=perplexity_client)
+            stories = research_lead(test_leads, perplexity_client=perplexity_client)
 
             # 2. Storage phase
             for story in stories:

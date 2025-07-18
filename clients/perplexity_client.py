@@ -5,14 +5,17 @@ from __future__ import annotations
 import httpx
 
 from config import (
-    LEAD_RESEARCH_MODEL,
     PERPLEXITY_API_KEY,
-    RESEARCH_SYSTEM_PROMPT,
 )
 from config.discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE,
+)
+from config.research_config import (
+    LEAD_RESEARCH_MODEL,
+    RESEARCH_SYSTEM_PROMPT,
+    RESEARCH_TIMEOUT_SECONDS,
 )
 from utils import logger
 
@@ -74,7 +77,7 @@ class PerplexityClient:
     # Public methods
     # ---------------------------------------------------------------------------
 
-    def story_research(self, prompt: str) -> str:
+    def lead_research(self, prompt: str) -> str:
         """Executes research for a story and returns structured JSON.
 
         Uses structured output for consistent JSON responses.
@@ -105,7 +108,7 @@ class PerplexityClient:
             },
         }
 
-        with httpx.Client(timeout=120) as client:
+        with httpx.Client(timeout=RESEARCH_TIMEOUT_SECONDS) as client:
             response = client.post(
                 _PERPLEXITY_ENDPOINT, json=payload, headers=self._headers
             )

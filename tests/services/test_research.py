@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from models import Lead, Story
-from services import research_story
+from services import research_lead
 
 
 class TestResearchService:
@@ -53,13 +53,13 @@ class TestResearchService:
         """Sample malformed research response."""
         return '{"headline": "Test", "incomplete": json'
 
-    def test_research_story_success(
+    def test_research_lead_success(
         self, mock_perplexity_client, sample_leads, sample_research_response
     ):
         """Test successful story research."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
-        stories = research_story(sample_leads, perplexity_client=mock_perplexity_client)
+        stories = research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
         assert len(stories) == 2
         assert isinstance(stories[0], Story)
@@ -74,13 +74,13 @@ class TestResearchService:
         # Verify research was called for each lead
         assert mock_perplexity_client.lead_research.call_count == 2
 
-    def test_research_story_prompt_formatting(
+    def test_research_lead_prompt_formatting(
         self, mock_perplexity_client, sample_leads, sample_research_response
     ):
         """Test that research prompts are formatted correctly."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
-        research_story(sample_leads, perplexity_client=mock_perplexity_client)
+        research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
         # Verify prompts were formatted with lead tip
         call_args_list = mock_perplexity_client.lead_research.call_args_list
@@ -91,7 +91,7 @@ class TestResearchService:
         assert sample_leads[0].tip in first_call_prompt
         assert sample_leads[1].tip in second_call_prompt
 
-    def test_research_story_json_parsing(self, mock_perplexity_client, sample_leads):
+    def test_research_lead_json_parsing(self, mock_perplexity_client, sample_leads):
         """Test JSON parsing from research response."""
         response = json.dumps(
             {
@@ -103,7 +103,7 @@ class TestResearchService:
         )
         mock_perplexity_client.lead_research.return_value = response
 
-        stories = research_story(
+        stories = research_lead(
             sample_leads[:1], perplexity_client=mock_perplexity_client
         )
 
@@ -113,7 +113,7 @@ class TestResearchService:
         assert stories[0].body == "Detailed story body"
         assert stories[0].sources == ["https://example.com/test"]
 
-    def test_research_story_malformed_json(
+    def test_research_lead_malformed_json(
         self, mock_perplexity_client, sample_leads, sample_malformed_research_response
     ):
         """Test handling of malformed JSON response."""
@@ -121,8 +121,8 @@ class TestResearchService:
             sample_malformed_research_response
         )
 
-        with patch("services.story_research.logger") as mock_logger:
-            stories = research_story(
+        with patch("services.lead_research.logger") as mock_logger:
+            stories = research_lead(
                 sample_leads[:1], perplexity_client=mock_perplexity_client
             )
 
@@ -131,15 +131,15 @@ class TestResearchService:
         assert stories[0].summary == ""  # Default empty
         mock_logger.warning.assert_called()
 
-    def test_research_story_empty_input(self, mock_perplexity_client):
+    def test_research_lead_empty_input(self, mock_perplexity_client):
         """Test research with empty lead list."""
-        stories = research_story([], perplexity_client=mock_perplexity_client)
+        stories = research_lead([], perplexity_client=mock_perplexity_client)
 
         assert stories == []
         mock_perplexity_client.lead_research.assert_not_called()
 
-    @patch("services.story_research.logger")
-    def test_research_story_logging(
+    @patch("services.lead_research.logger")
+    def test_research_lead_logging(
         self,
         mock_logger,
         mock_perplexity_client,
@@ -149,11 +149,11 @@ class TestResearchService:
         """Test that research logs story count."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
-        research_story(sample_leads, perplexity_client=mock_perplexity_client)
+        research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
         mock_logger.info.assert_called_with("Generated %d stories", 2)
 
-    def test_research_story_with_fenced_json(
+    def test_research_lead_with_fenced_json(
         self, mock_perplexity_client, sample_leads
     ):
         """Test research with JSON wrapped in markdown fences.
@@ -171,8 +171,8 @@ class TestResearchService:
         ```"""
         mock_perplexity_client.lead_research.return_value = fenced_response
 
-        with patch("services.story_research.logger") as mock_logger:
-            stories = research_story(
+        with patch("services.lead_research.logger") as mock_logger:
+            stories = research_lead(
                 sample_leads[:1], perplexity_client=mock_perplexity_client
             )
 
@@ -184,7 +184,7 @@ class TestResearchService:
         assert stories[0].sources == []
         mock_logger.warning.assert_called()
 
-    def test_research_story_unicode_handling(
+    def test_research_lead_unicode_handling(
         self, mock_perplexity_client, sample_leads
     ):
         """Test research with Unicode characters."""
@@ -198,7 +198,7 @@ class TestResearchService:
         )
         mock_perplexity_client.lead_research.return_value = unicode_response
 
-        stories = research_story(
+        stories = research_lead(
             sample_leads[:1], perplexity_client=mock_perplexity_client
         )
 
@@ -206,7 +206,7 @@ class TestResearchService:
         assert "Résumé" in stories[0].summary
         assert stories[0].headline == "Événement Important 🌍"
 
-    def test_research_story_missing_fields(self, mock_perplexity_client, sample_leads):
+    def test_research_lead_missing_fields(self, mock_perplexity_client, sample_leads):
         """Test research with missing JSON fields."""
         response_missing_fields = json.dumps(
             {
@@ -216,7 +216,7 @@ class TestResearchService:
         )
         mock_perplexity_client.lead_research.return_value = response_missing_fields
 
-        stories = research_story(
+        stories = research_lead(
             sample_leads[:1], perplexity_client=mock_perplexity_client
         )
 
@@ -226,7 +226,7 @@ class TestResearchService:
         assert stories[0].body == ""  # Default empty
         assert stories[0].sources == []  # Default empty list
 
-    def test_research_story_null_values(self, mock_perplexity_client, sample_leads):
+    def test_research_lead_null_values(self, mock_perplexity_client, sample_leads):
         """Test research with null values in JSON."""
         response_null_values = json.dumps(
             {
@@ -238,7 +238,7 @@ class TestResearchService:
         )
         mock_perplexity_client.lead_research.return_value = response_null_values
 
-        stories = research_story(
+        stories = research_lead(
             sample_leads[:1], perplexity_client=mock_perplexity_client
         )
 
@@ -249,19 +249,19 @@ class TestResearchService:
         assert stories[0].body == ""  # None converted to empty string
         assert stories[0].sources == []  # None converted to empty list
 
-    def test_research_story_single_lead(
+    def test_research_lead_single_lead(
         self, mock_perplexity_client, sample_research_response
     ):
         """Test research with single lead."""
         single_lead = [Lead(tip="Single Lead: Description of a single lead")]
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
-        stories = research_story(single_lead, perplexity_client=mock_perplexity_client)
+        stories = research_lead(single_lead, perplexity_client=mock_perplexity_client)
 
         assert len(stories) == 1
         assert mock_perplexity_client.lead_research.call_count == 1
 
-    def test_research_story_client_error_propagation(
+    def test_research_lead_client_error_propagation(
         self, mock_perplexity_client, sample_leads
     ):
         """Test that client errors are properly propagated."""
@@ -270,11 +270,11 @@ class TestResearchService:
         )
 
         with pytest.raises(Exception, match="Research API Error"):
-            research_story(sample_leads, perplexity_client=mock_perplexity_client)
+            research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
-    def test_parse_story_from_response_direct(self):
-        """Test the _parse_story_from_response function directly."""
-        from services.story_research import _parse_story_from_response
+    def test_parse_lead_from_response_direct(self):
+        """Test the _parse_lead_from_response function directly."""
+        from services.lead_research import _parse_lead_from_response
 
         # Test valid JSON
         valid_json = json.dumps(
@@ -286,17 +286,17 @@ class TestResearchService:
             }
         )
 
-        story = _parse_story_from_response(valid_json)
+        story = _parse_lead_from_response(valid_json)
         assert isinstance(story, Story)
         assert story.headline == "Direct Test"
 
         # Test invalid JSON
-        with patch("services.story_research.logger") as mock_logger:
-            story = _parse_story_from_response("invalid json")
+        with patch("services.lead_research.logger") as mock_logger:
+            story = _parse_lead_from_response("invalid json")
             assert story.headline == ""  # Should return empty Story
             mock_logger.warning.assert_called()
 
-    def test_research_story_empty_strings_handling(
+    def test_research_lead_empty_strings_handling(
         self, mock_perplexity_client, sample_leads
     ):
         """Test research with empty string values."""
@@ -305,7 +305,7 @@ class TestResearchService:
         )
         mock_perplexity_client.lead_research.return_value = empty_response
 
-        stories = research_story(
+        stories = research_lead(
             sample_leads[:1], perplexity_client=mock_perplexity_client
         )
 
@@ -315,7 +315,7 @@ class TestResearchService:
         assert stories[0].body == ""
         assert stories[0].sources == []
 
-    def test_research_story_date_preservation(
+    def test_research_lead_date_preservation(
         self, mock_perplexity_client, sample_research_response
     ):
         """Test that lead dates are preserved in story research."""
@@ -339,7 +339,7 @@ class TestResearchService:
         )
         mock_perplexity_client.lead_research.return_value = research_with_date
 
-        stories = research_story(
+        stories = research_lead(
             [lead_with_date], perplexity_client=mock_perplexity_client
         )
 

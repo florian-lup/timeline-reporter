@@ -36,9 +36,3 @@ TOP_K_RESULTS: int = 5
 EMBEDDING_MODEL: str = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS: int = 1536
 METRIC: str = "cosine"
-STORY_WRITING_MODEL: str = "gpt-4.1-mini-2025-04-14"
-
-# ---------------------------------------------------------------------------
-# Perplexity
-# ---------------------------------------------------------------------------
-LEAD_RESEARCH_MODEL: str = "sonar-pro"

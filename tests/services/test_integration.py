@@ -11,7 +11,7 @@ from services import (
     deduplicate_leads,
     discover_leads,
     persist_stories,
-    research_story,
+    research_lead,
 )
 
 
@@ -152,7 +152,7 @@ class TestServicesIntegration:
         prioritized_leads = curate_leads(
             unique_leads, openai_client=mock_clients["openai"]
         )
-        stories = research_story(
+        stories = research_lead(
             prioritized_leads, perplexity_client=mock_clients["perplexity"]
         )
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
@@ -350,7 +350,7 @@ class TestServicesIntegration:
         prioritized_leads = curate_leads(
             unique_leads, openai_client=mock_clients["openai"]
         )
-        stories = research_story(
+        stories = research_lead(
             prioritized_leads, perplexity_client=mock_clients["perplexity"]
         )
 
@@ -421,7 +421,7 @@ class TestServicesIntegration:
         prioritized_leads = curate_leads(
             unique_leads, openai_client=mock_clients["openai"]
         )
-        stories = research_story(
+        stories = research_lead(
             prioritized_leads, perplexity_client=mock_clients["perplexity"]
         )
 

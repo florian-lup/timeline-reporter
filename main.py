@@ -18,7 +18,7 @@ from services import (
     deduplicate_leads,
     discover_leads,
     persist_stories,
-    research_story,
+    research_lead,
 )
 from utils import logger  # noqa: F401 – configure logging first
 
@@ -45,7 +45,7 @@ def run_pipeline() -> None:  # noqa: D401
     prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
 
     # 4️⃣ Research
-    stories = research_story(prioritized_leads, perplexity_client=perplexity_client)
+    stories = research_lead(prioritized_leads, perplexity_client=perplexity_client)
 
     # 5️⃣ Storage
     persist_stories(stories, mongodb_client=mongodb_client)

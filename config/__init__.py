@@ -7,7 +7,7 @@ This package provides centralized configuration including:
 - All prompts used across the pipeline
 """
 
-# Import all settings, prompts, curation and discovery configuration
+# Import all settings, prompts, curation, discovery and research configuration
 from .curation_config import (
     ALL_CURATION_PROMPTS,
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
@@ -43,22 +43,26 @@ from .discovery_config import (
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE,
 )
-from .prompts import (
-    ALL_PROMPTS,
+from .research_config import (
+    ALL_RESEARCH_PROMPTS,
+    # Research Configuration
+    LEAD_RESEARCH_MODEL,
+    MAX_RESEARCH_RETRIES,
     RESEARCH_INSTRUCTIONS,
+    # Organized Prompt Collections
     RESEARCH_PROMPTS,
     # Research Prompts
     RESEARCH_SYSTEM_PROMPT,
+    RESEARCH_TIMEOUT_SECONDS,
+    STORY_QUALITY_GUIDELINES,
+    STORY_WRITING_MODEL,
 )
 from .settings import (
-    CHAT_MODEL,
     CLOUD_PROVIDER,
     CLOUD_REGION,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
     # OpenAI Configuration
-    LEAD_RESEARCH_MODEL,
-    # Perplexity Configuration
     METRIC,
     MONGODB_COLLECTION_NAME,
     # MongoDB Configuration
@@ -90,9 +94,6 @@ __all__ = [
     "EMBEDDING_MODEL",
     "EMBEDDING_DIMENSIONS",
     "METRIC",
-    "CHAT_MODEL",
-    # Perplexity Configuration
-    "LEAD_RESEARCH_MODEL",
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
@@ -111,6 +112,12 @@ __all__ = [
     "MIN_GROUP_SIZE_FOR_PAIRWISE",
     "WEIGHTED_SCORE_WEIGHT",
     "PAIRWISE_SCORE_WEIGHT",
+    # Research Configuration
+    "LEAD_RESEARCH_MODEL",
+    "STORY_WRITING_MODEL",
+    "RESEARCH_TIMEOUT_SECONDS",
+    "MAX_RESEARCH_RETRIES",
+    "STORY_QUALITY_GUIDELINES",
     # Discovery Prompts
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_POLITICS_INSTRUCTIONS",
@@ -129,7 +136,7 @@ __all__ = [
     "DECISION_PROMPTS",
     "RESEARCH_PROMPTS",
     "CURATION_PROMPTS",
-    "ALL_PROMPTS",
     "ALL_CURATION_PROMPTS",
     "ALL_DISCOVERY_PROMPTS",
+    "ALL_RESEARCH_PROMPTS",
 ]
