@@ -39,7 +39,9 @@ WRITING_INSTRUCTIONS = (
     "   - Provides comprehensive coverage using the researched context\n"
     "   - Explains the significance and implications\n"
     "   - Maintains objectivity and balanced perspective\n"
-    "   - Concludes with forward-looking context or next steps\n\n"
+    "   - Concludes with forward-looking context or next steps\n"
+    "4. An appropriate category tag that best describes the story's "
+    "primary subject matter\n\n"
     "Ensure the story reflects the timeliness of the {lead_date} date."
 )
 
@@ -50,5 +52,8 @@ JSON_FORMAT_INSTRUCTION = (
     "\n\nProvide your response as a JSON object with these exact fields:\n"
     "- headline: A compelling headline (max 20 words)\n"
     "- summary: A concise summary (80-120 words)\n"
-    "- body: The detailed story body (400-600 words)"
+    "- body: The detailed story body (400-600 words)\n"
+    "- tag: A single category tag that best describes the story. Examples include: "
+    "politics, economics, technology, health, environment, business, sports, "
+    "entertainment, science, crime, education, international, social, or other"
 )

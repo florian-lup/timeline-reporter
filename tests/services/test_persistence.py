@@ -24,12 +24,14 @@ class TestPersistenceService:
                 headline="Climate Summit Agreement",
                 summary="World leaders reach consensus on climate action.",
                 body="Detailed story about the climate summit and its outcomes.",
+                tag="environment",
                 sources=["https://example.com/climate-news"],
             ),
             Story(
                 headline="Tech Innovation News",
                 summary="Breakthrough in AI technology announced.",
                 body="Comprehensive coverage of the latest AI developments.",
+                tag="technology",
                 sources=["https://example.com/tech-news"],
             ),
         ]
@@ -116,6 +118,7 @@ class TestPersistenceService:
                 headline="Single Story",
                 summary="Single story summary",
                 body="Single story content",
+                tag="other",
                 sources=["https://example.com/single"],
             )
         ]
@@ -162,6 +165,7 @@ class TestPersistenceService:
                 headline="Événement Important 🌍",
                 summary="Résumé avec caractères spéciaux: àáäâ",
                 body="Contenu détaillé avec émojis 🚀 et accents",
+                tag="international",
                 sources=["https://example.com/unicode"],
             )
         ]
@@ -182,6 +186,7 @@ class TestPersistenceService:
                 headline=f"Story {i}",
                 summary=f"Summary {i}",
                 body=f"Body {i}",
+                tag="other",
                 sources=[f"https://example.com/{i}"],
             )
             for i in range(100)

@@ -22,5 +22,6 @@ class Story:
     headline: str
     summary: str
     body: str
+    tag: str
     sources: list[str]
     date: str = field(default_factory=get_today_formatted)

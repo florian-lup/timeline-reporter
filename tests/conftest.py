@@ -119,6 +119,7 @@ def sample_story():
         headline="Breaking: Major Climate Summit Concluded",
         summary="World leaders reach historic agreement on carbon reduction targets.",
         body="In a landmark decision today, world leaders...",
+        tag="environment",
         sources=[
             "https://example.com/climate-news",
             "https://example.com/summit-report",
@@ -135,6 +136,7 @@ def sample_stories():
             summary="Researchers announce major advancement in artificial "
             "intelligence.",
             body="Scientists at leading research institutions have...",
+            tag="technology",
             sources=[
                 "https://example.com/tech-news",
                 "https://example.com/ai-research",
@@ -144,6 +146,7 @@ def sample_stories():
             headline="Climate Action Summit Results",
             summary="Global climate summit concludes with new agreements.",
             body="The three-day climate summit has concluded with...",
+            tag="environment",
             sources=[
                 "https://example.com/climate-summit",
                 "https://example.com/environment",

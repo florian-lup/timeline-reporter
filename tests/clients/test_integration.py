@@ -157,6 +157,7 @@ class TestClientIntegration:
             headline="Test Headline",
             summary="Test summary",
             body="Test story content",
+            tag="other",
             sources=["https://example.com"],
         )
 

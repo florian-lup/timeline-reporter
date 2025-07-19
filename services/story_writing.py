@@ -73,6 +73,7 @@ def _parse_story_from_response(response_text: str, lead: Lead) -> Story:
             headline=data.get("headline", "").strip(),
             summary=data.get("summary", "").strip(),
             body=data.get("body", "").strip(),
+            tag=data.get("tag", "other").strip(),
             sources=lead.sources,
             date=lead.date,
         )
