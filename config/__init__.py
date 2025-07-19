@@ -45,6 +45,8 @@ from .discovery_config import (
     # Discovery Configuration
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE,
+    # Discovery Timeouts
+    DISCOVERY_TIMEOUT_SECONDS,
 )
 from .research_config import (
     # Research Configuration
@@ -53,6 +55,8 @@ from .research_config import (
     # Research Prompts
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
+    # Research Timeouts
+    RESEARCH_TIMEOUT_SECONDS,
 )
 from .settings import (
     CLOUD_PROVIDER,
@@ -99,6 +103,7 @@ __all__ = [
     "SEARCH_CONTEXT_SIZE",
     "DISCOVERY_CATEGORIES",
     "DISCOVERY_CATEGORY_INSTRUCTIONS",
+    "DISCOVERY_TIMEOUT_SECONDS",
     # Curation Configuration
     "CURATION_MODEL",
     "MIN_WEIGHTED_SCORE",
@@ -112,6 +117,7 @@ __all__ = [
     # Research Configuration
     "LEAD_RESEARCH_MODEL",
     "RESEARCH_SEARCH_CONTEXT_SIZE",
+    "RESEARCH_TIMEOUT_SECONDS",
     # Verification Configuration
     "VERIFICATION_MODEL",
     "VERIFICATION_TEMPERATURE",

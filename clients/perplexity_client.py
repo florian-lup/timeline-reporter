@@ -13,11 +13,13 @@ from config.discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
+    DISCOVERY_TIMEOUT_SECONDS,
 )
 from config.research_config import (
     LEAD_RESEARCH_MODEL,
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
+    RESEARCH_TIMEOUT_SECONDS,
 )
 
 _PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions"
@@ -118,7 +120,9 @@ class PerplexityClient:
             },
         }
 
-        with httpx.Client() as client:
+        # Set timeout for research operations that involve web search
+        timeout = httpx.Timeout(RESEARCH_TIMEOUT_SECONDS)
+        with httpx.Client(timeout=timeout) as client:
             response = client.post(_PERPLEXITY_ENDPOINT, json=payload, headers=self._headers)
             response.raise_for_status()
             data = response.json()
@@ -158,7 +162,9 @@ class PerplexityClient:
             },
         }
 
-        with httpx.Client() as client:
+        # Set timeout for discovery operations that involve web search and reasoning
+        timeout = httpx.Timeout(DISCOVERY_TIMEOUT_SECONDS)
+        with httpx.Client(timeout=timeout) as client:
             response = client.post(_PERPLEXITY_ENDPOINT, json=payload, headers=self._headers)
             response.raise_for_status()
             data = response.json()

@@ -45,6 +45,11 @@ LEAD_RESEARCH_MODEL: str = "sonar-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
+# Research Timeout Configuration  
+# ---------------------------------------------------------------------------
+RESEARCH_TIMEOUT_SECONDS: float = 90  # Total timeout for research operations
+
+# ---------------------------------------------------------------------------
 # Research System Prompt
 # ---------------------------------------------------------------------------
 RESEARCH_SYSTEM_PROMPT = """

@@ -13,6 +13,11 @@ LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
+# Discovery Timeout Configuration
+# ---------------------------------------------------------------------------
+DISCOVERY_TIMEOUT_SECONDS: float = 120  # Total timeout for discovery operations
+
+# ---------------------------------------------------------------------------
 # Discovery Categories Configuration
 # ---------------------------------------------------------------------------
 DISCOVERY_CATEGORIES = [
