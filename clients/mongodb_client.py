@@ -25,17 +25,11 @@ class MongoDBClient:
         if uri is None:
             uri = MONGODB_URI
         if not uri:
-            raise ValueError(
-                "MONGODB_URI is missing, cannot initialise MongoDB client."
-            )
+            raise ValueError("MONGODB_URI is missing, cannot initialise MongoDB client.")
         if not MONGODB_DATABASE_NAME:
-            raise ValueError(
-                "MONGODB_DATABASE_NAME is missing, cannot initialise MongoDB client."
-            )
+            raise ValueError("MONGODB_DATABASE_NAME is missing, cannot initialise MongoDB client.")
         if not MONGODB_COLLECTION_NAME:
-            raise ValueError(
-                "MONGODB_COLLECTION_NAME is missing, cannot initialise MongoDB client."
-            )
+            raise ValueError("MONGODB_COLLECTION_NAME is missing, cannot initialise MongoDB client.")
         self._client: MongoClient[dict[str, Any]] = MongoClient(uri)
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]

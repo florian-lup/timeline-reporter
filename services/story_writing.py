@@ -32,9 +32,7 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
         )
 
         # Combine system prompt, user prompt, and JSON format instruction
-        full_prompt = (
-            f"{WRITING_SYSTEM_PROMPT}\n\n{user_prompt}{JSON_FORMAT_INSTRUCTION}"
-        )
+        full_prompt = f"{WRITING_SYSTEM_PROMPT}\n\n{user_prompt}{JSON_FORMAT_INSTRUCTION}"
 
         # Generate the story using GPT-4o with JSON response format
         response_text = openai_client.chat_completion(
@@ -46,9 +44,7 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
 
         story = _parse_story_from_response(response_text, lead)
         stories.append(story)
-        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + (
-            "..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else ""
-        )
+        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + ("..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else "")
         logger.info(
             "  ✓ Story %d/%d completed - %s: '%s'",
             idx,

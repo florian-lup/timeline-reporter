@@ -59,24 +59,17 @@ class LeadCurator:
         if not leads:
             return []
 
-        logger.info(
-            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", len(leads)
-        )
+        logger.info("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", len(leads))
 
         # Step 1: Multi-criteria evaluation
         evaluations = self._evaluate_all_criteria(leads)
 
         # Step 2: Filter by minimum threshold
-        qualified = [
-            e for e in evaluations if e.weighted_score >= self.MIN_WEIGHTED_SCORE
-        ]
-        failed_threshold = [
-            e for e in evaluations if e.weighted_score < self.MIN_WEIGHTED_SCORE
-        ]
+        qualified = [e for e in evaluations if e.weighted_score >= self.MIN_WEIGHTED_SCORE]
+        failed_threshold = [e for e in evaluations if e.weighted_score < self.MIN_WEIGHTED_SCORE]
 
         logger.info(
-            "  📊 Threshold analysis: %d/%d leads passed minimum score "
-            "requirement (%.1f)",
+            "  📊 Threshold analysis: %d/%d leads passed minimum score requirement (%.1f)",
             len(qualified),
             len(leads),
             self.MIN_WEIGHTED_SCORE,
@@ -93,8 +86,7 @@ class LeadCurator:
         if not qualified:
             # Fallback: return top leads by weighted score
             logger.warning(
-                "FALLBACK: No leads passed minimum threshold (%.2f), "
-                "selecting top %d by weighted score",
+                "FALLBACK: No leads passed minimum threshold (%.2f), selecting top %d by weighted score",
                 self.MIN_WEIGHTED_SCORE,
                 self.MIN_LEADS_TO_SELECT,
             )
@@ -130,19 +122,12 @@ class LeadCurator:
     def _evaluate_all_criteria(self, leads: list[Lead]) -> list[LeadEvaluation]:
         """Step 1: Evaluate each lead on multiple criteria."""
         # Format leads for evaluation using researched context
-        leads_text = "\n".join(
-            f"{i + 1}. {lead.context}" for i, lead in enumerate(leads)
-        )
+        leads_text = "\n".join(f"{i + 1}. {lead.context}" for i, lead in enumerate(leads))
 
         # Use centralized prompt template with JSON format instruction
-        prompt = (
-            CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text)
-            + CRITERIA_JSON_FORMAT
-        )
+        prompt = CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text) + CRITERIA_JSON_FORMAT
 
-        response_text = self.openai_client.chat_completion(
-            prompt, model=CURATION_MODEL, response_format={"type": "json_object"}
-        )
+        response_text = self.openai_client.chat_completion(prompt, model=CURATION_MODEL, response_format={"type": "json_object"})
 
         # Parse response
         try:
@@ -168,10 +153,7 @@ class LeadCurator:
         except (json.JSONDecodeError, ValueError) as exc:
             logger.error("Failed to parse JSON response: %s", exc)
             # Fallback: treat all leads equally
-            logger.warning(
-                "FALLBACK: Using default scores (7.0) for all criteria "
-                "due to JSON parsing failure"
-            )
+            logger.warning("FALLBACK: Using default scores (7.0) for all criteria due to JSON parsing failure")
             scores_data = [
                 {
                     "index": i + 1,
@@ -203,22 +185,16 @@ class LeadCurator:
                 }
 
                 # Check for missing criteria and log if any defaults were used
-                missing_criteria = [
-                    k for k in self.CRITERIA_WEIGHTS if k not in lead_scores
-                ]
+                missing_criteria = [k for k in self.CRITERIA_WEIGHTS if k not in lead_scores]
                 if missing_criteria:
                     logger.warning(
-                        "FALLBACK: Lead %d missing criteria scores for %s, "
-                        "using default (7.0)",
+                        "FALLBACK: Lead %d missing criteria scores for %s, using default (7.0)",
                         i + 1,
                         missing_criteria,
                     )
 
                 # Calculate weighted score
-                weighted = sum(
-                    score * self.CRITERIA_WEIGHTS[criterion]
-                    for criterion, score in criteria_scores.items()
-                )
+                weighted = sum(score * self.CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items())
 
                 evaluations.append(
                     LeadEvaluation(
@@ -230,9 +206,7 @@ class LeadCurator:
 
                 first_words = " ".join(lead.tip.split()[:5]) + "..."
                 reasoning = lead_scores.get("brief_reasoning", "No reasoning provided")
-                reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + (
-                    "..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else ""
-                )
+                reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + ("..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else "")
                 logger.info(
                     "  📊 Lead %d/%d scored %.1f - %s: %s",
                     i + 1,
@@ -274,16 +248,9 @@ Lead B ({j + 1}): {group[j].lead.context[:200]}...
 """)
 
         # Use centralized prompt template with JSON format instruction
-        prompt = (
-            PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(
-                comparisons_text=chr(10).join(comparisons_text)
-            )
-            + PAIRWISE_JSON_FORMAT
-        )
+        prompt = PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(comparisons_text=chr(10).join(comparisons_text)) + PAIRWISE_JSON_FORMAT
 
-        response_text = self.openai_client.chat_completion(
-            prompt, model=CURATION_MODEL, response_format={"type": "json_object"}
-        )
+        response_text = self.openai_client.chat_completion(prompt, model=CURATION_MODEL, response_format={"type": "json_object"})
 
         # Parse response
         try:
@@ -305,10 +272,7 @@ Lead B ({j + 1}): {group[j].lead.context[:200]}...
 
         except json.JSONDecodeError as exc:
             logger.warning("Failed to parse pairwise comparison results: %s", exc)
-            logger.warning(
-                "FALLBACK: Skipping pairwise comparisons, using only "
-                "weighted scores for ranking"
-            )
+            logger.warning("FALLBACK: Skipping pairwise comparisons, using only weighted scores for ranking")
             return
 
         # Update pairwise wins
@@ -331,9 +295,7 @@ Lead B ({j + 1}): {group[j].lead.context[:200]}...
                     result.get("reason", ""),
                 )
 
-    def _compute_final_ranking(
-        self, evaluations: list[LeadEvaluation]
-    ) -> list[LeadEvaluation]:
+    def _compute_final_ranking(self, evaluations: list[LeadEvaluation]) -> list[LeadEvaluation]:
         """Step 4: Combine all factors for final ranking."""
         # Normalize pairwise wins to 0-10 scale
         max_wins = max((e.pairwise_wins for e in evaluations), default=0)
@@ -342,9 +304,7 @@ Lead B ({j + 1}): {group[j].lead.context[:200]}...
             # Use centralized weights for final scoring
             pairwise_score = (eval.pairwise_wins / max_wins) * 10 if max_wins > 0 else 0
 
-            eval.final_rank = (WEIGHTED_SCORE_WEIGHT * eval.weighted_score) + (
-                PAIRWISE_SCORE_WEIGHT * pairwise_score
-            )
+            eval.final_rank = (WEIGHTED_SCORE_WEIGHT * eval.weighted_score) + (PAIRWISE_SCORE_WEIGHT * pairwise_score)
 
             logger.debug(
                 "Lead final ranking: weighted=%.2f, pairwise=%.2f, final=%.2f",
@@ -358,25 +318,18 @@ Lead B ({j + 1}): {group[j].lead.context[:200]}...
 
         return evaluations
 
-    def _select_top_leads(
-        self, ranked_evaluations: list[LeadEvaluation]
-    ) -> list[LeadEvaluation]:
+    def _select_top_leads(self, ranked_evaluations: list[LeadEvaluation]) -> list[LeadEvaluation]:
         """Step 5: Select top leads by final rank."""
         # Simply take the top N leads based on final ranking
         selected = ranked_evaluations[: self.MAX_LEADS_TO_SELECT]
 
         # Ensure minimum selection
-        if (
-            len(selected) < self.MIN_LEADS_TO_SELECT
-            and len(ranked_evaluations) >= self.MIN_LEADS_TO_SELECT
-        ):
+        if len(selected) < self.MIN_LEADS_TO_SELECT and len(ranked_evaluations) >= self.MIN_LEADS_TO_SELECT:
             selected = ranked_evaluations[: self.MIN_LEADS_TO_SELECT]
 
         return selected
 
-    def _group_by_score_similarity(
-        self, evaluations: list[LeadEvaluation]
-    ) -> list[list[LeadEvaluation]]:
+    def _group_by_score_similarity(self, evaluations: list[LeadEvaluation]) -> list[list[LeadEvaluation]]:
         """Group evaluations with similar scores."""
         groups = []
         used = set()

@@ -53,9 +53,7 @@ class TestVerifyLeads:
 
     def test_verify_leads_all_pass(self, mock_openai_client, sample_leads):
         """Test verify_leads when all leads pass verification."""
-        with patch(
-            "services.lead_verification._verify_lead_credibility", return_value=True
-        ):
+        with patch("services.lead_verification._verify_lead_credibility", return_value=True):
             result = verify_leads(sample_leads, openai_client=mock_openai_client)
 
             assert len(result) == 3
@@ -78,9 +76,7 @@ class TestVerifyLeads:
 
     def test_verify_leads_all_fail(self, mock_openai_client, sample_leads):
         """Test verify_leads when all leads fail verification."""
-        with patch(
-            "services.lead_verification._verify_lead_credibility", return_value=False
-        ):
+        with patch("services.lead_verification._verify_lead_credibility", return_value=False):
             result = verify_leads(sample_leads, openai_client=mock_openai_client)
 
             assert len(result) == 0
@@ -152,9 +148,7 @@ class TestVerifyLeadCredibility:
             "context_relevance": MIN_CONTEXT_RELEVANCE_SCORE + 1,
         }
 
-        with patch(
-            "services.lead_verification._evaluate_lead_credibility", return_value=scores
-        ):
+        with patch("services.lead_verification._evaluate_lead_credibility", return_value=scores):
             result = _verify_lead_credibility(sample_lead, mock_openai_client)
 
             assert result is True
@@ -166,9 +160,7 @@ class TestVerifyLeadCredibility:
             "context_relevance": MIN_CONTEXT_RELEVANCE_SCORE + 1,
         }
 
-        with patch(
-            "services.lead_verification._evaluate_lead_credibility", return_value=scores
-        ):
+        with patch("services.lead_verification._evaluate_lead_credibility", return_value=scores):
             result = _verify_lead_credibility(sample_lead, mock_openai_client)
 
             assert result is False
@@ -180,9 +172,7 @@ class TestVerifyLeadCredibility:
             "context_relevance": MIN_CONTEXT_RELEVANCE_SCORE - 1,
         }
 
-        with patch(
-            "services.lead_verification._evaluate_lead_credibility", return_value=scores
-        ):
+        with patch("services.lead_verification._evaluate_lead_credibility", return_value=scores):
             result = _verify_lead_credibility(sample_lead, mock_openai_client)
 
             assert result is False
@@ -195,18 +185,14 @@ class TestVerifyLeadCredibility:
             "context_relevance": MIN_TOTAL_SCORE - MIN_SOURCE_CREDIBILITY_SCORE - 1,
         }
 
-        with patch(
-            "services.lead_verification._evaluate_lead_credibility", return_value=scores
-        ):
+        with patch("services.lead_verification._evaluate_lead_credibility", return_value=scores):
             result = _verify_lead_credibility(sample_lead, mock_openai_client)
 
             assert result is False
 
     def test_verify_lead_evaluation_error(self, mock_openai_client, sample_lead):
         """Test lead verification when evaluation returns None."""
-        with patch(
-            "services.lead_verification._evaluate_lead_credibility", return_value=None
-        ):
+        with patch("services.lead_verification._evaluate_lead_credibility", return_value=None):
             result = _verify_lead_credibility(sample_lead, mock_openai_client)
 
             assert result is False
@@ -227,9 +213,7 @@ class TestVerifyLeadCredibility:
             # Verify that score logging happened
             # (debug logging is in _evaluate_lead_credibility which is mocked)
             # The function logs the score breakdown with info level using emoji
-            score_logged = any(
-                "📊 Scores:" in str(call) for call in mock_logger.info.call_args_list
-            )
+            score_logged = any("📊 Scores:" in str(call) for call in mock_logger.info.call_args_list)
             assert score_logged, "Expected score breakdown to be logged"
 
 
@@ -254,9 +238,7 @@ class TestEvaluateLeadCredibility:
     @pytest.fixture
     def sample_lead_no_sources(self):
         """Sample lead without sources."""
-        return Lead(
-            tip="Test news tip", date="2024-01-15", context="Test context", sources=[]
-        )
+        return Lead(tip="Test news tip", date="2024-01-15", context="Test context", sources=[])
 
     def test_evaluate_lead_success(self, mock_openai_client, sample_lead):
         """Test successful lead evaluation."""
@@ -368,9 +350,7 @@ class TestEvaluateLeadCredibility:
             _evaluate_lead_credibility(sample_lead, mock_openai_client)
 
             # Verify analysis was logged
-            mock_logger.debug.assert_called_once_with(
-                "Verification analysis: %s", analysis_text
-            )
+            mock_logger.debug.assert_called_once_with("Verification analysis: %s", analysis_text)
 
     def test_evaluate_lead_prompt_formatting(self, mock_openai_client, sample_lead):
         """Test that prompt is formatted correctly with lead data."""

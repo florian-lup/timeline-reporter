@@ -55,30 +55,17 @@ class TestPersistenceService:
         # First story
         first_story_dict = call_args[0][0][0]
         assert first_story_dict["headline"] == "Climate Summit Agreement"
-        assert (
-            first_story_dict["summary"]
-            == "World leaders reach consensus on climate action."
-        )
-        assert (
-            first_story_dict["body"]
-            == "Detailed story about the climate summit and its outcomes."
-        )
+        assert first_story_dict["summary"] == "World leaders reach consensus on climate action."
+        assert first_story_dict["body"] == "Detailed story about the climate summit and its outcomes."
 
         # Second story
         second_story_dict = call_args[1][0][0]
         assert second_story_dict["headline"] == "Tech Innovation News"
-        assert (
-            second_story_dict["summary"] == "Breakthrough in AI technology announced."
-        )
-        assert (
-            second_story_dict["body"]
-            == "Comprehensive coverage of the latest AI developments."
-        )
+        assert second_story_dict["summary"] == "Breakthrough in AI technology announced."
+        assert second_story_dict["body"] == "Comprehensive coverage of the latest AI developments."
 
     @patch("services.story_persistence.logger")
-    def test_persist_stories_logging(
-        self, mock_logger, mock_mongodb_client, sample_stories
-    ):
+    def test_persist_stories_logging(self, mock_logger, mock_mongodb_client, sample_stories):
         """Test that storage logging works correctly."""
         mock_mongodb_client.insert_story.side_effect = [
             "60a1b2c3d4e5f6789",
@@ -129,9 +116,7 @@ class TestPersistenceService:
 
         assert mock_mongodb_client.insert_story.call_count == 1
 
-    def test_persist_stories_story_dict_conversion(
-        self, mock_mongodb_client, sample_stories
-    ):
+    def test_persist_stories_story_dict_conversion(self, mock_mongodb_client, sample_stories):
         """Test that stories are properly converted to dictionaries."""
         mock_mongodb_client.insert_story.side_effect = ["id1", "id2"]
 
@@ -149,9 +134,7 @@ class TestPersistenceService:
             assert story_dict["body"] == original_story.body
             assert story_dict["sources"] == original_story.sources
 
-    def test_persist_stories_mongodb_error_handling(
-        self, mock_mongodb_client, sample_stories
-    ):
+    def test_persist_stories_mongodb_error_handling(self, mock_mongodb_client, sample_stories):
         """Test error handling for MongoDB insertion failures."""
         mock_mongodb_client.insert_story.side_effect = Exception("Database error")
 

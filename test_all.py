@@ -6,9 +6,7 @@ import subprocess
 import sys
 
 
-def test_all(
-    test_type: str = "all", coverage: bool = True, verbose: bool = False
-) -> subprocess.CompletedProcess[bytes]:
+def test_all(test_type: str = "all", coverage: bool = True, verbose: bool = False) -> subprocess.CompletedProcess[bytes]:
     """Run tests with specified options."""
     cmd = [sys.executable, "-m", "pytest"]
 
@@ -64,16 +62,12 @@ def main() -> None:
         default="all",
         help="Type of tests to run (default: all)",
     )
-    parser.add_argument(
-        "--no-coverage", action="store_true", help="Disable coverage reporting"
-    )
+    parser.add_argument("--no-coverage", action="store_true", help="Disable coverage reporting")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 
-    result = test_all(
-        test_type=args.type, coverage=not args.no_coverage, verbose=args.verbose
-    )
+    result = test_all(test_type=args.type, coverage=not args.no_coverage, verbose=args.verbose)
 
     sys.exit(result.returncode)
 

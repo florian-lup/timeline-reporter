@@ -132,9 +132,7 @@ class TestPineconeClient:
             client = PineconeClient()
             client.similarity_search([0.1, 0.2, 0.3], top_k=10)
 
-            mock_index.query.assert_called_once_with(
-                vector=[0.1, 0.2, 0.3], top_k=10, include_values=False
-            )
+            mock_index.query.assert_called_once_with(vector=[0.1, 0.2, 0.3], top_k=10, include_values=False)
 
     def test_upsert_vector_without_metadata(self, mock_pinecone):
         """Test vector upsert without metadata."""
@@ -145,9 +143,7 @@ class TestPineconeClient:
             client = PineconeClient()
             client.upsert_vector("test-id", [0.1, 0.2, 0.3])
 
-            mock_index.upsert.assert_called_once_with(
-                [("test-id", [0.1, 0.2, 0.3], {})]
-            )
+            mock_index.upsert.assert_called_once_with([("test-id", [0.1, 0.2, 0.3], {})])
 
     def test_upsert_vector_with_metadata(self, mock_pinecone):
         """Test vector upsert with metadata."""
@@ -160,9 +156,7 @@ class TestPineconeClient:
             client = PineconeClient()
             client.upsert_vector("test-id", [0.1, 0.2, 0.3], metadata)
 
-            mock_index.upsert.assert_called_once_with(
-                [("test-id", [0.1, 0.2, 0.3], metadata)]
-            )
+            mock_index.upsert.assert_called_once_with([("test-id", [0.1, 0.2, 0.3], metadata)])
 
     @patch("clients.pinecone_client.logger")
     def test_logging_init(self, mock_logger, mock_pinecone):

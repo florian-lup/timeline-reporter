@@ -38,19 +38,13 @@ def run_pipeline() -> None:  # noqa: D401
     mongodb_client = MongoDBClient()
 
     # 1️⃣ Discovery
-    logger.info(
-        "🔍 STEP 1: Lead Discovery - Scanning news sources for breaking stories..."
-    )
+    logger.info("🔍 STEP 1: Lead Discovery - Scanning news sources for breaking stories...")
     leads = discover_leads(perplexity_client)
-    logger.info(
-        "✅ Discovery complete: Found %d leads across all categories", len(leads)
-    )
+    logger.info("✅ Discovery complete: Found %d leads across all categories", len(leads))
 
     # 2️⃣ Deduplication
     logger.info("🔄 STEP 2: Deduplication - Removing duplicate stories...")
-    unique_leads = deduplicate_leads(
-        leads, openai_client=openai_client, pinecone_client=pinecone_client
-    )
+    unique_leads = deduplicate_leads(leads, openai_client=openai_client, pinecone_client=pinecone_client)
     duplicates_removed = len(leads) - len(unique_leads)
     logger.info(
         "✅ Deduplication complete: %d duplicates removed, %d unique leads remain",
@@ -63,7 +57,7 @@ def run_pipeline() -> None:  # noqa: D401
         "📚 STEP 3: Research - Gathering context and sources for %d leads...",
         len(unique_leads),
     )
-    researched_leads = research_lead(unique_leads, perplexity_client=perplexity_client)
+    researched_leads = research_lead(unique_leads, openai_client=openai_client, perplexity_client=perplexity_client)
     logger.info(
         "✅ Research complete: Enhanced %d leads with detailed context",
         len(researched_leads),
@@ -99,9 +93,7 @@ def run_pipeline() -> None:  # noqa: D401
         len(prioritized_leads),
     )
     stories = write_stories(prioritized_leads, openai_client=openai_client)
-    logger.info(
-        "✅ Writing complete: Generated %d publication-ready stories", len(stories)
-    )
+    logger.info("✅ Writing complete: Generated %d publication-ready stories", len(stories))
 
     # 7️⃣ Storage
     logger.info("💾 STEP 7: Storage - Saving %d stories to database...", len(stories))

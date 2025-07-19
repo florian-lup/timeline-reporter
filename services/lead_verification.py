@@ -44,15 +44,9 @@ def verify_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
         logger.info("  🔎 Verifying lead %d/%d - %s", idx, len(leads), first_words)
         if _verify_lead_credibility(lead, openai_client):
             verified_leads.append(lead)
-            logger.info(
-                "  ✓ Lead %d/%d passed verification - %s", idx, len(leads), first_words
-            )
+            logger.info("  ✓ Lead %d/%d passed verification - %s", idx, len(leads), first_words)
         else:
-            lead_summary = (
-                lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..."
-                if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH
-                else lead.tip
-            )
+            lead_summary = lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..." if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH else lead.tip
             rejected_leads.append(lead_summary)
             logger.info(
                 "  ✗ Lead %d/%d rejected - %s: %s",
@@ -111,26 +105,16 @@ def _verify_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> bool:
     )
 
     # Determine pass/fail and log the result
-    passes_all = (
-        passes_source_threshold and passes_context_threshold and passes_total_threshold
-    )
+    passes_all = passes_source_threshold and passes_context_threshold and passes_total_threshold
 
     if not passes_all:
         failed_criteria = []
         if not passes_source_threshold:
-            failed_criteria.append(
-                f"source credibility "
-                f"({source_score:.1f} < {MIN_SOURCE_CREDIBILITY_SCORE})"
-            )
+            failed_criteria.append(f"source credibility ({source_score:.1f} < {MIN_SOURCE_CREDIBILITY_SCORE})")
         if not passes_context_threshold:
-            failed_criteria.append(
-                f"context relevance "
-                f"({context_score:.1f} < {MIN_CONTEXT_RELEVANCE_SCORE})"
-            )
+            failed_criteria.append(f"context relevance ({context_score:.1f} < {MIN_CONTEXT_RELEVANCE_SCORE})")
         if not passes_total_threshold:
-            failed_criteria.append(
-                f"total score ({total_score:.1f} < {MIN_TOTAL_SCORE})"
-            )
+            failed_criteria.append(f"total score ({total_score:.1f} < {MIN_TOTAL_SCORE})")
 
         logger.info("    ❌ Failed: %s", ", ".join(failed_criteria))
     else:
@@ -139,9 +123,7 @@ def _verify_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> bool:
     return passes_all
 
 
-def _evaluate_lead_credibility(
-    lead: Lead, openai_client: OpenAIClient
-) -> dict[str, float] | None:
+def _evaluate_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> dict[str, float] | None:
     """Use GPT-4o to evaluate both source credibility and context relevance.
 
     Args:
@@ -153,11 +135,7 @@ def _evaluate_lead_credibility(
         or None if evaluation fails
     """
     # Format sources for the prompt
-    sources_text = (
-        "\n".join(f"- {source}" for source in lead.sources)
-        if lead.sources
-        else "No sources provided"
-    )
+    sources_text = "\n".join(f"- {source}" for source in lead.sources) if lead.sources else "No sources provided"
 
     # Create the verification prompt
     prompt = VERIFICATION_INSTRUCTIONS.format(
@@ -168,9 +146,7 @@ def _evaluate_lead_credibility(
     )
 
     # Add JSON format instructions
-    full_prompt = (
-        VERIFICATION_SYSTEM_PROMPT + "\n\n" + prompt + VERIFICATION_JSON_FORMAT
-    )
+    full_prompt = VERIFICATION_SYSTEM_PROMPT + "\n\n" + prompt + VERIFICATION_JSON_FORMAT
 
     try:
         # Get GPT-4o evaluation

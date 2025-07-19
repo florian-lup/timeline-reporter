@@ -26,16 +26,13 @@ class TestDeduplicationService:
         """Sample leads for testing."""
         return [
             Lead(
-                tip="Climate Summit 2024: World leaders meet to discuss climate "
-                "change solutions and carbon reduction targets.",
+                tip="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
             ),
             Lead(
-                tip="Earthquake in Pacific: A 6.5 magnitude earthquake struck the "
-                "Pacific region with minimal damage reported.",
+                tip="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
             ),
             Lead(
-                tip="Tech Conference Announced: Major technology companies "
-                "announce new AI developments at annual conference.",
+                tip="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
             ),
         ]
 
@@ -48,9 +45,7 @@ class TestDeduplicationService:
             [0.7, 0.8, 0.9] * 512,
         ]
 
-    def test_deduplicate_leads_no_duplicates(
-        self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client
-    ):
+    def test_deduplicate_leads_no_duplicates(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
         """Test deduplication when no duplicates exist."""
         # Setup mocks
         mock_openai_client.embed_text.side_effect = sample_embeddings
@@ -76,9 +71,7 @@ class TestDeduplicationService:
         # Verify upsert calls
         assert mock_pinecone_client.upsert_vector.call_count == 3
 
-    def test_deduplicate_leads_with_duplicates(
-        self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client
-    ):
+    def test_deduplicate_leads_with_duplicates(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
         """Test deduplication when duplicates exist."""
         # Setup mocks - second lead is a duplicate
         mock_openai_client.embed_text.side_effect = sample_embeddings
@@ -103,9 +96,7 @@ class TestDeduplicationService:
         # Verify only 2 vectors were upserted (excluding duplicate)
         assert mock_pinecone_client.upsert_vector.call_count == 2
 
-    def test_deduplicate_leads_empty_input(
-        self, mock_openai_client, mock_pinecone_client
-    ):
+    def test_deduplicate_leads_empty_input(self, mock_openai_client, mock_pinecone_client):
         """Test deduplication with empty input."""
         result = deduplicate_leads(
             [],
@@ -148,9 +139,7 @@ class TestDeduplicationService:
         # Verify completion logging - updated to match new emoji-based format
         mock_logger.info.assert_any_call("  🔄 Removed %d duplicate leads", 1)
 
-    def test_vector_metadata_structure(
-        self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client
-    ):
+    def test_vector_metadata_structure(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
         """Test that vectors are stored with correct metadata."""
         # Setup mocks
         mock_openai_client.embed_text.side_effect = sample_embeddings

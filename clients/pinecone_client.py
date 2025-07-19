@@ -34,21 +34,13 @@ class PineconeClient:
         if api_key is None:
             api_key = PINECONE_API_KEY
         if not api_key:
-            raise ValueError(
-                "PINECONE_API_KEY is missing, cannot initialise Pinecone client."
-            )
+            raise ValueError("PINECONE_API_KEY is missing, cannot initialise Pinecone client.")
         if not PINECONE_INDEX_NAME:
-            raise ValueError(
-                "PINECONE_INDEX_NAME is missing, cannot initialise Pinecone client."
-            )
+            raise ValueError("PINECONE_INDEX_NAME is missing, cannot initialise Pinecone client.")
         if not CLOUD_PROVIDER:
-            raise ValueError(
-                "CLOUD_PROVIDER is missing, cannot initialise Pinecone client."
-            )
+            raise ValueError("CLOUD_PROVIDER is missing, cannot initialise Pinecone client.")
         if not CLOUD_REGION:
-            raise ValueError(
-                "CLOUD_REGION is missing, cannot initialise Pinecone client."
-            )
+            raise ValueError("CLOUD_REGION is missing, cannot initialise Pinecone client.")
 
         self._pc = Pinecone(api_key=api_key)
         self._index = self._ensure_index()
@@ -57,18 +49,12 @@ class PineconeClient:
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------
-    def similarity_search(
-        self, vector: list[float], *, top_k: int | None = None
-    ) -> list[tuple[str, float]]:
+    def similarity_search(self, vector: list[float], *, top_k: int | None = None) -> list[tuple[str, float]]:
         """Returns list of (id, score) above SIMILARITY_THRESHOLD for *vector*."""
         if top_k is None:
             top_k = TOP_K_RESULTS
         res = self._index.query(vector=vector, top_k=top_k, include_values=False)
-        return [
-            (m.id, m.score)
-            for m in res.matches
-            if m.score and m.score >= SIMILARITY_THRESHOLD
-        ]
+        return [(m.id, m.score) for m in res.matches if m.score and m.score >= SIMILARITY_THRESHOLD]
 
     def upsert_vector(
         self,

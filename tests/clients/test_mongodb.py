@@ -149,14 +149,10 @@ class TestMongoDBClient:
         ):
             MongoDBClient()
 
-            mock_logger.info.assert_called_once_with(
-                "  ✓ MongoDB connected: %s/%s", "test_db", "test_collection"
-            )
+            mock_logger.info.assert_called_once_with("  ✓ MongoDB connected: %s/%s", "test_db", "test_collection")
 
     @patch("clients.mongodb_client.logger")
-    def test_logging_on_insert_story(
-        self, mock_logger, mock_mongo_client, sample_story
-    ):
+    def test_logging_on_insert_story(self, mock_logger, mock_mongo_client, sample_story):
         """Test that insert_story logs the operation."""
         mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
 

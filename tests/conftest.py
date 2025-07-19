@@ -51,14 +51,8 @@ def mock_perplexity_client():
     # Mock discovery response
     discovery_response = json.dumps(
         [
-            {
-                "tip": "Climate Summit 2024: World leaders meet to discuss "
-                "climate action and set ambitious targets for carbon reduction."
-            },
-            {
-                "tip": "AI Breakthrough Announced: New AI model shows "
-                "remarkable capabilities in medical diagnosis and drug discovery."
-            },
+            {"tip": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."},
+            {"tip": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."},
         ]
     )
     mock_client.lead_discovery.return_value = discovery_response
@@ -98,16 +92,13 @@ def sample_leads():
     """Sample list of Lead objects for testing."""
     return [
         Lead(
-            tip="Technology Breakthrough: Major advancement in artificial "
-            "intelligence technology announced.",
+            tip="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",
         ),
         Lead(
-            tip="Climate Change Update: New climate research reveals important "
-            "environmental findings.",
+            tip="Climate Change Update: New climate research reveals important environmental findings.",
         ),
         Lead(
-            tip="Economic Development: Significant economic changes affecting "
-            "global markets.",
+            tip="Economic Development: Significant economic changes affecting global markets.",
         ),
     ]
 
@@ -133,8 +124,7 @@ def sample_stories():
     return [
         Story(
             headline="Technology Breakthrough in AI",
-            summary="Researchers announce major advancement in artificial "
-            "intelligence.",
+            summary="Researchers announce major advancement in artificial intelligence.",
             body="Scientists at leading research institutions have...",
             tag="technology",
             sources=[

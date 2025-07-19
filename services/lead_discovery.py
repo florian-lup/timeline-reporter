@@ -45,16 +45,12 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
             # Log each individual lead with first 5 words for tracking
             for idx, lead in enumerate(category_leads, 1):
                 first_words = " ".join(lead.tip.split()[:5]) + "..."
-                logger.info(
-                    "    📋 Lead %d/%d - %s", idx, len(category_leads), first_words
-                )
+                logger.info("    📋 Lead %d/%d - %s", idx, len(category_leads), first_words)
 
             all_leads.extend(category_leads)
 
         except Exception as exc:
-            logger.error(
-                "  ✗ %s: Discovery failed - %s", category_name.capitalize(), exc
-            )
+            logger.error("  ✗ %s: Discovery failed - %s", category_name.capitalize(), exc)
             # Continue with other categories even if one fails
             continue
     return all_leads

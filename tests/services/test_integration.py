@@ -42,29 +42,12 @@ class TestServicesIntegration:
         mock_mongodb = Mock()
 
         # Set up discovery responses for three categories
-        politics_response = json.dumps(
-            [
-                {
-                    "tip": "Political Summit 2024: World leaders discuss global "
-                    "governance and international cooperation."
-                }
-            ]
-        )
+        politics_response = json.dumps([{"tip": "Political Summit 2024: World leaders discuss global governance and international cooperation."}])
         environment_response = json.dumps(
-            [
-                {
-                    "tip": "Climate Summit 2024: Global climate leaders meet to "
-                    "establish comprehensive environmental policies."
-                }
-            ]
+            [{"tip": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
         )
         entertainment_response = json.dumps(
-            [
-                {
-                    "tip": "AI Breakthrough Announced: Major AI advancement in "
-                    "healthcare diagnostics revolutionizes medical practice."
-                }
-            ]
+            [{"tip": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
         )
 
         # Set lead_discovery to return different responses for each call
@@ -78,7 +61,7 @@ class TestServicesIntegration:
         mock_openai.embed_text.return_value = [0.1] * 1536
         mock_pinecone.similarity_search.return_value = []
 
-        # Set up decision response
+        # Set up curation response (will be overridden by side_effect)
         mock_openai.chat_completion.return_value = "1, 2, 3"
 
         # Set up lead research responses (context + sources)
@@ -86,8 +69,7 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "context": (
-                        "Political leaders from around the world gathered to discuss "
-                        "international cooperation and global governance frameworks."
+                        "Political leaders from around the world gathered to discuss international cooperation and global governance frameworks."
                     ),
                     "sources": [
                         "https://example.com/political-summit",
@@ -111,8 +93,7 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "context": (
-                        "Researchers have developed breakthrough AI technology that "
-                        "revolutionizes healthcare diagnostics and medical practice."
+                        "Researchers have developed breakthrough AI technology that revolutionizes healthcare diagnostics and medical practice."
                     ),
                     "sources": [
                         "https://example.com/ai-health",
@@ -123,50 +104,84 @@ class TestServicesIntegration:
         ]
         mock_perplexity.lead_research.side_effect = lead_research_responses
 
+        # Set up query formulation responses (for research service)
+        query_formulation_responses = [
+            "political summit world leaders international cooperation",
+            "climate summit 2024 environmental policies carbon targets",
+            "AI breakthrough healthcare diagnostics medical technology",
+        ]
+
         # Set up story writing responses (headline + summary + body)
         story_writing_responses = [
             json.dumps(
                 {
                     "headline": "World Leaders Unite at Political Summit",
-                    "summary": (
-                        "Political leaders agree on new international cooperation "
-                        "framework."
-                    ),
-                    "body": (
-                        "In a historic gathering, world leaders came together to "
-                        "discuss global governance."
-                    ),
+                    "summary": ("Political leaders agree on new international cooperation framework."),
+                    "body": ("In a historic gathering, world leaders came together to discuss global governance."),
                 }
             ),
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": (
-                        "World leaders at the 2024 Climate Summit agreed on "
-                        "unprecedented carbon reduction goals."
-                    ),
-                    "body": (
-                        "In a historic gathering, the 2024 Climate Summit "
-                        "concluded with ambitious commitments."
-                    ),
+                    "summary": ("World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals."),
+                    "body": ("In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments."),
                 }
             ),
             json.dumps(
                 {
                     "headline": "AI Revolution in Healthcare Diagnostics",
-                    "summary": (
-                        "Breakthrough AI system shows promise in medical "
-                        "diagnosis and drug discovery."
-                    ),
-                    "body": (
-                        "Researchers have developed an AI system that "
-                        "revolutionizes healthcare diagnostics."
-                    ),
+                    "summary": ("Breakthrough AI system shows promise in medical diagnosis and drug discovery."),
+                    "body": ("Researchers have developed an AI system that revolutionizes healthcare diagnostics."),
                 }
             ),
         ]
-        # Override the chat_completion setup for story writing
-        mock_openai.chat_completion.side_effect = ["1, 2, 3"] + story_writing_responses
+        # Set up curation response
+        curation_response = json.dumps(
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality political lead",
+                    },
+                    {
+                        "index": 2,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality environmental lead",
+                    },
+                    {
+                        "index": 3,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality AI lead",
+                    },
+                ]
+            }
+        )
+
+        # Set up chat_completion to handle all calls: 1 curation + 3 query formulation + 3 story writing = 7 calls
+        mock_openai.chat_completion.side_effect = (
+            [curation_response]  # 1 curation call
+            + query_formulation_responses  # 3 query formulation calls
+            + story_writing_responses  # 3 story writing calls
+        )
 
         # Set up storage
         mock_mongodb.insert_story.return_value = "64a7b8c9d1e2f3a4b5c6d7e8"
@@ -191,12 +206,8 @@ class TestServicesIntegration:
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
         )
-        prioritized_leads = curate_leads(
-            unique_leads, openai_client=mock_clients["openai"]
-        )
-        researched_leads = research_lead(
-            prioritized_leads, perplexity_client=mock_clients["perplexity"]
-        )
+        prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
+        researched_leads = research_lead(prioritized_leads, openai_client=mock_clients["openai"], perplexity_client=mock_clients["perplexity"])
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
@@ -220,27 +231,21 @@ class TestServicesIntegration:
 
         # Stories from writing
         assert stories[0].headline == "World Leaders Unite at Political Summit"
-        assert stories[1].headline == (
-            "Global Climate Summit Sets Ambitious 2030 Targets"
-        )
+        assert stories[1].headline == ("Global Climate Summit Sets Ambitious 2030 Targets")
         assert stories[2].headline == "AI Revolution in Healthcare Diagnostics"
 
         # Verify clients were called appropriately
-        assert (
-            mock_clients["perplexity"].lead_discovery.call_count == 3
-        )  # Three category calls
+        assert mock_clients["perplexity"].lead_discovery.call_count == 3  # Three category calls
         # One per lead for deduplication
         assert mock_clients["openai"].embed_text.call_count == 3
         # One per lead for research
         assert mock_clients["perplexity"].lead_research.call_count == 3
-        # 1 for curation + 3 for story writing
-        assert mock_clients["openai"].chat_completion.call_count == 4
+        # 1 for curation + 3 for query formulation + 3 for story writing = 7 calls
+        assert mock_clients["openai"].chat_completion.call_count == 7
         assert mock_clients["mongodb"].insert_story.call_count == 3
 
     @pytest.mark.integration
-    def test_pipeline_with_deduplication(
-        self, mock_clients, test_discovery_instructions
-    ):
+    def test_pipeline_with_deduplication(self, mock_clients, test_discovery_instructions):
         """Test pipeline behavior when deduplication removes leads."""
         # Modify similarity search to simulate duplicates - provide enough responses
         mock_clients["pinecone"].similarity_search.side_effect = [
@@ -324,9 +329,7 @@ class TestServicesIntegration:
                 },
             ]
         )
-        pairwise_response = json.dumps(
-            [{"pair": "1vs2", "winner": 2, "confidence": "high"}]
-        )
+        pairwise_response = json.dumps([{"pair": "1vs2", "winner": 2, "confidence": "high"}])
         mock_clients["openai"].chat_completion.side_effect = [
             evaluation_response,
             pairwise_response,
@@ -339,9 +342,7 @@ class TestServicesIntegration:
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
         )
-        prioritized_leads = curate_leads(
-            unique_leads, openai_client=mock_clients["openai"]
-        )
+        prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
 
         # Verify deduplication worked
         assert len(leads) == 5  # Original count across all categories
@@ -360,9 +361,7 @@ class TestServicesIntegration:
         # Lead 4 filtered
         assert not any("Lead 4" in tip for tip in selected_tips)
 
-    def test_pipeline_data_transformation(
-        self, mock_clients, test_discovery_instructions
-    ):
+    def test_pipeline_data_transformation(self, mock_clients, test_discovery_instructions):
         """Test data transformation through pipeline stages."""
 
         # Mock simple discovery response - one lead per category
@@ -396,12 +395,55 @@ class TestServicesIntegration:
             }
         )
 
-        # Set up decision response and story writing response (3 leads selected)
+        # Set up all OpenAI responses: 1 curation + 3 query formulation + 3 story writing = 7 total
+        curation_response = json.dumps(
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 2,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 3,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                ]
+            }
+        )
+
         mock_clients["openai"].chat_completion.side_effect = [
-            "1",
-            story_writing_json,
-            story_writing_json,
-            story_writing_json,
+            curation_response,  # 1 curation call
+            "transformed search query 1",  # Query formulation for lead 1
+            "transformed search query 2",  # Query formulation for lead 2
+            "transformed search query 3",  # Query formulation for lead 3
+            story_writing_json,  # Story writing for lead 1
+            story_writing_json,  # Story writing for lead 2
+            story_writing_json,  # Story writing for lead 3
         ]
 
         # Execute pipeline and track transformations
@@ -411,12 +453,8 @@ class TestServicesIntegration:
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
         )
-        prioritized_leads = curate_leads(
-            unique_leads, openai_client=mock_clients["openai"]
-        )
-        researched_leads = research_lead(
-            prioritized_leads, perplexity_client=mock_clients["perplexity"]
-        )
+        prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
+        researched_leads = research_lead(prioritized_leads, openai_client=mock_clients["openai"], perplexity_client=mock_clients["perplexity"])
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
 
         # Store final stories
@@ -450,15 +488,9 @@ class TestServicesIntegration:
         """Test pipeline performance with larger data volume."""
 
         # Create large discovery responses across categories
-        politics_data = [
-            {"tip": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)
-        ]
-        environment_data = [
-            {"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)
-        ]
-        entertainment_data = [
-            {"tip": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)
-        ]
+        politics_data = [{"tip": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
+        environment_data = [{"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
+        entertainment_data = [{"tip": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             json.dumps(politics_data),
@@ -466,8 +498,131 @@ class TestServicesIntegration:
             json.dumps(entertainment_data),
         ]
 
-        # Set up decision to select subset
-        mock_clients["openai"].chat_completion.return_value = "1, 3, 5, 7, 9"
+        # Set up curation response to evaluate all 10 leads and select 5
+        large_scale_curation_response = json.dumps(
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 2,
+                        "impact": 5,  # Lower score to exclude
+                        "proximity": 5,
+                        "prominence": 5,
+                        "relevance": 5,
+                        "hook": 5,
+                        "novelty": 5,
+                        "conflict": 5,
+                        "brief_reasoning": "Lower quality lead",
+                    },
+                    {
+                        "index": 3,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 4,
+                        "impact": 5,  # Lower score to exclude
+                        "proximity": 5,
+                        "prominence": 5,
+                        "relevance": 5,
+                        "hook": 5,
+                        "novelty": 5,
+                        "conflict": 5,
+                        "brief_reasoning": "Lower quality lead",
+                    },
+                    {
+                        "index": 5,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 6,
+                        "impact": 5,  # Lower score to exclude
+                        "proximity": 5,
+                        "prominence": 5,
+                        "relevance": 5,
+                        "hook": 5,
+                        "novelty": 5,
+                        "conflict": 5,
+                        "brief_reasoning": "Lower quality lead",
+                    },
+                    {
+                        "index": 7,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 8,
+                        "impact": 5,  # Lower score to exclude
+                        "proximity": 5,
+                        "prominence": 5,
+                        "relevance": 5,
+                        "hook": 5,
+                        "novelty": 5,
+                        "conflict": 5,
+                        "brief_reasoning": "Lower quality lead",
+                    },
+                    {
+                        "index": 9,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "High quality lead",
+                    },
+                    {
+                        "index": 10,
+                        "impact": 5,  # Lower score to exclude
+                        "proximity": 5,
+                        "prominence": 5,
+                        "relevance": 5,
+                        "hook": 5,
+                        "novelty": 5,
+                        "conflict": 5,
+                        "brief_reasoning": "Lower quality lead",
+                    },
+                ]
+            }
+        )
+
+        # Set up all responses for this test: 1 curation + 5 query formulation
+        query_formulation_responses = [f"optimized query {i}" for i in [1, 3, 5, 7, 9]]
+
+        mock_clients["openai"].chat_completion.side_effect = (
+            [large_scale_curation_response]  # 1 curation call
+            + query_formulation_responses  # 5 query formulation calls
+        )
 
         # Override research responses for 5 stories
         research_responses = [
@@ -490,12 +645,8 @@ class TestServicesIntegration:
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
         )
-        prioritized_leads = curate_leads(
-            unique_leads, openai_client=mock_clients["openai"]
-        )
-        stories = research_lead(
-            prioritized_leads, perplexity_client=mock_clients["perplexity"]
-        )
+        prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
+        stories = research_lead(prioritized_leads, openai_client=mock_clients["openai"], perplexity_client=mock_clients["perplexity"])
 
         # Verify scalability
         assert len(leads) == 10  # 4 + 3 + 3 from three categories

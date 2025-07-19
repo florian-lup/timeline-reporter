@@ -152,9 +152,7 @@ class TestPerplexityClient:
             assert payload["web_search_options"]["search_context_size"] == "large"
             assert payload["response_format"]["type"] == "json_schema"
 
-    def test_research_json_schema_structure(
-        self, mock_httpx_client, sample_response_data
-    ):
+    def test_research_json_schema_structure(self, mock_httpx_client, sample_response_data):
         """Test that the JSON schema is properly structured."""
         mock_client, mock_response = mock_httpx_client
         mock_response.json.return_value = sample_response_data
@@ -189,9 +187,7 @@ class TestPerplexityClient:
     def test_research_http_error(self, mock_httpx_client):
         """Test that HTTP errors are properly raised."""
         mock_client, mock_response = mock_httpx_client
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "404 Not Found", request=Mock(), response=Mock()
-        )
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError("404 Not Found", request=Mock(), response=Mock())
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
@@ -210,9 +206,7 @@ class TestPerplexityClient:
             "multi\nline\nprompt",
         ],
     )
-    def test_research_various_prompts(
-        self, mock_httpx_client, sample_response_data, prompt
-    ):
+    def test_research_various_prompts(self, mock_httpx_client, sample_response_data, prompt):
         """Test research with various prompt inputs."""
         mock_client, mock_response = mock_httpx_client
         mock_response.json.return_value = sample_response_data
@@ -308,9 +302,7 @@ Let me search for current information.
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.lead_discovery(
-                "Find recent events about climate and geopolitics"
-            )
+            result = client.lead_discovery("Find recent events about climate and geopolitics")
 
             # Should extract JSON after <think> section
             expected_json = """[
@@ -335,9 +327,7 @@ Let me search for current information.
 
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
-            patch(
-                "clients.perplexity_client.LEAD_DISCOVERY_MODEL", "sonar-reasoning-pro"
-            ),
+            patch("clients.perplexity_client.LEAD_DISCOVERY_MODEL", "sonar-reasoning-pro"),
         ):
             client = PerplexityClient()
             client.lead_discovery("test prompt")
@@ -431,9 +421,7 @@ This is reasoning content that should be removed.
 
             response_without_think = '{"result": "direct json"}'
 
-            result = client._extract_json_from_reasoning_response(
-                response_without_think
-            )
+            result = client._extract_json_from_reasoning_response(response_without_think)
             assert result == '{"result": "direct json"}'
 
     def test_lead_discovery_system_prompt(self, mock_httpx_client):

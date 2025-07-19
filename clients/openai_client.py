@@ -28,9 +28,7 @@ class OpenAIClient:
         if api_key is None:
             api_key = OPENAI_API_KEY
         if not api_key:
-            raise ValueError(
-                "OPENAI_API_KEY is missing, cannot initialise OpenAI client."
-            )
+            raise ValueError("OPENAI_API_KEY is missing, cannot initialise OpenAI client.")
 
         self._client = OpenAI(api_key=api_key)
 

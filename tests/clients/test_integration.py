@@ -25,12 +25,8 @@ class TestClientIntegration:
             mock_openai_instance = Mock()
             mock_openai.return_value = mock_openai_instance
             mock_embedding_response = Mock()
-            mock_embedding_response.data = [
-                Mock(embedding=[0.1] * 1536)
-            ]  # Sample embedding
-            mock_openai_instance.embeddings.create.return_value = (
-                mock_embedding_response
-            )
+            mock_embedding_response.data = [Mock(embedding=[0.1] * 1536)]  # Sample embedding
+            mock_openai_instance.embeddings.create.return_value = mock_embedding_response
 
             # Setup Pinecone mock
             mock_pinecone_instance = Mock()
@@ -55,9 +51,7 @@ class TestClientIntegration:
             embedding = openai_client.embed_text(test_text)
 
             # 2. Store in Pinecone
-            pinecone_client.upsert_vector(
-                "test-lead-123", embedding, {"content": test_text}
-            )
+            pinecone_client.upsert_vector("test-lead-123", embedding, {"content": test_text})
 
             # 3. Search for similar events
             pinecone_client.similarity_search(embedding)
@@ -82,17 +76,13 @@ class TestClientIntegration:
             mock_http_client = Mock()
             mock_response = Mock()
             research_data = {
-                "context": (
-                    "Comprehensive research context about breaking technology news"
-                ),
+                "context": ("Comprehensive research context about breaking technology news"),
                 "sources": [
                     "https://example.com/source1",
                     "https://example.com/source2",
                 ],
             }
-            mock_response.json.return_value = {
-                "choices": [{"message": {"content": json.dumps(research_data)}}]
-            }
+            mock_response.json.return_value = {"choices": [{"message": {"content": json.dumps(research_data)}}]}
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
@@ -105,16 +95,11 @@ class TestClientIntegration:
             # Verify API call
             mock_http_client.post.assert_called_once()
             call_args = mock_http_client.post.call_args
-            assert (
-                "senior investigative research analyst"
-                in call_args[1]["json"]["messages"][0]["content"]
-            )
+            assert "senior investigative research analyst" in call_args[1]["json"]["messages"][0]["content"]
 
             # Verify result parsing - lead research returns context + sources
             result_data = json.loads(result)
-            assert result_data["context"] == (
-                "Comprehensive research context about breaking technology news"
-            )
+            assert result_data["context"] == ("Comprehensive research context about breaking technology news")
             assert len(result_data["sources"]) == 2
 
     def test_mongodb_story_storage_integration(self):
@@ -200,9 +185,7 @@ class TestClientIntegration:
                 "context": "Enhanced context about breaking news from research",
                 "sources": ["https://source.com"],
             }
-            mock_response.json.return_value = {
-                "choices": [{"message": {"content": json.dumps(research_data)}}]
-            }
+            mock_response.json.return_value = {"choices": [{"message": {"content": json.dumps(research_data)}}]}
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
@@ -215,9 +198,7 @@ class TestClientIntegration:
                 "summary": "Important lead summary",
                 "body": "Full story details...",
             }
-            mock_openai_instance.chat.completions.create.return_value = Mock(
-                choices=[Mock(message=Mock(content=json.dumps(story_data)))]
-            )
+            mock_openai_instance.chat.completions.create.return_value = Mock(choices=[Mock(message=Mock(content=json.dumps(story_data)))])
 
             # MongoDB storage
             mock_mongo_instance = Mock()
@@ -241,9 +222,7 @@ class TestClientIntegration:
 
             # 1. Research phase - enhance leads with context
             test_leads = [Lead(tip="Breaking News: Important lead")]
-            researched_leads = research_lead(
-                test_leads, perplexity_client=perplexity_client
-            )
+            researched_leads = research_lead(test_leads, openai_client=openai_client, perplexity_client=perplexity_client)
 
             # 2. Writing phase - convert enhanced leads to stories
             stories = write_stories(researched_leads, openai_client=openai_client)
@@ -258,9 +237,7 @@ class TestClientIntegration:
 
             # Check research enhanced the lead
             researched_lead = researched_leads[0]
-            assert researched_lead.context == (
-                "Enhanced context about breaking news from research"
-            )
+            assert researched_lead.context == ("Enhanced context about breaking news from research")
             assert researched_lead.sources == ["https://source.com"]
 
             # Check story was created from researched lead
@@ -274,8 +251,8 @@ class TestClientIntegration:
             # Verify all services were called
             # Perplexity research
             mock_http_client.post.assert_called_once()
-            # OpenAI story writing
-            mock_openai_instance.chat.completions.create.assert_called_once()
+            # OpenAI: 1 call for query formulation + 1 call for story writing = 2 calls
+            assert mock_openai_instance.chat.completions.create.call_count == 2
             # MongoDB storage
             mock_collection.insert_one.assert_called_once()
 
@@ -294,9 +271,7 @@ class TestClientIntegration:
             mock_openai.return_value = mock_openai_instance
             mock_embedding_response = Mock()
             mock_embedding_response.data = [Mock(embedding=[0.5] * 1536)]
-            mock_openai_instance.embeddings.create.return_value = (
-                mock_embedding_response
-            )
+            mock_openai_instance.embeddings.create.return_value = mock_embedding_response
 
             mock_pinecone_instance = Mock()
             mock_pinecone.return_value = mock_pinecone_instance
@@ -335,9 +310,7 @@ class TestClientIntegration:
         ):
             mock_openai_instance = Mock()
             mock_openai.return_value = mock_openai_instance
-            mock_openai_instance.embeddings.create.side_effect = Exception(
-                "API rate limit exceeded"
-            )
+            mock_openai_instance.embeddings.create.side_effect = Exception("API rate limit exceeded")
 
             openai_client = OpenAIClient()
 
@@ -384,9 +357,7 @@ class TestClientIntegration:
             mock_openai.return_value = mock_openai_instance
             mock_embedding_response = Mock()
             mock_embedding_response.data = [Mock(embedding=[0.3] * 1536)]
-            mock_openai_instance.embeddings.create.return_value = (
-                mock_embedding_response
-            )
+            mock_openai_instance.embeddings.create.return_value = mock_embedding_response
 
             # Pinecone (similarity search)
             mock_pinecone_instance = Mock()
@@ -405,9 +376,7 @@ class TestClientIntegration:
             pinecone_client = PineconeClient()
 
             # 1. Discovery
-            discovery_result = perplexity_client.lead_discovery(
-                "Find recent climate news"
-            )
+            discovery_result = perplexity_client.lead_discovery("Find recent climate news")
             events = json.loads(discovery_result)
 
             # 2. Embedding generation

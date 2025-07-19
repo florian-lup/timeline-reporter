@@ -102,9 +102,7 @@ class TestOpenAIClient:
         "text_input,expected_length",
         [("short", 5), ("", 0), ("a" * 1000, 1000), ("unicode: 🚀 emoji test", 19)],
     )
-    def test_embed_text_various_inputs(
-        self, mock_openai_client, text_input, expected_length
-    ):
+    def test_embed_text_various_inputs(self, mock_openai_client, text_input, expected_length):
         """Test embed_text with various text inputs."""
         mock_openai, mock_instance = mock_openai_client
 
@@ -205,9 +203,7 @@ class TestOpenAIClient:
             client = OpenAIClient()
             client.chat_completion("test prompt", model="gpt-4.1")
 
-            mock_instance.chat.completions.create.assert_called_once_with(
-                model="gpt-4.1", messages=[{"role": "user", "content": "test prompt"}]
-            )
+            mock_instance.chat.completions.create.assert_called_once_with(model="gpt-4.1", messages=[{"role": "user", "content": "test prompt"}])
 
     @pytest.mark.parametrize(
         "prompt",

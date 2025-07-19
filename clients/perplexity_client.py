@@ -42,9 +42,7 @@ class PerplexityClient:
         if api_key is None:
             api_key = PERPLEXITY_API_KEY
         if not api_key:
-            raise ValueError(
-                "PERPLEXITY_API_KEY is missing, cannot initialise Perplexity client."
-            )
+            raise ValueError("PERPLEXITY_API_KEY is missing, cannot initialise Perplexity client.")
         self._headers = {**self._DEFAULT_HEADERS, "Authorization": f"Bearer {api_key}"}
 
     # JSON schema for Story structured output as per docs
@@ -121,9 +119,7 @@ class PerplexityClient:
         }
 
         with httpx.Client() as client:
-            response = client.post(
-                _PERPLEXITY_ENDPOINT, json=payload, headers=self._headers
-            )
+            response = client.post(_PERPLEXITY_ENDPOINT, json=payload, headers=self._headers)
             response.raise_for_status()
             data = response.json()
 
@@ -163,9 +159,7 @@ class PerplexityClient:
         }
 
         with httpx.Client() as client:
-            response = client.post(
-                _PERPLEXITY_ENDPOINT, json=payload, headers=self._headers
-            )
+            response = client.post(_PERPLEXITY_ENDPOINT, json=payload, headers=self._headers)
             response.raise_for_status()
             data = response.json()
 

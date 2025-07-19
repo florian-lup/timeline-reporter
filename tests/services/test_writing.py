@@ -65,9 +65,7 @@ class TestWritingService:
         """Sample writing response from OpenAI."""
         return json.dumps(
             {
-                "headline": (
-                    "World Leaders Unite at Climate Summit 2024 for Urgent Action"
-                ),
+                "headline": ("World Leaders Unite at Climate Summit 2024 for Urgent Action"),
                 "summary": (
                     "The Climate Summit 2024 has concluded with unprecedented "
                     "cooperation between world leaders from 190 countries, "
@@ -96,21 +94,15 @@ class TestWritingService:
             }
         )
 
-    def test_write_stories_success(
-        self, mock_openai_client, sample_researched_leads, sample_writing_response
-    ):
+    def test_write_stories_success(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test successful story writing."""
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
-        stories = write_stories(
-            sample_researched_leads, openai_client=mock_openai_client
-        )
+        stories = write_stories(sample_researched_leads, openai_client=mock_openai_client)
 
         assert len(stories) == 2
         assert isinstance(stories[0], Story)
-        assert stories[0].headline == (
-            "World Leaders Unite at Climate Summit 2024 for Urgent Action"
-        )
+        assert stories[0].headline == ("World Leaders Unite at Climate Summit 2024 for Urgent Action")
         assert "unprecedented cooperation" in stories[0].summary
         assert "Climate Summit 2024 has concluded" in stories[0].body
 
@@ -121,9 +113,7 @@ class TestWritingService:
         # Verify OpenAI client was called for each lead
         assert mock_openai_client.chat_completion.call_count == 2
 
-    def test_write_stories_openai_parameters(
-        self, mock_openai_client, sample_researched_leads, sample_writing_response
-    ):
+    def test_write_stories_openai_parameters(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test that OpenAI client is called with correct parameters."""
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
@@ -135,9 +125,7 @@ class TestWritingService:
         assert call_args[1]["temperature"] == 0.5
         assert call_args[1]["response_format"] == {"type": "json_object"}
 
-    def test_write_stories_prompt_formatting(
-        self, mock_openai_client, sample_researched_leads, sample_writing_response
-    ):
+    def test_write_stories_prompt_formatting(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test that prompts are formatted correctly."""
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
@@ -158,9 +146,7 @@ class TestWritingService:
         assert "award-winning news journalist" in prompt.lower()
         assert "json object" in prompt.lower()
 
-    def test_write_stories_json_parsing(
-        self, mock_openai_client, sample_researched_leads
-    ):
+    def test_write_stories_json_parsing(self, mock_openai_client, sample_researched_leads):
         """Test JSON parsing from writing response."""
         response = json.dumps(
             {
@@ -171,9 +157,7 @@ class TestWritingService:
         )
         mock_openai_client.chat_completion.return_value = response
 
-        stories = write_stories(
-            sample_researched_leads[:1], openai_client=mock_openai_client
-        )
+        stories = write_stories(sample_researched_leads[:1], openai_client=mock_openai_client)
 
         assert len(stories) == 1
         assert stories[0].headline == "Test Headline"
@@ -181,9 +165,7 @@ class TestWritingService:
         assert stories[0].body == "Detailed story body content"
         assert stories[0].sources == sample_researched_leads[0].sources
 
-    def test_write_stories_json_parse_error(
-        self, mock_openai_client, sample_researched_leads
-    ):
+    def test_write_stories_json_parse_error(self, mock_openai_client, sample_researched_leads):
         """Test handling of malformed JSON response."""
         malformed_response = '{"headline": "Test", "incomplete": json'
         mock_openai_client.chat_completion.return_value = malformed_response
@@ -228,9 +210,7 @@ class TestWritingService:
             "World Leaders Unite at Climate Summit 2024 for Urgent Action",
         )
 
-    def test_write_stories_missing_json_fields(
-        self, mock_openai_client, sample_researched_leads
-    ):
+    def test_write_stories_missing_json_fields(self, mock_openai_client, sample_researched_leads):
         """Test writing with missing JSON fields."""
         response_missing_fields = json.dumps(
             {
@@ -240,9 +220,7 @@ class TestWritingService:
         )
         mock_openai_client.chat_completion.return_value = response_missing_fields
 
-        stories = write_stories(
-            sample_researched_leads[:1], openai_client=mock_openai_client
-        )
+        stories = write_stories(sample_researched_leads[:1], openai_client=mock_openai_client)
 
         assert len(stories) == 1
         assert stories[0].headline == "Only Headline"
@@ -277,9 +255,7 @@ class TestWritingService:
         prompt = call_args[0][0]
         assert "Context:" in prompt
 
-    def test_write_stories_single_lead(
-        self, mock_openai_client, sample_writing_response
-    ):
+    def test_write_stories_single_lead(self, mock_openai_client, sample_writing_response):
         """Test writing with single lead."""
         single_lead = [
             Lead(
@@ -296,9 +272,7 @@ class TestWritingService:
         assert len(stories) == 1
         assert mock_openai_client.chat_completion.call_count == 1
 
-    def test_write_stories_client_error_propagation(
-        self, mock_openai_client, sample_researched_leads
-    ):
+    def test_write_stories_client_error_propagation(self, mock_openai_client, sample_researched_leads):
         """Test that client errors are properly propagated."""
         mock_openai_client.chat_completion.side_effect = Exception("OpenAI API Error")
 
@@ -329,9 +303,7 @@ class TestWritingService:
                 _parse_story_from_response("invalid json", sample_researched_leads[0])
             mock_logger.error.assert_called()
 
-    def test_write_stories_preserves_lead_attributes(
-        self, mock_openai_client, sample_writing_response
-    ):
+    def test_write_stories_preserves_lead_attributes(self, mock_openai_client, sample_writing_response):
         """Test that lead attributes are properly preserved in stories."""
         lead_with_custom_date = Lead(
             tip="Custom date lead",
@@ -342,9 +314,7 @@ class TestWritingService:
 
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
-        stories = write_stories(
-            [lead_with_custom_date], openai_client=mock_openai_client
-        )
+        stories = write_stories([lead_with_custom_date], openai_client=mock_openai_client)
 
         assert stories[0].date == "2024-12-25"
         assert stories[0].sources == ["https://custom1.com", "https://custom2.com"]

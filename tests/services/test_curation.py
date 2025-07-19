@@ -109,10 +109,7 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                tip=(
-                    "Local sports team wins championship after 50 years, bringing "
-                    "joy to fans and boosting local economy through celebrations."
-                ),
+                tip=("Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."),
                 context=(
                     "Local sports championship victory: The city's professional "
                     "baseball team won their first championship in 50 years, "
@@ -294,9 +291,7 @@ class TestLeadCuration:
         result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
         # Check logging calls - updated to match new emoji-based format
-        mock_logger.info.assert_any_call(
-            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6
-        )
+        mock_logger.info.assert_any_call("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6)
         mock_logger.info.assert_any_call(
             "  ✓ Priority selection complete: %d high-impact leads selected",
             len(result),
@@ -326,9 +321,7 @@ class TestLeadCuration:
 
         # Verify model parameter was used in at least one call
         calls = mock_openai_client.chat_completion.call_args_list
-        assert any(
-            call.kwargs.get("model") == CURATION_MODEL for call in calls if call.kwargs
-        )
+        assert any(call.kwargs.get("model") == CURATION_MODEL for call in calls if call.kwargs)
 
     def test_curate_leads_fallback_behavior(self, mock_openai_client, sample_leads):
         """Test fallback behavior when evaluation fails."""
@@ -380,8 +373,7 @@ class TestLeadCurator:
                 "opportunities.",
             ),
             Lead(
-                tip="Local sports team wins championship after 50 years, bringing "
-                "joy to fans and boosting local economy through celebrations.",
+                tip="Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations.",
             ),
         ]
 
@@ -415,9 +407,7 @@ class TestLeadCurator:
                         "hook": 7,  # Strong headline potential
                         "novelty": 6,  # Somewhat expected
                         "conflict": 7,  # Political disagreements
-                        "brief_reasoning": (
-                            "Major global climate policy with world leaders"
-                        ),
+                        "brief_reasoning": ("Major global climate policy with world leaders"),
                     },
                     {
                         "index": 2,
@@ -663,9 +653,7 @@ class TestLeadCurator:
 
         # Create a cyclical response to handle any number of pairwise calls
         pairwise_responses = [pairwise_response] * 10
-        mock_openai_client.chat_completion.side_effect = [
-            evaluation_response
-        ] + pairwise_responses
+        mock_openai_client.chat_completion.side_effect = [evaluation_response] + pairwise_responses
 
         curator = LeadCurator(mock_openai_client)
         result = curator.curate_leads(sample_leads)
@@ -728,12 +716,8 @@ class TestLeadCurator:
         curator.curate_leads(sample_leads[:1])
 
         # Verify logging calls - updated to match new emoji-based format
-        mock_logger.info.assert_any_call(
-            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1
-        )
-        mock_logger.info.assert_any_call(
-            "  ✓ Priority selection complete: %d high-impact leads selected", 1
-        )
+        mock_logger.info.assert_any_call("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1)
+        mock_logger.info.assert_any_call("  ✓ Priority selection complete: %d high-impact leads selected", 1)
 
 
 class TestLeadCurationEdgeCases:
@@ -753,9 +737,7 @@ class TestLeadCurationEdgeCases:
         )
 
     @patch("services.lead_curation.logger")
-    def test_json_parsing_dict_without_evaluations(
-        self, mock_logger, mock_openai_client, sample_lead
-    ):
+    def test_json_parsing_dict_without_evaluations(self, mock_logger, mock_openai_client, sample_lead):
         """Test JSON parsing when response is dict without 'evaluations' key
         but contains a list."""
         # Response is a dict with a list value, not in 'evaluations' key
@@ -782,9 +764,7 @@ class TestLeadCurationEdgeCases:
         assert len(result) == 1
 
     @patch("services.lead_curation.logger")
-    def test_json_parsing_dict_no_array_found(
-        self, mock_logger, mock_openai_client, sample_lead
-    ):
+    def test_json_parsing_dict_no_array_found(self, mock_logger, mock_openai_client, sample_lead):
         """Test JSON parsing when response is dict with no list values."""
         # Response is a dict with no list values
         mock_response = {"message": "No evaluations available", "status": "error"}
@@ -800,9 +780,7 @@ class TestLeadCurationEdgeCases:
         mock_logger.error.assert_called()
 
     @patch("services.lead_curation.logger")
-    def test_json_parsing_invalid_type(
-        self, mock_logger, mock_openai_client, sample_lead
-    ):
+    def test_json_parsing_invalid_type(self, mock_logger, mock_openai_client, sample_lead):
         """Test JSON parsing when response is neither list nor dict."""
         # Response is a string, not list or dict
         mock_openai_client.chat_completion.return_value = '"Invalid response type"'
@@ -815,9 +793,7 @@ class TestLeadCurationEdgeCases:
         mock_logger.error.assert_called()
 
     @patch("services.lead_curation.logger")
-    def test_missing_criteria_scores_warning(
-        self, mock_logger, mock_openai_client, sample_lead
-    ):
+    def test_missing_criteria_scores_warning(self, mock_logger, mock_openai_client, sample_lead):
         """Test warning is logged when criteria scores are missing from evaluation."""
         # Response missing some criteria (e.g., missing 'novelty' and 'conflict')
         mock_response = [
@@ -880,10 +856,7 @@ class TestLeadCurationEdgeCases:
         """Test fallback to minimum leads selection when not enough leads pass
         thresholds."""
         # Create more leads than minimum required
-        leads = [
-            Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}")
-            for i in range(6)
-        ]
+        leads = [Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}") for i in range(6)]
 
         # Mock response with low scores that won't pass normal selection
         mock_response = [
@@ -942,9 +915,7 @@ class TestLeadCurationEdgeCases:
             mock_pairwise.assert_not_called()
 
     @patch("services.lead_curation.logger")
-    def test_json_decode_error_handling(
-        self, mock_logger, mock_openai_client, sample_lead
-    ):
+    def test_json_decode_error_handling(self, mock_logger, mock_openai_client, sample_lead):
         """Test handling of invalid JSON response."""
         # Return invalid JSON
         mock_openai_client.chat_completion.return_value = "Invalid JSON {"
