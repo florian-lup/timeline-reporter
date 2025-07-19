@@ -9,8 +9,9 @@ from utils import get_today_formatted
 # ---------------------------------------------------------------------------
 # Discovery Model Configuration
 # ---------------------------------------------------------------------------
-LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
-SEARCH_CONTEXT_SIZE: str = "high"
+LEAD_DISCOVERY_MODEL: str = "sonar-deep-research"
+SEARCH_CONTEXT_SIZE: str = "low"
+REASONING_EFFORT: str = "low"
 
 # ---------------------------------------------------------------------------
 # Discovery Timeout Configuration
