@@ -17,7 +17,6 @@ from config.discovery_config import (
 from config.research_config import (
     LEAD_RESEARCH_MODEL,
     RESEARCH_SYSTEM_PROMPT,
-    RESEARCH_TIMEOUT_SECONDS,
 )
 
 _PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions"
@@ -120,7 +119,7 @@ class PerplexityClient:
             },
         }
 
-        with httpx.Client(timeout=RESEARCH_TIMEOUT_SECONDS) as client:
+        with httpx.Client() as client:
             response = client.post(
                 _PERPLEXITY_ENDPOINT, json=payload, headers=self._headers
             )
@@ -162,7 +161,7 @@ class PerplexityClient:
             },
         }
 
-        with httpx.Client(timeout=180) as client:  # Longer timeout for deep research
+        with httpx.Client() as client:
             response = client.post(
                 _PERPLEXITY_ENDPOINT, json=payload, headers=self._headers
             )

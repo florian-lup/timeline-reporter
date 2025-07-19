@@ -1,7 +1,7 @@
 """Test suite for Perplexity client."""
 
 import json
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import httpx
 import pytest
@@ -198,28 +198,6 @@ class TestPerplexityClient:
 
             with pytest.raises(httpx.HTTPStatusError):
                 client.lead_research("test prompt")
-
-    def test_research_timeout_configuration(self, sample_response_data):
-        """Test that HTTP client is configured with proper timeout."""
-        with patch("clients.perplexity_client.httpx.Client") as mock_client_class:
-            mock_context_manager = MagicMock()
-            mock_client = Mock()
-            mock_response = Mock()
-
-            mock_client_class.return_value = mock_context_manager
-            mock_context_manager.__enter__.return_value = mock_client
-            mock_context_manager.__exit__.return_value = None
-
-            mock_response.json.return_value = sample_response_data
-            mock_response.raise_for_status.return_value = None
-            mock_client.post.return_value = mock_response
-
-            with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-                client = PerplexityClient()
-                client.lead_research("test prompt")
-
-                # Verify Client was initialized with timeout=240
-                mock_client_class.assert_called_with(timeout=240)
 
     @pytest.mark.parametrize(
         "prompt",
@@ -425,30 +403,6 @@ Let me search for current information.
 
             # Should return the full response as-is
             assert result == raw_response
-
-    def test_lead_discovery_timeout_configuration(self):
-        """Test that deep research uses longer timeout (180s)."""
-        with patch("clients.perplexity_client.httpx.Client") as mock_client_class:
-            mock_context_manager = MagicMock()
-            mock_client = Mock()
-            mock_response = Mock()
-
-            mock_client_class.return_value = mock_context_manager
-            mock_context_manager.__enter__.return_value = mock_client
-            mock_context_manager.__exit__.return_value = None
-
-            response_data = {"choices": [{"message": {"content": "[]"}}]}
-            mock_response.json.return_value = response_data
-            mock_response.raise_for_status.return_value = None
-            mock_client.post.return_value = mock_response
-
-            with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-                client = PerplexityClient()
-                client.lead_discovery("test prompt")
-
-                # Verify Client was initialized with timeout=180
-                # (longer for deep research)
-                mock_client_class.assert_called_with(timeout=180)
 
     def test_extract_json_from_reasoning_response_with_think(self):
         """Test the _extract_json_from_reasoning_response method.

@@ -52,7 +52,6 @@ from .research_config import (
     RESEARCH_INSTRUCTIONS,
     # Research Prompts
     RESEARCH_SYSTEM_PROMPT,
-    RESEARCH_TIMEOUT_SECONDS,
 )
 from .settings import (
     CLOUD_PROVIDER,
@@ -111,7 +110,6 @@ __all__ = [
     "PAIRWISE_SCORE_WEIGHT",
     # Research Configuration
     "LEAD_RESEARCH_MODEL",
-    "RESEARCH_TIMEOUT_SECONDS",
     # Verification Configuration
     "VERIFICATION_MODEL",
     "VERIFICATION_TEMPERATURE",

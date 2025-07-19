@@ -172,6 +172,7 @@ class TestClientIntegration:
             "headline",
             "summary",
             "body",
+            "tag",
             "sources",
             "date",
         }

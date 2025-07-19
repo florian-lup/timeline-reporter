@@ -37,8 +37,3 @@ RESEARCH_INSTRUCTIONS = (
     "- Include both primary sources (official statements, documents) and secondary "
     "sources (news reports, analysis) where available"
 )
-
-# ---------------------------------------------------------------------------
-# Research Timeouts and Limits
-# ---------------------------------------------------------------------------
-RESEARCH_TIMEOUT_SECONDS: int = 240
