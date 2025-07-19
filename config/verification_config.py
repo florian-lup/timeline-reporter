@@ -8,7 +8,6 @@ related to lead credibility verification.
 # Verification Model Configuration
 # ---------------------------------------------------------------------------
 VERIFICATION_MODEL: str = "o4-mini-2025-04-16"
-VERIFICATION_TEMPERATURE: float = 0.2  # Low temperature for consistent scoring
 
 # ---------------------------------------------------------------------------
 # Scoring Thresholds

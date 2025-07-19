@@ -8,7 +8,6 @@ related to story writing.
 # Writing Model Configuration
 # ---------------------------------------------------------------------------
 WRITING_MODEL: str = "gpt-4.1-2025-04-14"
-WRITING_TEMPERATURE: float = 0.5
 
 # ---------------------------------------------------------------------------
 # Writing System Prompt

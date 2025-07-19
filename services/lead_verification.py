@@ -17,7 +17,6 @@ from config.verification_config import (
     VERIFICATION_JSON_FORMAT,
     VERIFICATION_MODEL,
     VERIFICATION_SYSTEM_PROMPT,
-    VERIFICATION_TEMPERATURE,
 )
 from models import Lead
 from utils import logger
@@ -153,7 +152,6 @@ def _evaluate_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> dict[
         response = openai_client.chat_completion(
             prompt=full_prompt,
             model=VERIFICATION_MODEL,
-            temperature=VERIFICATION_TEMPERATURE,
             response_format={"type": "json_object"},
         )
 

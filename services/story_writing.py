@@ -8,7 +8,6 @@ from config.writing_config import (
     WRITING_INSTRUCTIONS,
     WRITING_MODEL,
     WRITING_SYSTEM_PROMPT,
-    WRITING_TEMPERATURE,
 )
 from models import Lead, Story
 from utils import logger
@@ -38,7 +37,6 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
         response_text = openai_client.chat_completion(
             full_prompt,
             model=WRITING_MODEL,
-            temperature=WRITING_TEMPERATURE,
             response_format={"type": "json_object"},
         )
 

@@ -82,7 +82,6 @@ from .verification_config import (
     VERIFICATION_MODEL,
     # Verification Prompts
     VERIFICATION_SYSTEM_PROMPT,
-    VERIFICATION_TEMPERATURE,
 )
 
 __all__ = [
@@ -120,7 +119,6 @@ __all__ = [
     "RESEARCH_TIMEOUT_SECONDS",
     # Verification Configuration
     "VERIFICATION_MODEL",
-    "VERIFICATION_TEMPERATURE",
     "MIN_SOURCE_CREDIBILITY_SCORE",
     "MIN_CONTEXT_RELEVANCE_SCORE",
     "MIN_TOTAL_SCORE",
