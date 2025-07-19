@@ -15,7 +15,7 @@ SEARCH_CONTEXT_SIZE: str = "high"
 # ---------------------------------------------------------------------------
 # Discovery Timeout Configuration
 # ---------------------------------------------------------------------------
-DISCOVERY_TIMEOUT_SECONDS: float = 120  # Total timeout for discovery operations
+DISCOVERY_TIMEOUT_SECONDS: float = 600  # Total timeout for discovery operations
 
 # ---------------------------------------------------------------------------
 # Discovery Categories Configuration
@@ -40,13 +40,14 @@ Guidelines:
 • If information is insufficient or no qualifying leads are found, return an empty JSON array ( [] )—do NOT fabricate content.
 • Cross-check whenever possible—avoid single-source rumours or speculative opinion pieces.
 • Summarise each lead in one concise paragraph (50-80 words) covering who, what, when, where, why/how, and implications.
+• Include credible source URLs that confirm the information in your summary.
 • Remain strictly factual and neutral; no opinion or analysis beyond what the sourced material states.
 • OUTPUT ONLY the JSON array described below—no markdown, headers, or extra commentary.
 
 Expected output format (do not include this block in your response):
 [
-  {"tip": "<single paragraph summary>"},
-  {"tip": "<single paragraph summary>"}
+  {"tip": "<single paragraph summary>", "sources": ["<source_url_1>", "<source_url_2>"]},
+  {"tip": "<single paragraph summary>", "sources": ["<source_url_1>", "<source_url_2>"]}
 ]
 """.strip()
 
@@ -54,9 +55,12 @@ Expected output format (do not include this block in your response):
 # Discovery JSON Format Instructions
 # ---------------------------------------------------------------------------
 DISCOVERY_JSON_FORMAT = """
-Return ONLY a JSON array. Each element must be an object with exactly one key—'tip'—whose value is a
-single-paragraph string (50-80 words). Do NOT include any other keys, wrap the output in Markdown fences,
-or add explanations before/after the JSON. If no leads meet the criteria, return an empty array: []
+Return ONLY a JSON array. Each element must be an object with exactly two keys:
+- 'tip': a single-paragraph string (50-80 words)
+- 'sources': an array of credible source URLs that confirm the information
+
+Do NOT include any other keys, wrap the output in Markdown fences, or add explanations before/after the JSON. 
+If no leads meet the criteria, return an empty array: []
 """.strip()
 
 # ---------------------------------------------------------------------------

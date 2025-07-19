@@ -60,6 +60,7 @@ def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead
     """Parse JSON from Perplexity and enhance the Lead object.
 
     The Perplexity client uses structured output and returns clean JSON.
+    Combines existing sources from discovery with new sources from research.
     """
     try:
         data = json.loads(response_text)
@@ -68,10 +69,17 @@ def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead
         # Return the original lead unchanged
         return original_lead
 
-    # Create enhanced Lead with context and sources from the JSON data
+    # Get new sources from research
+    new_sources = data.get("sources") or []
+    
+    # Combine existing sources from discovery with new research sources
+    # Use a set to avoid duplicates, then convert back to list
+    combined_sources = list(set(original_lead.sources + new_sources))
+
+    # Create enhanced Lead with context and combined sources from the JSON data
     return Lead(
         tip=original_lead.tip,
         context=data.get("context") or "",
-        sources=data.get("sources") or [],
+        sources=combined_sources,
         date=original_lead.date,
     )

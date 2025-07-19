@@ -31,9 +31,11 @@ class TestResearchService:
         return [
             Lead(
                 tip="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                sources=["https://example.com/discovery-climate-1", "https://example.com/discovery-climate-2"]
             ),
             Lead(
                 tip="Tech Innovation Expo: Major technology companies showcase AI and renewable energy innovations.",
+                sources=["https://example.com/discovery-tech-1"]
             ),
         ]
 
@@ -73,9 +75,16 @@ class TestResearchService:
         # Check that context was added
         assert "Climate Summit 2024" in enhanced_leads[0].context
         assert "190 countries" in enhanced_leads[0].context
-        # Check that sources were added
-        assert len(enhanced_leads[0].sources) == 2
-        assert enhanced_leads[0].sources[0] == "https://example.com/climate-news"
+        
+        # Check that sources were combined - discovery sources + research sources
+        expected_sources = set([
+            "https://example.com/discovery-climate-1",
+            "https://example.com/discovery-climate-2", 
+            "https://example.com/climate-news",
+            "https://example.com/summit-report"
+        ])
+        assert set(enhanced_leads[0].sources) == expected_sources
+        assert len(enhanced_leads[0].sources) == 4
 
         # Verify research was called for each lead
         assert mock_perplexity_client.lead_research.call_count == 2
@@ -156,14 +165,9 @@ class TestResearchService:
         research_lead(sample_leads, openai_client=mock_openai_client, perplexity_client=mock_perplexity_client)
 
         # Verify the last call matches the final research completion log
-        # The implementation logs each lead individually, so check the last call
-        mock_logger.info.assert_called_with(
-            "  ✓ Research complete for lead %d/%d - %s: %d sources found",
-            2,
-            2,
-            "Tech Innovation Expo: Major technology...",
-            2,
-        )
+        # The implementation logs each lead individually, so check the last call  
+        # With source combination, this should be 3 sources (1 discovery + 2 research)
+        mock_logger.info.assert_called_with("  📊 Sources found: %d", 3)
 
     def test_research_lead_with_fenced_json(self, mock_openai_client, mock_perplexity_client, sample_leads):
         """Test research with JSON wrapped in markdown fences.
@@ -200,6 +204,25 @@ class TestResearchService:
 
         assert enhanced_leads[0].date == "2024-01-15"
 
+    def test_research_lead_empty_discovery_sources(self, mock_openai_client, mock_perplexity_client):
+        """Test research with lead that has empty sources from discovery."""
+        lead_no_sources = Lead(
+            tip="Lead with no discovery sources",
+            sources=[]  # Empty sources from discovery
+        )
+        
+        research_response = json.dumps({
+            "context": "Research context",
+            "sources": ["https://research-source-1.com", "https://research-source-2.com"]
+        })
+        mock_perplexity_client.lead_research.return_value = research_response
+
+        enhanced_leads = research_lead([lead_no_sources], openai_client=mock_openai_client, perplexity_client=mock_perplexity_client)
+
+        # Should only have research sources
+        assert len(enhanced_leads[0].sources) == 2
+        assert set(enhanced_leads[0].sources) == {"https://research-source-1.com", "https://research-source-2.com"}
+
     def test_research_lead_null_values(self, mock_openai_client, mock_perplexity_client, sample_leads):
         """Test research with null values in JSON."""
         response_null_values = json.dumps(
@@ -228,6 +251,59 @@ class TestResearchService:
 
         assert len(enhanced_leads) == 1
         assert mock_perplexity_client.lead_research.call_count == 1
+
+    def test_research_lead_source_combination(self, mock_openai_client, mock_perplexity_client):
+        """Test that research combines existing sources from discovery with new research sources."""
+        # Lead with existing sources from discovery
+        lead_with_discovery_sources = Lead(
+            tip="Test lead with discovery sources",
+            sources=["https://discovery-source-1.com", "https://discovery-source-2.com"]
+        )
+        
+        # Research response with new sources
+        research_response = json.dumps({
+            "context": "Research context",
+            "sources": ["https://research-source-1.com", "https://research-source-2.com"]
+        })
+        mock_perplexity_client.lead_research.return_value = research_response
+
+        enhanced_leads = research_lead([lead_with_discovery_sources], openai_client=mock_openai_client, perplexity_client=mock_perplexity_client)
+
+        # Should combine all sources without duplicates
+        expected_sources = [
+            "https://discovery-source-1.com",
+            "https://discovery-source-2.com", 
+            "https://research-source-1.com",
+            "https://research-source-2.com"
+        ]
+        assert len(enhanced_leads[0].sources) == 4
+        assert set(enhanced_leads[0].sources) == set(expected_sources)
+
+    def test_research_lead_duplicate_source_removal(self, mock_openai_client, mock_perplexity_client):
+        """Test that duplicate sources are removed when combining discovery and research sources."""
+        # Lead with discovery sources
+        lead_with_sources = Lead(
+            tip="Test lead",
+            sources=["https://duplicate-source.com", "https://discovery-only.com"]
+        )
+        
+        # Research response with overlapping sources
+        research_response = json.dumps({
+            "context": "Research context",
+            "sources": ["https://duplicate-source.com", "https://research-only.com"]
+        })
+        mock_perplexity_client.lead_research.return_value = research_response
+
+        enhanced_leads = research_lead([lead_with_sources], openai_client=mock_openai_client, perplexity_client=mock_perplexity_client)
+
+        # Should have 3 unique sources (duplicate removed)
+        expected_sources = [
+            "https://duplicate-source.com",
+            "https://discovery-only.com",
+            "https://research-only.com"
+        ]
+        assert len(enhanced_leads[0].sources) == 3
+        assert set(enhanced_leads[0].sources) == set(expected_sources)
 
     def test_research_lead_client_error_propagation(self, mock_openai_client, mock_perplexity_client, sample_leads):
         """Test that client errors are properly propagated."""
