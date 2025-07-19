@@ -1,7 +1,7 @@
 """Centralized configuration for story writing system.
 
 This module contains all settings, prompts, and configuration data
-related to story writing using GPT-4o.
+related to story writing.
 """
 
 # ---------------------------------------------------------------------------

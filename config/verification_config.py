@@ -1,13 +1,13 @@
 """Centralized configuration for lead verification system.
 
 This module contains all settings, prompts, and configuration data
-related to lead credibility verification using GPT-4o.
+related to lead credibility verification.
 """
 
 # ---------------------------------------------------------------------------
 # Verification Model Configuration
 # ---------------------------------------------------------------------------
-VERIFICATION_MODEL: str = "gpt-4o"
+VERIFICATION_MODEL: str = "o4-mini-2025-04-16"
 VERIFICATION_TEMPERATURE: float = 0.2  # Low temperature for consistent scoring
 
 # ---------------------------------------------------------------------------
@@ -21,53 +21,69 @@ MIN_TOTAL_SCORE: float = 11.0  # Minimum combined score to pass verification
 # Verification System Prompt
 # ---------------------------------------------------------------------------
 VERIFICATION_SYSTEM_PROMPT = """
-You are a fact-checking expert specializing in evaluating the credibility
-and reliability of news leads. Your role is to assess whether a lead is
-trustworthy based on its sources and contextual relevance. You provide
-objective, numerical scores based on clear criteria.
+You are a senior fact-checking editor at a global news organization. Your mission is to evaluate the credibility of incoming news leads before publication.
+
+Guidelines:
+• Base every judgment strictly on the evidence provided—do NOT add or assume facts.
+• Remain impartial and objective; avoid political or ideological bias.
+• Use a 0–10 numeric rubric where 0 = not credible at all and 10 = fully credible.
+• Consider: source authority & reputation, corroboration across multiple outlets, 
+  primary vs. secondary sourcing, timeliness, presence of verifiable data, and the 
+  relevance of context to the lead tip.
+• Be consistent: similar evidence should yield similar scores.
+• Output ONLY the final JSON object; do not add explanations outside the specified fields.
 """.strip()
 
 # ---------------------------------------------------------------------------
 # Verification Instructions Template
 # ---------------------------------------------------------------------------
 VERIFICATION_INSTRUCTIONS = """
-Evaluate the credibility of this news lead based on its sources and context.
+Evaluate the credibility of the news lead using ONLY the information provided below.
 
+Input:
 Lead Tip: {lead_tip}
 Date: {lead_date}
-Context: {lead_context}
-Sources: {lead_sources}
+Context:
+"""{lead_context}"""
+Sources:
+"""{lead_sources}"""
 
-Provide two scores:
+Scoring rubric:
+1. Source Credibility Score (0–10)
+   • 9–10 – Multiple authoritative, independent primary sources 
+     (e.g., Reuters, WHO, peer-reviewed journals).
+   • 7–8 – At least one authoritative source plus additional reputable outlets.
+   • 4–6 – Predominantly secondary or lesser-known sources with some reliability.
+   • 1–3 – Single unverified, anonymous, or partisan sources; social-media rumors.
+   • 0   – No identifiable source or clearly fabricated information.
 
-1. Source Credibility Score (0-10):
-   - Evaluate the quality and reputation of the sources
-   - Major news networks (CNN, BBC, Reuters, etc.) score 8-10
-   - Established media outlets score 6-8
-   - Government/academic sources (.gov, .edu) score 7-9
-   - Lesser-known but legitimate sources score 4-6
-   - Blogs, social media, or unverified sources score 0-3
-   - Consider the diversity and number of sources
+2. Context Relevance Score (0–10)
+   • 9–10 – Context directly supports the lead with specific, timely facts or data.
+   • 7–8 – Context largely supports but lacks some detail or independence.
+   • 4–6 – Some linkage but notable gaps or outdated information.
+   • 1–3 – Weak or tangential relationship between context and lead tip.
+   • 0   – Context unrelated or contradicts the lead.
 
-2. Context Relevance Score (0-10):
-   - How well does the context relate to and support the lead tip?
-   - Is the information timely and relevant to the {lead_date}?
-   - Does the context provide substantive, factual information?
-   - Are there specific details, quotes, or data points?
+3. Analysis
+   • 2–3 concise sentences explaining your scores.
+   • Highlight any red flags, missing information, or outstanding questions.
 
-3. Analysis:
-   - Briefly explain your scores
-   - Note any red flags or credibility concerns
-   - Identify if this appears to be speculation, rumor, or verified fact
+Output:
+Think step-by-step, then present ONLY the JSON object specified in the format 
+instructions—no additional text.
 """.strip()
 
 # ---------------------------------------------------------------------------
 # JSON Format Instructions
 # ---------------------------------------------------------------------------
 VERIFICATION_JSON_FORMAT = """
-
-Provide your response as a JSON object with these exact fields:
-- source_credibility_score: A float between 0 and 10
-- context_relevance_score: A float between 0 and 10
-- analysis: A brief explanation (2-3 sentences) of your assessment
+Return ONLY a JSON object with the following keys in this exact order and no 
+additional keys or text:
+{
+  "source_credibility_score": <float 0-10>,
+  "context_relevance_score": <float 0-10>,
+  "analysis": "<string>"
+}
+Do NOT wrap the JSON in Markdown fences and do NOT include explanations before 
+or after the JSON object.
 """.strip()
