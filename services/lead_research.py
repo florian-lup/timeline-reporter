@@ -11,10 +11,6 @@ from config.research_config import (
 from models import Lead
 from utils import logger
 
-# Constants
-MAX_QUERY_LOG_LENGTH = 100
-
-
 def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_client: PerplexityClient) -> list[Lead]:
     """Calls OpenAI to formulate search queries, then Perplexity to gather context and sources."""
     enhanced_leads: list[Lead] = []
@@ -26,7 +22,7 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
         # Step 1: Use OpenAI to formulate an effective search query
         logger.info("  🔍 Formulating search query for lead %d/%d", idx, len(leads))
         search_query = _formulate_search_query(lead, openai_client=openai_client)
-        logger.info("  ✓ Query formulated: %s", search_query[:MAX_QUERY_LOG_LENGTH] + ("..." if len(search_query) > MAX_QUERY_LOG_LENGTH else ""))
+        logger.info("  ✓ Query formulated: %s", search_query)
 
         # Step 2: Use Perplexity to research the formulated query
         prompt = RESEARCH_INSTRUCTIONS.format(search_query=search_query, lead_date=lead.date)
@@ -34,13 +30,8 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
         enhanced_lead = _enhance_lead_from_response(lead, response_text)
         enhanced_leads.append(enhanced_lead)
         source_count = len(enhanced_lead.sources) if enhanced_lead.sources else 0
-        logger.info(
-            "  ✓ Research complete for lead %d/%d - %s: %d sources found",
-            idx,
-            len(leads),
-            first_words,
-            source_count,
-        )
+        logger.info("  ✓ Research complete for lead %d/%d - %s", idx, len(leads), first_words)
+        logger.info("  📊 Sources found: %d", source_count)
     return enhanced_leads
 
 
@@ -52,8 +43,6 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
 def _formulate_search_query(lead: Lead, *, openai_client: OpenAIClient) -> str:
     """Use OpenAI to transform the raw tip into an effective search query for Perplexity."""
     prompt = QUERY_FORMULATION_INSTRUCTIONS.format(lead_tip=lead.tip, lead_date=lead.date)
-
-    logger.info("  🤖 GPT Query: %s", prompt[:MAX_QUERY_LOG_LENGTH] + ("..." if len(prompt) > MAX_QUERY_LOG_LENGTH else ""))
 
     try:
         search_query = openai_client.chat_completion(
