@@ -106,7 +106,7 @@ class TestClientIntegration:
             mock_http_client.post.assert_called_once()
             call_args = mock_http_client.post.call_args
             assert (
-                "investigative research assistant"
+                "senior investigative research analyst"
                 in call_args[1]["json"]["messages"][0]["content"]
             )
 

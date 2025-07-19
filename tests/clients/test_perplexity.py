@@ -243,10 +243,10 @@ class TestPerplexityClient:
             payload = mock_client.post.call_args[1]["json"]
             system_message = payload["messages"][0]["content"]
 
-            assert "investigative research assistant" in system_message
-            assert "current events" in system_message
-            assert "credible sources" in system_message
-            assert "background information" in system_message
+            assert "senior investigative research analyst" in system_message
+            assert "developing news leads" in system_message
+            assert "authoritative sources" in system_message
+            assert "background" in system_message
 
     def test_response_content_extraction(self, mock_httpx_client):
         """Test that response content is properly extracted."""
@@ -452,13 +452,10 @@ This is reasoning content that should be removed.
             system_message = payload["messages"][0]["content"]
 
             # Should contain discovery-specific instructions
-            expected_text = (
-                "expert research assistant specializing in "
-                "identifying significant current events"
-            )
+            expected_text = "senior news-scout for a global newsroom"
             assert expected_text in system_message
             assert "factual" in system_message
-            assert "reputable sources" in system_message
+            assert "reputable English-language sources" in system_message
 
     def test_lead_discovery_search_context_size(self, mock_httpx_client):
         """Test that deep research uses the configured search context size."""

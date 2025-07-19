@@ -13,7 +13,8 @@ LEAD_RESEARCH_MODEL: str = "sonar-pro"
 # Research System Prompt
 # ---------------------------------------------------------------------------
 RESEARCH_SYSTEM_PROMPT = """
-You are a senior investigative research analyst at a global news desk. Your job is to collect verifiable facts and authoritative sources about developing news leads.
+You are a senior investigative research analyst at a global news desk.
+Your job is to collect verifiable facts and authoritative sources about developing news leads.
 
 Guidelines:
 • Use only publicly available, reputable information. If multiple sources conflict, note the discrepancy.
@@ -34,7 +35,8 @@ Lead Tip: {lead_tip}
 Date: {lead_date}
 
 Output requirements:
-1. context – an in-depth report (approximately 600–1000 words) detailing relevant background, key actors, chronology, significance, and any controversies surrounding the lead. Use neutral, factual language.
+1. context – an in-depth report (approximately 600–1000 words) detailing relevant background, key actors,
+   chronology, significance, and any controversies surrounding the lead. Use neutral, factual language.
 2. sources – An array of unique, fully-qualified URLs to credible material that supports the context.
 
 Think step-by-step while researching, then present ONLY the JSON object specified in the format instructions—no additional text.

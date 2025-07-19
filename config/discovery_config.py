@@ -46,7 +46,8 @@ Output format:
 # Discovery JSON Format Instructions
 # ---------------------------------------------------------------------------
 DISCOVERY_JSON_FORMAT = """
-Return ONLY a JSON array. Each element must be an object with exactly one key—'tip'—whose value is a string paragraph (50-80 words). Do not include any other keys or wrap the JSON in Markdown fences.
+Return ONLY a JSON array. Each element must be an object with exactly one key—'tip'—whose
+value is a string paragraph (50-80 words). Do not include any other keys or wrap the JSON in Markdown fences.
 """.strip()
 
 # ---------------------------------------------------------------------------
@@ -54,19 +55,22 @@ Return ONLY a JSON array. Each element must be an object with exactly one key—
 # ---------------------------------------------------------------------------
 
 DISCOVERY_POLITICS_INSTRUCTIONS = f"""
-Identify impactful political and geopolitical developments reported on {get_today_formatted()}. Focus on government decisions, elections, policy shifts, diplomatic negotiations, conflicts, or sanctions with global significance.
+Identify impactful political and geopolitical developments reported on {get_today_formatted()}.
+Focus on government decisions, elections, policy shifts, diplomatic negotiations, conflicts, or sanctions with global significance.
 
 Follow the system guidelines and output requirements. Provide 3-5 leads.
 """.strip()
 
 DISCOVERY_ENVIRONMENT_INSTRUCTIONS = f"""
-Identify significant environmental news reported on {get_today_formatted()}. Look for climate-change findings, major natural disasters, conservation breakthroughs, environmental policy shifts, or landmark ecological studies.
+Identify significant environmental news reported on {get_today_formatted()}.
+Look for climate-change findings, major natural disasters, conservation breakthroughs, environmental policy shifts, or landmark ecological studies.
 
 Follow the system guidelines and output requirements. Provide 3-5 leads.
 """.strip()
 
 DISCOVERY_ENTERTAINMENT_INSTRUCTIONS = f"""
-Identify notable entertainment and sports news reported on {get_today_formatted()}. Include major film/TV/music releases, award announcements, high-profile celebrity developments, and headline sporting achievements or events.
+Identify notable entertainment and sports news reported on {get_today_formatted()}.
+Include major film/TV/music releases, award announcements, high-profile celebrity developments, and headline sporting achievements or events.
 
 Follow the system guidelines and output requirements. Provide 3-5 leads.
 """.strip()

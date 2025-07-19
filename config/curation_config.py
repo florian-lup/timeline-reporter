@@ -90,7 +90,8 @@ PAIRWISE_COMPARISON_PROMPT_TEMPLATE = """
 You are comparing pairs of researched leads to decide which is more newsworthy for a global audience.
 
 Guidelines:
-• Consider all evaluation criteria (impact, proximity, prominence, relevance, hook, novelty, conflict) with particular emphasis on real-world impact and reader interest.
+• Consider all evaluation criteria (impact, proximity, prominence, relevance, hook, novelty, conflict)
+  with particular emphasis on real-world impact and reader interest.
 • Provide a concise reason and a confidence level (high, medium, low) for each decision.
 
 Input pairs:

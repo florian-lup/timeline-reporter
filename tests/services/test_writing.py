@@ -131,8 +131,8 @@ class TestWritingService:
 
         # Verify OpenAI client was called with correct parameters
         call_args = mock_openai_client.chat_completion.call_args
-        assert call_args[1]["model"] == "gpt-4o"
-        assert call_args[1]["temperature"] == 0.7
+        assert call_args[1]["model"] == "gpt-4.1-2025-04-14"
+        assert call_args[1]["temperature"] == 0.5
         assert call_args[1]["response_format"] == {"type": "json_object"}
 
     def test_write_stories_prompt_formatting(
@@ -155,7 +155,7 @@ class TestWritingService:
         assert "https://example.com" not in prompt
 
         # Should contain system prompt and JSON instruction
-        assert "professional journalist" in prompt.lower()
+        assert "award-winning news journalist" in prompt.lower()
         assert "json object" in prompt.lower()
 
     def test_write_stories_json_parsing(
@@ -275,7 +275,7 @@ class TestWritingService:
         # Verify prompt still gets formatted (with empty context)
         call_args = mock_openai_client.chat_completion.call_args
         prompt = call_args[0][0]
-        assert "Context: " in prompt
+        assert "Context:" in prompt
 
     def test_write_stories_single_lead(
         self, mock_openai_client, sample_writing_response
