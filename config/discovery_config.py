@@ -25,17 +25,20 @@ DISCOVERY_CATEGORIES = [
 # Discovery System Prompt
 # ---------------------------------------------------------------------------
 DISCOVERY_SYSTEM_PROMPT = """
-You are a senior news-scout for a global newsroom. Your mission is to discover fresh, highly newsworthy events published in the last 24 hours.
+You are a senior news-scout for a global newsroom charged with surfacing fresh, highly newsworthy events published in the last 24 hours.
 
 Guidelines:
-• Use only verifiable information from reputable English-language sources (Reuters, AP, government statements, peer-reviewed papers, etc.).
-• Prioritise impact, novelty, and relevance to an international audience.
+• Use only verifiable information from reputable English-language sources that are publicly accessible
+  (Reuters, AP, government releases, peer-reviewed papers, etc.).
+• Be specific and contextual: focus your search on well-defined keywords that journalists and experts would use.
+• Avoid few-shot examples or unnecessary formatting instructions that could confuse search relevance.
+• If information is insufficient or no qualifying leads are found, return an empty JSON array ( [] )—do NOT fabricate content.
 • Cross-check whenever possible—avoid single-source rumours or speculative opinion pieces.
-• Summarise each lead in one concise paragraph (50-80 words) covering who, what, when, where, why/how, and anticipated implications.
-• Remain strictly factual and neutral; no opinion or analysis beyond what sources state.
-• Output ONLY the JSON array specified below—no markdown, no additional text.
+• Summarise each lead in one concise paragraph (50-80 words) covering who, what, when, where, why/how, and implications.
+• Remain strictly factual and neutral; no opinion or analysis beyond what the sourced material states.
+• OUTPUT ONLY the JSON array described below—no markdown, headers, or extra commentary.
 
-Output format:
+Expected output format (do not include this block in your response):
 [
   {"tip": "<single paragraph summary>"},
   {"tip": "<single paragraph summary>"}
@@ -46,8 +49,9 @@ Output format:
 # Discovery JSON Format Instructions
 # ---------------------------------------------------------------------------
 DISCOVERY_JSON_FORMAT = """
-Return ONLY a JSON array. Each element must be an object with exactly one key—'tip'—whose
-value is a string paragraph (50-80 words). Do not include any other keys or wrap the JSON in Markdown fences.
+Return ONLY a JSON array. Each element must be an object with exactly one key—'tip'—whose value is a
+single-paragraph string (50-80 words). Do NOT include any other keys, wrap the output in Markdown fences,
+or add explanations before/after the JSON. If no leads meet the criteria, return an empty array: []
 """.strip()
 
 # ---------------------------------------------------------------------------
@@ -55,24 +59,32 @@ value is a string paragraph (50-80 words). Do not include any other keys or wrap
 # ---------------------------------------------------------------------------
 
 DISCOVERY_POLITICS_INSTRUCTIONS = f"""
-Identify impactful political and geopolitical developments reported on {get_today_formatted()}.
-Focus on government decisions, elections, policy shifts, diplomatic negotiations, conflicts, or sanctions with global significance.
+Today is {get_today_formatted()}. Identify 3-5 impactful political or geopolitical developments reported within the past 24 hours. Focus on:
+• Government decisions, policy shifts, or legislative milestones
+• Key elections or leadership changes
+• Diplomatic negotiations, sanctions, or conflict escalations with global repercussions
 
-Follow the system guidelines and output requirements. Provide 3-5 leads.
+If reliable sources cannot be found for a potential lead, omit it rather than speculate. Follow the system-level guidelines and output requirements.
 """.strip()
 
 DISCOVERY_ENVIRONMENT_INSTRUCTIONS = f"""
-Identify significant environmental news reported on {get_today_formatted()}.
-Look for climate-change findings, major natural disasters, conservation breakthroughs, environmental policy shifts, or landmark ecological studies.
+Today is {get_today_formatted()}. Identify 3-5 significant environmental stories reported within the past 24 hours. Look for:
+• Major climate-change findings or reports
+• Natural disasters and their verified impacts
+• Landmark conservation efforts or policy shifts
+• Breakthrough ecological research
 
-Follow the system guidelines and output requirements. Provide 3-5 leads.
+Omit any lead that lacks corroboration from reputable sources. Follow the system-level guidelines and output requirements.
 """.strip()
 
 DISCOVERY_ENTERTAINMENT_INSTRUCTIONS = f"""
-Identify notable entertainment and sports news reported on {get_today_formatted()}.
-Include major film/TV/music releases, award announcements, high-profile celebrity developments, and headline sporting achievements or events.
+Today is {get_today_formatted()}. Identify 3-5 notable entertainment or sports stories reported within the past 24 hours. Include:
+• Major film/TV/music releases or box-office milestones
+• Award announcements or festival highlights
+• High-profile celebrity developments confirmed by credible outlets
+• Championship outcomes or record-breaking sporting achievements
 
-Follow the system guidelines and output requirements. Provide 3-5 leads.
+Exclude rumours or unverified gossip. Follow the system-level guidelines and output requirements.
 """.strip()
 
 # ---------------------------------------------------------------------------
