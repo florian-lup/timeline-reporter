@@ -1,7 +1,5 @@
 """Service for identifying and removing duplicate leads using vector similarity."""
 
-import logging
-
 from clients.openai_client import OpenAIClient
 from clients.pinecone_client import PineconeClient
 from config.deduplication_config import (
@@ -10,8 +8,7 @@ from config.deduplication_config import (
     VECTOR_ID_PREFIX,
 )
 from models.core import Lead
-
-logger = logging.getLogger(__name__)
+from utils import logger
 
 
 # ---------------------------------------------------------------------------
