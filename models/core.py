@@ -11,6 +11,7 @@ class Lead:
 
     tip: str
     context: str = ""
+    report: str = ""
     sources: list[str] = field(default_factory=list)
     date: str = field(default_factory=get_today_formatted)
 
