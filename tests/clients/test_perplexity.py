@@ -126,7 +126,7 @@ class TestPerplexityClient:
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
             patch("clients.perplexity_client.LEAD_RESEARCH_MODEL", "test-model"),
-            patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
+            patch("clients.perplexity_client.RESEARCH_SEARCH_CONTEXT_SIZE", "large"),
         ):
             client = PerplexityClient()
             client.lead_research("test prompt")
@@ -467,7 +467,7 @@ This is reasoning content that should be removed.
 
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
-            patch("clients.perplexity_client.SEARCH_CONTEXT_SIZE", "large"),
+            patch("clients.perplexity_client.DISCOVERY_SEARCH_CONTEXT_SIZE", "large"),
         ):
             client = PerplexityClient()
             client.lead_discovery("test prompt")

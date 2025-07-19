@@ -52,6 +52,7 @@ from .research_config import (
     RESEARCH_INSTRUCTIONS,
     # Research Prompts
     RESEARCH_SYSTEM_PROMPT,
+    SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
 )
 from .settings import (
     CLOUD_PROVIDER,
@@ -110,6 +111,7 @@ __all__ = [
     "PAIRWISE_SCORE_WEIGHT",
     # Research Configuration
     "LEAD_RESEARCH_MODEL",
+    "RESEARCH_SEARCH_CONTEXT_SIZE",
     # Verification Configuration
     "VERIFICATION_MODEL",
     "VERIFICATION_TEMPERATURE",
