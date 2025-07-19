@@ -64,6 +64,11 @@ If no leads meet the criteria, return an empty array: []
 """.strip()
 
 # ---------------------------------------------------------------------------
+# Discovery Recency Filter Configuration
+# ---------------------------------------------------------------------------
+SEARCH_RECENCY_FILTER: str = "day"  # Limit web search to content from the last 24 hours
+
+# ---------------------------------------------------------------------------
 # Category-Specific Discovery Instructions
 # ---------------------------------------------------------------------------
 
