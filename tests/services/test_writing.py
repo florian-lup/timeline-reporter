@@ -218,7 +218,15 @@ class TestWritingService:
 
         write_stories(sample_researched_leads, openai_client=mock_openai_client)
 
-        mock_logger.info.assert_called_with("Generated %d stories", 2)
+        # Verify the last call matches the final story completion log
+        # The implementation logs each story individually, so check the last call
+        mock_logger.info.assert_called_with(
+            "  ✓ Story %d/%d completed - %s: '%s'",
+            2,
+            2,
+            "Tech Innovation Expo: AI breakthroughs...",
+            "World Leaders Unite at Climate Summit 2024 for Urgent Action",
+        )
 
     def test_write_stories_missing_json_fields(
         self, mock_openai_client, sample_researched_leads

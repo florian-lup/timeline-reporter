@@ -122,25 +122,6 @@ class TestOpenAIClient:
             assert isinstance(result, list)
             assert all(isinstance(x, float) for x in result)
 
-    @patch("clients.openai_client.logger")
-    def test_logging_embed_text(self, mock_logger, mock_openai_client):
-        """Test that embed_text logs properly."""
-        mock_openai, mock_instance = mock_openai_client
-
-        mock_response = Mock()
-        mock_data = Mock()
-        mock_data.embedding = [0.1, 0.2, 0.3]
-        mock_response.data = [mock_data]
-
-        mock_instance.embeddings.create.return_value = mock_response
-
-        with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-            client = OpenAIClient()
-            client.embed_text("test text")
-
-            # Debug logging was removed - no assertion needed
-            pass
-
     def test_embed_text_exception_handling(self, mock_openai_client):
         """Test that embed_text properly propagates exceptions."""
         mock_openai, mock_instance = mock_openai_client
@@ -185,26 +166,6 @@ class TestOpenAIClient:
                 model="text-embedding-3-small",
                 dimensions=1536,
             )
-
-    @patch("clients.openai_client.logger")
-    def test_logging(self, mock_logger, mock_openai_client):
-        """Test that methods log properly."""
-        mock_openai, mock_instance = mock_openai_client
-
-        # Test embedding logging
-        mock_response = Mock()
-        mock_data = Mock()
-        mock_data.embedding = [0.1, 0.2, 0.3]
-        mock_response.data = [mock_data]
-
-        mock_instance.embeddings.create.return_value = mock_response
-
-        with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-            client = OpenAIClient()
-            client.embed_text("test text")
-
-            # Debug logging was removed - no assertion needed
-            pass
 
     def test_chat_completion_success(self, mock_openai_client):
         """Test successful chat completion call."""
@@ -292,26 +253,3 @@ class TestOpenAIClient:
 
             with pytest.raises(Exception, match="Chat API Error"):
                 client.chat_completion("test prompt", model="test-model")
-
-    @patch("clients.openai_client.logger")
-    def test_logging_chat_completion(self, mock_logger, mock_openai_client):
-        """Test that chat_completion logs properly."""
-        mock_openai, mock_instance = mock_openai_client
-
-        mock_response = Mock()
-        mock_choice = Mock()
-        mock_message = Mock()
-        mock_message.content = "Test response"
-        mock_choice.message = mock_message
-        mock_response.choices = [mock_choice]
-
-        mock_instance.chat.completions.create.return_value = mock_response
-
-        with patch("clients.openai_client.OPENAI_API_KEY", "test-api-key"):
-            client = OpenAIClient()
-            client.chat_completion("test prompt", model="test-model")
-
-            mock_logger.info.assert_called_once_with(
-                "Chat completion with %s", "test-model"
-            )
-            # Debug logging was removed - no debug assertion needed

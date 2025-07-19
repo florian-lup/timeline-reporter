@@ -11,7 +11,6 @@ from config import (
     EMBEDDING_MODEL,
     OPENAI_API_KEY,
 )
-from utils import logger
 
 
 class OpenAIClient:
@@ -57,8 +56,6 @@ class OpenAIClient:
         Returns:
             The generated text response
         """
-        logger.info("Chat completion with %s", model)
-
         kwargs: dict[str, Any] = {
             "model": model,
             "messages": [{"role": "user", "content": prompt}],

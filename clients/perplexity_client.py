@@ -19,7 +19,6 @@ from config.research_config import (
     RESEARCH_SYSTEM_PROMPT,
     RESEARCH_TIMEOUT_SECONDS,
 )
-from utils import logger
 
 _PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions"
 
@@ -103,8 +102,6 @@ class PerplexityClient:
         Returns:
             JSON string containing the structured research results
         """
-        logger.info("Lead research request with %s", LEAD_RESEARCH_MODEL)
-
         payload = {
             "model": LEAD_RESEARCH_MODEL,
             "messages": [
@@ -147,8 +144,6 @@ class PerplexityClient:
         Returns:
             JSON string containing the structured research results
         """
-        logger.info("Deep research request with %s", LEAD_DISCOVERY_MODEL)
-
         payload = {
             "model": LEAD_DISCOVERY_MODEL,
             "messages": [

@@ -162,7 +162,15 @@ class TestResearchService:
 
         research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
-        mock_logger.info.assert_called_with("Enhanced %d leads with research", 2)
+        # Verify the last call matches the final research completion log
+        # The implementation logs each lead individually, so check the last call
+        mock_logger.info.assert_called_with(
+            "  ✓ Research complete for lead %d/%d - %s: %d sources found",
+            2,
+            2,
+            "Tech Innovation Expo: Major technology...",
+            2,
+        )
 
     def test_research_lead_with_fenced_json(self, mock_perplexity_client, sample_leads):
         """Test research with JSON wrapped in markdown fences.

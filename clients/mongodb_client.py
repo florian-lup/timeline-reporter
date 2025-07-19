@@ -40,7 +40,9 @@ class MongoDBClient:
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]
         logger.info(
-            "MongoDB connected: %s/%s", MONGODB_DATABASE_NAME, MONGODB_COLLECTION_NAME
+            "  ✓ MongoDB connected: %s/%s",
+            MONGODB_DATABASE_NAME,
+            MONGODB_COLLECTION_NAME,
         )
 
     # ------------------------------------------------------------------

@@ -176,8 +176,9 @@ class TestPineconeClient:
         ):
             PineconeClient()
 
-            mock_logger.info.assert_any_call("Initializing Pinecone")
-            mock_logger.info.assert_any_call("Pinecone ready: %s", "test-index")
+            # Check for both creation and connection logging
+            mock_logger.info.assert_any_call("Creating index: %s", "test-index")
+            mock_logger.info.assert_any_call("  ✓ Pinecone connected: %s", "test-index")
 
     @patch("clients.pinecone_client.logger")
     def test_logging_create_index(self, mock_logger, mock_pinecone):
@@ -299,4 +300,4 @@ class TestPineconeClient:
             patch("clients.pinecone_client.CLOUD_REGION", None),
             pytest.raises(ValueError, match="CLOUD_REGION is missing"),
         ):
-                PineconeClient()
+            PineconeClient()

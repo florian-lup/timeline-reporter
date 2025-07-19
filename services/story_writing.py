@@ -13,12 +13,18 @@ from config.writing_config import (
 from models import Lead, Story
 from utils import logger
 
+# Constants for magic values
+MAX_HEADLINE_DISPLAY_LENGTH = 60
+
 
 def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Story]:
     """Takes researched leads and writes full stories using GPT-4o."""
     stories: list[Story] = []
 
-    for lead in leads:
+    for idx, lead in enumerate(leads, 1):
+        first_words = " ".join(lead.tip.split()[:5]) + "..."
+        logger.info("  ✍️ Writing story %d/%d - %s", idx, len(leads), first_words)
+
         # Format the writing prompt with only context and date
         user_prompt = WRITING_INSTRUCTIONS.format(
             lead_date=lead.date,
@@ -40,8 +46,16 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
 
         story = _parse_story_from_response(response_text, lead)
         stories.append(story)
-
-    logger.info("Generated %d stories", len(stories))
+        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + (
+            "..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else ""
+        )
+        logger.info(
+            "  ✓ Story %d/%d completed - %s: '%s'",
+            idx,
+            len(leads),
+            first_words,
+            headline_display,
+        )
     return stories
 
 

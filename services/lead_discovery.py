@@ -29,7 +29,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 
     # Use centralized category configuration
     for category_name in DISCOVERY_CATEGORIES:
-        logger.info("Discovering leads for category: %s", category_name)
+        logger.info("  📰 Scanning %s sources...", category_name)
 
         try:
             instructions = DISCOVERY_CATEGORY_INSTRUCTIONS[category_name]
@@ -37,16 +37,26 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
             category_leads = _parse_leads_from_response(response_text)
 
             logger.info(
-                "Discovered %d leads for %s", len(category_leads), category_name
+                "  ✓ %s: %d leads found",
+                category_name.capitalize(),
+                len(category_leads),
             )
+
+            # Log each individual lead with first 5 words for tracking
+            for idx, lead in enumerate(category_leads, 1):
+                first_words = " ".join(lead.tip.split()[:5]) + "..."
+                logger.info(
+                    "    📋 Lead %d/%d - %s", idx, len(category_leads), first_words
+                )
+
             all_leads.extend(category_leads)
 
         except Exception as exc:
-            logger.error("Failed to discover leads for %s: %s", category_name, exc)
+            logger.error(
+                "  ✗ %s: Discovery failed - %s", category_name.capitalize(), exc
+            )
             # Continue with other categories even if one fails
             continue
-
-    logger.info("Total leads discovered across all categories: %d", len(all_leads))
     return all_leads
 
 

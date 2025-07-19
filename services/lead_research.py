@@ -14,13 +14,21 @@ def research_lead(
     """Calls Perplexity once per lead to gather context and sources."""
     enhanced_leads: list[Lead] = []
 
-    for lead in leads:
+    for idx, lead in enumerate(leads, 1):
+        first_words = " ".join(lead.tip.split()[:5]) + "..."
+        logger.info("  📚 Researching lead %d/%d - %s", idx, len(leads), first_words)
         prompt = RESEARCH_INSTRUCTIONS.format(lead_tip=lead.tip, lead_date=lead.date)
         response_text = perplexity_client.lead_research(prompt)
         enhanced_lead = _enhance_lead_from_response(lead, response_text)
         enhanced_leads.append(enhanced_lead)
-
-    logger.info("Enhanced %d leads with research", len(enhanced_leads))
+        source_count = len(enhanced_lead.sources) if enhanced_lead.sources else 0
+        logger.info(
+            "  ✓ Research complete for lead %d/%d - %s: %d sources found",
+            idx,
+            len(leads),
+            first_words,
+            source_count,
+        )
     return enhanced_leads
 
 

@@ -10,7 +10,6 @@ from config.deduplication_config import (
 from models.core import Lead
 from utils import logger
 
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -31,6 +30,7 @@ def deduplicate_leads(
     and metadata handling.
     """
     unique_leads: list[Lead] = []
+    duplicates_found = 0
 
     for idx, lead in enumerate(leads):
         # Create embedding from the tip
@@ -39,10 +39,13 @@ def deduplicate_leads(
         # Query for similar existing leads
         matches = pinecone_client.similarity_search(vector)
         if matches:
-            logger.debug(
-                "Skipping duplicate lead %d: found %d similar vectors",
+            duplicates_found += 1
+            first_words = " ".join(lead.tip.split()[:5]) + "..."
+            logger.info(
+                "  🔄 Duplicate detected: Lead %d/%d - %s (similarity match found)",
                 idx + 1,
-                len(matches),
+                len(leads),
+                first_words,
             )
             continue
 
@@ -60,7 +63,10 @@ def deduplicate_leads(
         )
         unique_leads.append(lead)
 
-    logger.info("Deduplication complete: %d unique leads", len(unique_leads))
+    if duplicates_found > 0:
+        logger.info("  🔄 Removed %d duplicate leads", duplicates_found)
+    else:
+        logger.info("  ✓ No duplicates found - all leads are unique")
     return unique_leads
 
 

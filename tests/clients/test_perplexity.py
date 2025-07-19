@@ -252,23 +252,6 @@ class TestPerplexityClient:
             assert isinstance(result, str)
             json.loads(result)  # Should not raise exception
 
-    @patch("clients.perplexity_client.logger")
-    def test_logging_research(
-        self, mock_logger, mock_httpx_client, sample_response_data
-    ):
-        """Test that research method logs properly."""
-        mock_client, mock_response = mock_httpx_client
-        mock_response.json.return_value = sample_response_data
-        mock_response.raise_for_status.return_value = None
-
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            client = PerplexityClient()
-            client.lead_research("test prompt")
-
-            mock_logger.info.assert_called_once_with(
-                "Lead research request with %s", "sonar-pro"
-            )
-
     def test_system_message_content(self, mock_httpx_client, sample_response_data):
         """Test that system message contains proper instructions."""
         mock_client, mock_response = mock_httpx_client
@@ -466,23 +449,6 @@ Let me search for current information.
                 # Verify Client was initialized with timeout=180
                 # (longer for deep research)
                 mock_client_class.assert_called_with(timeout=180)
-
-    @patch("clients.perplexity_client.logger")
-    def test_logging_lead_discovery(self, mock_logger, mock_httpx_client):
-        """Test that deep research logs properly."""
-        mock_client, mock_response = mock_httpx_client
-
-        response_data = {"choices": [{"message": {"content": "[]"}}]}
-        mock_response.json.return_value = response_data
-        mock_response.raise_for_status.return_value = None
-
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            client = PerplexityClient()
-            client.lead_discovery("test prompt")
-
-            mock_logger.info.assert_called_once_with(
-                "Deep research request with %s", "sonar-reasoning-pro"
-            )
 
     def test_extract_json_from_reasoning_response_with_think(self):
         """Test the _extract_json_from_reasoning_response method.

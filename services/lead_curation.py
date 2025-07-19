@@ -24,6 +24,9 @@ from config.curation_config import (
 from models import Lead
 from utils import logger
 
+# Constants for magic values
+MAX_REASONING_DISPLAY_LENGTH = 80
+
 
 @dataclass
 class LeadEvaluation:
@@ -56,7 +59,9 @@ class LeadCurator:
         if not leads:
             return []
 
-        logger.info("Starting curation for %d leads", len(leads))
+        logger.info(
+            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", len(leads)
+        )
 
         # Step 1: Multi-criteria evaluation
         evaluations = self._evaluate_all_criteria(leads)
@@ -65,7 +70,25 @@ class LeadCurator:
         qualified = [
             e for e in evaluations if e.weighted_score >= self.MIN_WEIGHTED_SCORE
         ]
-        logger.info("%d leads passed minimum threshold", len(qualified))
+        failed_threshold = [
+            e for e in evaluations if e.weighted_score < self.MIN_WEIGHTED_SCORE
+        ]
+
+        logger.info(
+            "  📊 Threshold analysis: %d/%d leads passed minimum score "
+            "requirement (%.1f)",
+            len(qualified),
+            len(leads),
+            self.MIN_WEIGHTED_SCORE,
+        )
+
+        if failed_threshold:
+            logger.info(
+                "  📉 %d leads below threshold: scores %.1f-%.1f",
+                len(failed_threshold),
+                min(e.weighted_score for e in failed_threshold),
+                max(e.weighted_score for e in failed_threshold),
+            )
 
         if not qualified:
             # Fallback: return top leads by weighted score
@@ -88,8 +111,20 @@ class LeadCurator:
         # Step 5: Select top leads by final rank
         selected = self._select_top_leads(final_ranking)
 
-        logger.info("Curation completed successfully without fallbacks")
-        logger.info("Selected %d leads through curation", len(selected))
+        logger.info(
+            "  ✓ Priority selection complete: %d high-impact leads selected",
+            len(selected),
+        )
+
+        # Log the final selected leads with their scores
+        for i, evaluation in enumerate(selected, 1):
+            first_words = " ".join(evaluation.lead.tip.split()[:5]) + "..."
+            logger.info(
+                "  🏆 Selected #%d: Score %.1f - %s",
+                i,
+                evaluation.weighted_score,
+                first_words,
+            )
         return [e.lead for e in selected]
 
     def _evaluate_all_criteria(self, leads: list[Lead]) -> list[LeadEvaluation]:
@@ -193,11 +228,18 @@ class LeadCurator:
                     )
                 )
 
-                logger.debug(
-                    "Lead %d scored %.2f (reasoning: %s)",
+                first_words = " ".join(lead.tip.split()[:5]) + "..."
+                reasoning = lead_scores.get("brief_reasoning", "No reasoning provided")
+                reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + (
+                    "..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else ""
+                )
+                logger.info(
+                    "  📊 Lead %d/%d scored %.1f - %s: %s",
                     i + 1,
+                    len(leads),
                     weighted,
-                    lead_scores.get("brief_reasoning", ""),
+                    first_words,
+                    reasoning_display,
                 )
 
         return evaluations
@@ -375,15 +417,9 @@ def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
     that warrant comprehensive research.
     """
     if not leads:
-        logger.info("No leads to evaluate")
+        logger.info("  ⚠️ No leads to evaluate")
         return []
-
-    logger.info("Evaluating %d leads for priority", len(leads))
 
     # Use the curation system
     curator = LeadCurator(openai_client)
-    selected_leads = curator.curate_leads(leads)
-
-    logger.info("Selected %d priority leads", len(selected_leads))
-
-    return selected_leads
+    return curator.curate_leads(leads)

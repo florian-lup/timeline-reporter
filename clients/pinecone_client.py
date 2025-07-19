@@ -50,10 +50,9 @@ class PineconeClient:
                 "CLOUD_REGION is missing, cannot initialise Pinecone client."
             )
 
-        logger.info("Initializing Pinecone")
         self._pc = Pinecone(api_key=api_key)
         self._index = self._ensure_index()
-        logger.info("Pinecone ready: %s", PINECONE_INDEX_NAME)
+        logger.info("  ✓ Pinecone connected: %s", PINECONE_INDEX_NAME)
 
     # ------------------------------------------------------------------
     # Public helpers

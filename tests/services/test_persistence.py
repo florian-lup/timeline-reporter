@@ -85,14 +85,21 @@ class TestPersistenceService:
 
         persist_stories(sample_stories, mongodb_client=mock_mongodb_client)
 
-        # Verify individual story logging
+        # Verify individual story logging - updated to match new emoji-based format
+        # Check the exact logging calls (first 5 words of headline + "...")
         mock_logger.info.assert_any_call(
-            "Stored story: '%s' (id=%s)",
-            "Climate Summit Agreement",
-            "60a1b2c3d4e5f6789",
+            "  ✓ Story %d/%d saved successfully - %s (ID: %s)",
+            1,
+            2,
+            "Climate Summit Agreement...",
+            "60a1b2c3d4e5...",
         )
         mock_logger.info.assert_any_call(
-            "Stored story: '%s' (id=%s)", "Tech Innovation News", "60a1b2c3d4e5f6790"
+            "  ✓ Story %d/%d saved successfully - %s (ID: %s)",
+            2,
+            2,
+            "Tech Innovation News...",
+            "60a1b2c3d4e5...",
         )
 
     def test_persist_stories_empty_list(self, mock_mongodb_client):

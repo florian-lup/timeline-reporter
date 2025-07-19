@@ -150,7 +150,7 @@ class TestMongoDBClient:
             MongoDBClient()
 
             mock_logger.info.assert_called_once_with(
-                "MongoDB connected: %s/%s", "test_db", "test_collection"
+                "  ✓ MongoDB connected: %s/%s", "test_db", "test_collection"
             )
 
     @patch("clients.mongodb_client.logger")
@@ -233,4 +233,4 @@ class TestMongoDBClient:
             patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", None),
             pytest.raises(ValueError, match="MONGODB_COLLECTION_NAME is missing"),
         ):
-                MongoDBClient()
+            MongoDBClient()

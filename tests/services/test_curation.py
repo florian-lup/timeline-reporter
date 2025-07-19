@@ -293,9 +293,14 @@ class TestLeadCuration:
 
         result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
-        # Check logging calls
-        mock_logger.info.assert_any_call("Evaluating %d leads for priority", 6)
-        mock_logger.info.assert_any_call("Selected %d priority leads", len(result))
+        # Check logging calls - updated to match new emoji-based format
+        mock_logger.info.assert_any_call(
+            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6
+        )
+        mock_logger.info.assert_any_call(
+            "  ✓ Priority selection complete: %d high-impact leads selected",
+            len(result),
+        )
 
     def test_curate_leads_uses_curation_model(self, mock_openai_client, sample_leads):
         """Test that the correct model is used for decision making."""
@@ -722,9 +727,13 @@ class TestLeadCurator:
         curator = LeadCurator(mock_openai_client)
         curator.curate_leads(sample_leads[:1])
 
-        # Verify logging calls
-        mock_logger.info.assert_any_call("Starting curation for %d leads", 1)
-        mock_logger.info.assert_any_call("Selected %d leads through curation", 1)
+        # Verify logging calls - updated to match new emoji-based format
+        mock_logger.info.assert_any_call(
+            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1
+        )
+        mock_logger.info.assert_any_call(
+            "  ✓ Priority selection complete: %d high-impact leads selected", 1
+        )
 
 
 class TestLeadCurationEdgeCases:

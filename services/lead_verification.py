@@ -37,25 +37,35 @@ def verify_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
         List of verified leads that pass credibility threshold
     """
     verified_leads: list[Lead] = []
+    rejected_leads: list[str] = []
 
-    for lead in leads:
+    for idx, lead in enumerate(leads, 1):
+        first_words = " ".join(lead.tip.split()[:5]) + "..."
+        logger.info("  🔎 Verifying lead %d/%d - %s", idx, len(leads), first_words)
         if _verify_lead_credibility(lead, openai_client):
             verified_leads.append(lead)
-        else:
             logger.info(
-                "Lead discarded due to low credibility: %s",
-                (
-                    lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..."
-                    if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH
-                    else lead.tip
-                ),
+                "  ✓ Lead %d/%d passed verification - %s", idx, len(leads), first_words
+            )
+        else:
+            lead_summary = (
+                lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..."
+                if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH
+                else lead.tip
+            )
+            rejected_leads.append(lead_summary)
+            logger.info(
+                "  ✗ Lead %d/%d rejected - %s: %s",
+                idx,
+                len(leads),
+                first_words,
+                lead_summary,
             )
 
-    logger.info(
-        "Verification complete: %d/%d leads passed credibility check",
-        len(verified_leads),
-        len(leads),
-    )
+    if rejected_leads:
+        logger.info("  📊 Rejected %d leads for low credibility", len(rejected_leads))
+    else:
+        logger.info("  ✓ All leads passed credibility verification")
 
     return verified_leads
 
@@ -84,22 +94,49 @@ def _verify_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> bool:
     # Calculate total score
     total_score = source_score + context_score
 
-    # Log scoring details
-    logger.debug(
-        "Lead verification scores - Source: %.1f, Context: %.1f, Total: %.1f",
-        source_score,
-        context_score,
-        total_score,
-    )
-
     # Check if lead passes all thresholds
     passes_source_threshold = source_score >= MIN_SOURCE_CREDIBILITY_SCORE
     passes_context_threshold = context_score >= MIN_CONTEXT_RELEVANCE_SCORE
     passes_total_threshold = total_score >= MIN_TOTAL_SCORE
 
-    return (
+    # Log detailed scoring information
+    logger.info(
+        "    📊 Scores: Source %.1f/%d, Context %.1f/%d, Total %.1f/%d",
+        source_score,
+        MIN_SOURCE_CREDIBILITY_SCORE,
+        context_score,
+        MIN_CONTEXT_RELEVANCE_SCORE,
+        total_score,
+        MIN_TOTAL_SCORE,
+    )
+
+    # Determine pass/fail and log the result
+    passes_all = (
         passes_source_threshold and passes_context_threshold and passes_total_threshold
     )
+
+    if not passes_all:
+        failed_criteria = []
+        if not passes_source_threshold:
+            failed_criteria.append(
+                f"source credibility "
+                f"({source_score:.1f} < {MIN_SOURCE_CREDIBILITY_SCORE})"
+            )
+        if not passes_context_threshold:
+            failed_criteria.append(
+                f"context relevance "
+                f"({context_score:.1f} < {MIN_CONTEXT_RELEVANCE_SCORE})"
+            )
+        if not passes_total_threshold:
+            failed_criteria.append(
+                f"total score ({total_score:.1f} < {MIN_TOTAL_SCORE})"
+            )
+
+        logger.info("    ❌ Failed: %s", ", ".join(failed_criteria))
+    else:
+        logger.info("    ✅ Passed: All credibility thresholds met")
+
+    return passes_all
 
 
 def _evaluate_lead_credibility(

@@ -145,8 +145,8 @@ class TestDeduplicationService:
         # Verify that duplicates were properly filtered out
         assert len(result) == 2  # Should have 2 unique leads (skipping the duplicate)
 
-        # Verify completion logging
-        mock_logger.info.assert_any_call("Deduplication complete: %d unique leads", 2)
+        # Verify completion logging - updated to match new emoji-based format
+        mock_logger.info.assert_any_call("  🔄 Removed %d duplicate leads", 1)
 
     def test_vector_metadata_structure(
         self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client

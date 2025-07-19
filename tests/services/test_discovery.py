@@ -209,15 +209,12 @@ class TestDiscoveryService:
 
         discover_leads(mock_perplexity_client)
 
-        # Verify category-specific logging
-        # 3 for "Discovering", 3 for "Discovered", 1 for total
-        assert mock_logger.info.call_count >= 7
+        # Verify category-specific logging - updated to match new emoji-based format
+        mock_logger.info.assert_any_call("  📰 Scanning %s sources...", "politics")
+        mock_logger.info.assert_any_call("  ✓ %s: %d leads found", "Politics", 1)
+        # Individual lead logging also happens - updated to match actual test data
         mock_logger.info.assert_any_call(
-            "Discovering leads for category: %s", "politics"
-        )
-        mock_logger.info.assert_any_call("Discovered %d leads for %s", 1, "politics")
-        mock_logger.info.assert_any_call(
-            "Total leads discovered across all categories: %d", 3
+            "    📋 Lead %d/%d - %s", 1, 1, "World Cup Final: Historic victory..."
         )
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
