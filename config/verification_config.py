@@ -44,9 +44,9 @@ Input:
 Lead Tip: {lead_tip}
 Date: {lead_date}
 Context:
-"""{lead_context}"""
+'''{lead_context}'''
 Sources:
-"""{lead_sources}"""
+'''{lead_sources}'''
 
 Scoring rubric:
 1. Source Credibility Score (0–10)
