@@ -39,13 +39,13 @@ def verify_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead
     rejected_leads: list[str] = []
 
     for idx, lead in enumerate(leads, 1):
-        first_words = " ".join(lead.tip.split()[:5]) + "..."
+        first_words = " ".join(lead.title.split()[:5]) + "..."
         logger.info("  🔎 Verifying lead %d/%d - %s", idx, len(leads), first_words)
         if _verify_lead_credibility(lead, openai_client):
             verified_leads.append(lead)
             logger.info("  ✓ Lead %d/%d passed verification - %s", idx, len(leads), first_words)
         else:
-            lead_summary = lead.tip[:MAX_TIP_DISPLAY_LENGTH] + "..." if len(lead.tip) > MAX_TIP_DISPLAY_LENGTH else lead.tip
+            lead_summary = lead.title[:MAX_TIP_DISPLAY_LENGTH] + "..." if len(lead.title) > MAX_TIP_DISPLAY_LENGTH else lead.title
             rejected_leads.append(lead_summary)
             logger.info(
                 "  ✗ Lead %d/%d rejected - %s: %s",
@@ -138,7 +138,7 @@ def _evaluate_lead_credibility(lead: Lead, openai_client: OpenAIClient) -> dict[
 
     # Create the verification prompt
     prompt = VERIFICATION_INSTRUCTIONS.format(
-        lead_tip=lead.tip,
+        lead_tip=lead.title,
         lead_date=lead.date,
         lead_context=lead.context,
         lead_sources=sources_text,

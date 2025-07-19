@@ -31,6 +31,6 @@ INCLUDE_METADATA: bool = True  # Store lead metadata with vectors
 # Metadata Configuration
 # ---------------------------------------------------------------------------
 REQUIRED_METADATA_FIELDS = [
-    "tip",
+    "title",
     "date",
 ]

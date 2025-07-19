@@ -595,9 +595,9 @@ class TestLeadCurator:
         # Lead 2 should rank second: 0.7 * 7.5 + 0.3 * 5 = 6.75
         # Lead 3 should rank third: 0.7 * 7.8 + 0.3 * 0 = 5.46
 
-        assert ranked[0].lead.tip == "Lead 1"
-        assert ranked[1].lead.tip == "Lead 2"
-        assert ranked[2].lead.tip == "Lead 3"
+        assert ranked[0].lead.title == "Lead 1"
+        assert ranked[1].lead.title == "Lead 2"
+        assert ranked[2].lead.title == "Lead 3"
 
     def test_top_selection(self, mock_openai_client):
         """Test top lead selection."""
@@ -621,7 +621,7 @@ class TestLeadCurator:
 
         # Should be the highest ranked ones
         for i, eval in enumerate(selected):
-            assert eval.lead.tip == f"Lead {i}"
+            assert eval.lead.title == f"Lead {i}"
 
     def test_full_pipeline_integration(self, mock_openai_client, sample_leads):
         """Test the complete curation pipeline."""
@@ -662,8 +662,8 @@ class TestLeadCurator:
         assert curator.MIN_LEADS_TO_SELECT <= len(result) <= curator.MAX_LEADS_TO_SELECT
 
         # Verify high-scoring leads are included
-        result_tips = [lead.tip for lead in result]
-        assert any("Climate Summit" in tip for tip in result_tips)
+        result_titles = [lead.title for lead in result]
+        assert any("Climate Summit" in title for title in result_titles)
 
     def test_fallback_behavior(self, mock_openai_client, sample_leads):
         """Test fallback when all leads score below threshold."""

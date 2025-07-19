@@ -44,7 +44,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 
             # Log each individual lead with first 5 words for tracking
             for idx, lead in enumerate(category_leads, 1):
-                first_words = " ".join(lead.tip.split()[:5]) + "..."
+                first_words = " ".join(lead.title.split()[:5]) + "..."
                 source_count = len(lead.sources) if lead.sources else 0
                 report_length = len(lead.report.split()) if lead.report else 0
                 logger.info(

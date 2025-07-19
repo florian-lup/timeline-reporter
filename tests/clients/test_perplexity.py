@@ -286,11 +286,11 @@ Let me search for current information.
 </think>
 [
   {
-    "tip": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "title": "Climate Summit Reaches Agreement: World leaders at COP29 "
     "reach historic agreement on climate funding."
   },
   {
-    "tip": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "title": "Geopolitical Tensions Rise: Recent diplomatic developments show "
     "increasing tensions."
   }
 ]"""
@@ -307,11 +307,11 @@ Let me search for current information.
             # Should extract JSON after <think> section
             expected_json = """[
   {
-    "tip": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "title": "Climate Summit Reaches Agreement: World leaders at COP29 "
     "reach historic agreement on climate funding."
   },
   {
-    "tip": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "title": "Geopolitical Tensions Rise: Recent diplomatic developments show "
     "increasing tensions."
   }
 ]"""
@@ -378,7 +378,7 @@ Let me search for current information.
         # Response without <think> tags
         raw_response = """[
   {
-    "tip": "Direct Response: This response doesn't have think tags."
+                    "title": "Direct Response: This response doesn't have think tags."
   }
 ]"""
 

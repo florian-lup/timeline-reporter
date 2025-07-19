@@ -16,7 +16,7 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
     enhanced_leads: list[Lead] = []
 
     for idx, lead in enumerate(leads, 1):
-        first_words = " ".join(lead.tip.split()[:5]) + "..."
+        first_words = " ".join(lead.title.split()[:5]) + "..."
         logger.info("  📚 Researching lead %d/%d - %s", idx, len(leads), first_words)
 
         # Step 1: Use OpenAI to formulate an effective search query
@@ -42,7 +42,7 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
 
 def _formulate_search_query(lead: Lead, *, openai_client: OpenAIClient) -> str:
     """Use OpenAI to transform the raw tip into an effective search query for Perplexity."""
-    prompt = QUERY_FORMULATION_INSTRUCTIONS.format(lead_tip=lead.tip, lead_date=lead.date)
+    prompt = QUERY_FORMULATION_INSTRUCTIONS.format(lead_tip=lead.title, lead_date=lead.date)
 
     try:
         search_query = openai_client.chat_completion(
@@ -53,7 +53,7 @@ def _formulate_search_query(lead: Lead, *, openai_client: OpenAIClient) -> str:
     except Exception as exc:  # pragma: no cover
         logger.warning("Query formulation failed: %s. Using original tip.", exc)
         # Fallback to original tip if query formulation fails
-        return lead.tip
+        return lead.title
 
 
 def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead:
@@ -78,7 +78,7 @@ def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead
 
     # Create enhanced Lead with context and combined sources from the JSON data
     return Lead(
-        tip=original_lead.tip,
+        title=original_lead.title,
         context=data.get("context") or "",
         sources=combined_sources,
         date=original_lead.date,

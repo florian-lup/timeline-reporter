@@ -22,7 +22,7 @@ class TestWritingService:
         """Sample researched leads for testing."""
         return [
             Lead(
-                tip="Climate Summit 2024: World leaders meet to discuss climate change",
+                title="Climate Summit 2024: World leaders meet to discuss climate change",
                 context=(
                     "The Climate Summit 2024 brings together world leaders from "
                     "over 190 countries to address the escalating climate crisis. "
@@ -41,7 +41,7 @@ class TestWritingService:
                 date="2024-01-15",
             ),
             Lead(
-                tip="Tech Innovation Expo: AI breakthroughs announced",
+                title="Tech Innovation Expo: AI breakthroughs announced",
                 context=(
                     "The annual Tech Innovation Expo showcased groundbreaking AI "
                     "developments from major technology companies. Key announcements "
@@ -134,10 +134,10 @@ class TestWritingService:
         call_args = mock_openai_client.chat_completion.call_args
         prompt = call_args[0][0]  # First positional argument is the prompt
 
-        # Should contain context but not tip or sources
+        # Should contain context but not title or sources
         assert sample_researched_leads[0].context in prompt
         assert sample_researched_leads[0].date in prompt
-        assert sample_researched_leads[0].tip not in prompt
+        assert sample_researched_leads[0].title not in prompt
         # Sources should not be in prompt
         assert "https://example.com" not in prompt
 
@@ -229,7 +229,7 @@ class TestWritingService:
     def test_write_stories_empty_context(self, mock_openai_client):
         """Test writing with lead that has empty context."""
         lead_empty_context = Lead(
-            tip="Empty context lead",
+            title="Empty context lead",
             context="",
             sources=["https://example.com"],
             date="2024-01-15",
@@ -258,7 +258,7 @@ class TestWritingService:
         """Test writing with single lead."""
         single_lead = [
             Lead(
-                tip="Single test lead",
+                title="Single test lead",
                 context="Context for single lead test",
                 sources=["https://single.com"],
                 date="2024-01-20",
@@ -305,7 +305,7 @@ class TestWritingService:
     def test_write_stories_preserves_lead_attributes(self, mock_openai_client, sample_writing_response):
         """Test that lead attributes are properly preserved in stories."""
         lead_with_custom_date = Lead(
-            tip="Custom date lead",
+            title="Custom date lead",
             context="Context with custom date",
             sources=["https://custom1.com", "https://custom2.com"],
             date="2024-12-25",

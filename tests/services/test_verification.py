@@ -32,19 +32,19 @@ class TestVerifyLeads:
         """Sample leads for testing."""
         return [
             Lead(
-                tip="Breaking: Tech company announces merger",
+                title="Breaking: Tech company announces merger",
                 date="2024-01-15",
                 context="Tech company XYZ announced a merger with ABC Corp",
                 sources=["https://reuters.com/tech", "https://bloomberg.com/business"],
             ),
             Lead(
-                tip="Local event happening",
+                title="Local event happening",
                 date="2024-01-15",
                 context="Small local event with minimal details",
                 sources=["https://localblog.com"],
             ),
             Lead(
-                tip="Major policy change",
+                title="Major policy change",
                 date="2024-01-15",
                 context="Government announces significant policy changes",
                 sources=["https://gov.official", "https://bbc.com/news"],
@@ -89,11 +89,11 @@ class TestVerifyLeads:
         assert len(result) == 0
         assert result == []
 
-    def test_verify_leads_long_tip_truncation(self, mock_openai_client):
-        """Test that long tips are truncated in log messages."""
-        long_tip = "x" * 100  # Exceeds MAX_TIP_DISPLAY_LENGTH of 50
+    def test_verify_leads_long_title_truncation(self, mock_openai_client):
+        """Test that long titles are truncated in log messages."""
+        long_title = "x" * 100  # Exceeds MAX_TIP_DISPLAY_LENGTH of 50
         lead = Lead(
-            tip=long_tip,
+            title=long_title,
             date="2024-01-15",
             context="Some context",
             sources=["https://example.com"],
@@ -135,7 +135,7 @@ class TestVerifyLeadCredibility:
     def sample_lead(self):
         """Sample lead for testing."""
         return Lead(
-            tip="Test news tip",
+            title="Test news title",
             date="2024-01-15",
             context="Test context",
             sources=["https://reuters.com"],
@@ -229,7 +229,7 @@ class TestEvaluateLeadCredibility:
     def sample_lead(self):
         """Sample lead for testing."""
         return Lead(
-            tip="Test news tip",
+            title="Test news title",
             date="2024-01-15",
             context="Test context",
             sources=["https://reuters.com", "https://bbc.com"],
@@ -238,7 +238,7 @@ class TestEvaluateLeadCredibility:
     @pytest.fixture
     def sample_lead_no_sources(self):
         """Sample lead without sources."""
-        return Lead(tip="Test news tip", date="2024-01-15", context="Test context", sources=[])
+        return Lead(title="Test news title", date="2024-01-15", context="Test context", sources=[])
 
     def test_evaluate_lead_success(self, mock_openai_client, sample_lead):
         """Test successful lead evaluation."""
@@ -368,7 +368,7 @@ class TestEvaluateLeadCredibility:
         call_args = mock_openai_client.chat_completion.call_args[1]
         prompt = call_args["prompt"]
 
-        assert sample_lead.tip in prompt
+        assert sample_lead.title in prompt
         assert sample_lead.date in prompt
         assert sample_lead.context in prompt
         assert "https://reuters.com" in prompt

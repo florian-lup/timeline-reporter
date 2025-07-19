@@ -9,7 +9,7 @@ from utils.date import get_today_formatted
 class Lead:
     """Represents a news lead discovered in the discovery step."""
 
-    tip: str
+    title: str
     context: str = ""
     report: str = ""
     sources: list[str] = field(default_factory=list)

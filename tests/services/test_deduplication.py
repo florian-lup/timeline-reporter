@@ -64,9 +64,9 @@ class TestDeduplicationService:
 
         # Verify embedding calls
         assert mock_openai_client.embed_text.call_count == 3
-        mock_openai_client.embed_text.assert_any_call(sample_leads[0].tip)
-        mock_openai_client.embed_text.assert_any_call(sample_leads[1].tip)
-        mock_openai_client.embed_text.assert_any_call(sample_leads[2].tip)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[0].title)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[1].title)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[2].title)
 
         # Verify upsert calls
         assert mock_pinecone_client.upsert_vector.call_count == 3
@@ -161,5 +161,5 @@ class TestDeduplicationService:
             metadata = kwargs["metadata"]
             assert vector_id == f"lead-{i}"
             assert vector == sample_embeddings[i]
-            assert metadata["tip"] == sample_leads[i].tip
+            assert metadata["title"] == sample_leads[i].title
             assert metadata["date"] == sample_leads[i].date

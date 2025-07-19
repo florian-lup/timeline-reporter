@@ -21,7 +21,7 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
     stories: list[Story] = []
 
     for idx, lead in enumerate(leads, 1):
-        first_words = " ".join(lead.tip.split()[:5]) + "..."
+        first_words = " ".join(lead.title.split()[:5]) + "..."
         logger.info("  ✍️ Writing story %d/%d - %s", idx, len(leads), first_words)
 
         # Format the writing prompt with only context and date

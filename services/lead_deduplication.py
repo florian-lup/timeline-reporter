@@ -34,13 +34,13 @@ def deduplicate_leads(
 
     for idx, lead in enumerate(leads):
         # Create embedding from the tip
-        vector = openai_client.embed_text(lead.tip)
+        vector = openai_client.embed_text(lead.title)
 
         # Query for similar existing leads
         matches = pinecone_client.similarity_search(vector)
         if matches:
             duplicates_found += 1
-            first_words = " ".join(lead.tip.split()[:5]) + "..."
+            first_words = " ".join(lead.title.split()[:5]) + "..."
             logger.info(
                 "  🔄 Duplicate detected: Lead %d/%d - %s (similarity match found)",
                 idx + 1,

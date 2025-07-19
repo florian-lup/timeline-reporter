@@ -14,11 +14,11 @@ QUERY_FORMULATION_MODEL: str = "o4-mini-2025-04-16"
 # ---------------------------------------------------------------------------
 QUERY_FORMULATION_SYSTEM_PROMPT = """
 You are an expert research strategist who specializes in formulating effective search queries.
-Your job is to transform raw news tips into precise, actionable search queries that will help
+Your job is to transform raw news titles into precise, actionable search queries that will help
 researchers find relevant background information and sources.
 
 Guidelines:
-• Identify the key entities, events, and concepts in the tip.
+• Identify the key entities, events, and concepts in the title.
 • Include an explicit time filter when appropriate (e.g., "past 24 hours") to improve relevance.
 • Anticipate authoritative sources that might surface (official statements, government releases, established outlets).
 • Keep queries concise yet comprehensive enough to capture the essential elements—avoid overly generic terms.
@@ -29,11 +29,11 @@ Guidelines:
 # Query Formulation Instructions Template
 # ---------------------------------------------------------------------------
 QUERY_FORMULATION_INSTRUCTIONS = (
-    "Transform the news tip below into ONE optimized search query that will surface "
+    "Transform the news title below into ONE optimized search query that will surface "
     "authoritative background, recent developments, and any useful historical context. "
     "If timeliness is critical, append an appropriate date/time filter "
     "(e.g., 'past 24 hours', '2025').\n\n"
-    "Lead Tip: {lead_tip}\n"
+    "Lead Title: {lead_tip}\n"
     "Date: {lead_date}\n\n"
     "Return ONLY the search query—no additional text, explanation, or formatting."
 ).strip()

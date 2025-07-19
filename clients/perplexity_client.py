@@ -84,7 +84,7 @@ class PerplexityClient:
         "items": {
             "type": "object",
             "properties": {
-                "tip": {"type": "string"},
+                "title": {"type": "string"},
                 "sources": {
                     "type": "array",
                     "items": {"type": "string"},

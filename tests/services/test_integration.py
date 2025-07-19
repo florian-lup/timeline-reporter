@@ -30,7 +30,7 @@ class TestServicesIntegration:
             "global conflicts, policy changes, natural disasters, and tech "
             "Return your findings as a JSON array of leads, where each lead "
             "includes comprehensive context and details. Format: "
-            '[{"tip": "Lead description with comprehensive details..."}]'
+            '[{"title": "Lead description with comprehensive details..."}]'
         )
 
     @pytest.fixture
@@ -42,12 +42,12 @@ class TestServicesIntegration:
         mock_mongodb = Mock()
 
         # Set up discovery responses for three categories
-        politics_response = json.dumps([{"tip": "Political Summit 2024: World leaders discuss global governance and international cooperation."}])
+        politics_response = json.dumps([{"title": "Political Summit 2024: World leaders discuss global governance and international cooperation."}])
         environment_response = json.dumps(
-            [{"tip": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
+            [{"title": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
         )
         entertainment_response = json.dumps(
-            [{"tip": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
+            [{"title": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
         )
 
         # Set lead_discovery to return different responses for each call
@@ -220,9 +220,9 @@ class TestServicesIntegration:
 
         # Verify data flow through pipeline
         # Leads from discovery
-        assert "Political Summit 2024" in leads[0].tip
-        assert "Climate Summit 2024" in leads[1].tip
-        assert "AI Breakthrough Announced" in leads[2].tip
+        assert "Political Summit 2024" in leads[0].title
+        assert "Climate Summit 2024" in leads[1].title
+        assert "AI Breakthrough Announced" in leads[2].title
 
         # Researched leads have context
         assert "international cooperation" in researched_leads[0].context
@@ -259,19 +259,19 @@ class TestServicesIntegration:
         # Set up discovery with multiple leads per category
         politics_json = json.dumps(
             [
-                {"tip": "Lead 1: First political lead description"},
-                {"tip": "Lead 2: Second political lead description"},
+                            {"title": "Lead 1: First political lead description"},
+            {"title": "Lead 2: Second political lead description"},
             ]
         )
         environment_json = json.dumps(
             [
-                {"tip": "Lead 3: Environmental lead description"},
+                {"title": "Lead 3: Environmental lead description"},
             ]
         )
         entertainment_json = json.dumps(
             [
-                {"tip": "Lead 4: Entertainment lead description"},
-                {"tip": "Lead 5: Sports lead description"},
+                            {"title": "Lead 4: Entertainment lead description"},
+            {"title": "Lead 5: Sports lead description"},
             ]
         )
         mock_clients["perplexity"].lead_discovery.side_effect = [
@@ -351,23 +351,23 @@ class TestServicesIntegration:
 
         # Verify selected leads are the expected ones
         # (order may vary due to scoring)
-        selected_tips = [lead.tip for lead in prioritized_leads]
+        selected_titles = [lead.title for lead in prioritized_leads]
         # Lead 2 selected
-        assert any("Lead 2" in tip for tip in selected_tips)
+        assert any("Lead 2" in title for title in selected_titles)
         # Lead 3 selected
-        assert any("Lead 3" in tip for tip in selected_tips)
+        assert any("Lead 3" in title for title in selected_titles)
         # Lead 5 selected
-        assert any("Lead 5" in tip for tip in selected_tips)
+        assert any("Lead 5" in title for title in selected_titles)
         # Lead 4 filtered
-        assert not any("Lead 4" in tip for tip in selected_tips)
+        assert not any("Lead 4" in title for title in selected_titles)
 
     def test_pipeline_data_transformation(self, mock_clients, test_discovery_instructions):
         """Test data transformation through pipeline stages."""
 
         # Mock simple discovery response - one lead per category
-        politics_json = json.dumps([{"tip": "Political Lead: Political news"}])
-        environment_json = json.dumps([{"tip": "Environmental Lead: Climate news"}])
-        entertainment_json = json.dumps([{"tip": "Entertainment Lead: Celebrity news"}])
+        politics_json = json.dumps([{"title": "Political Lead: Political news"}])
+        environment_json = json.dumps([{"title": "Environmental Lead: Climate news"}])
+        entertainment_json = json.dumps([{"title": "Entertainment Lead: Celebrity news"}])
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             politics_json,
@@ -464,11 +464,11 @@ class TestServicesIntegration:
         # Lead -> Lead (deduplication preserves structure)
         assert isinstance(leads[0], Lead)
         assert isinstance(unique_leads[0], Lead)
-        assert leads[0].tip == unique_leads[0].tip
+        assert leads[0].title == unique_leads[0].title
 
         # Lead -> Lead (curation preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].tip in [lead.tip for lead in unique_leads]
+        assert prioritized_leads[0].title in [lead.title for lead in unique_leads]
 
         # Lead -> Enhanced Lead (research adds context and sources)
         assert len(researched_leads) == 3
@@ -488,9 +488,9 @@ class TestServicesIntegration:
         """Test pipeline performance with larger data volume."""
 
         # Create large discovery responses across categories
-        politics_data = [{"tip": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
-        environment_data = [{"tip": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
-        entertainment_data = [{"tip": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
+        politics_data = [{"title": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
+        environment_data = [{"title": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
+        entertainment_data = [{"title": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             json.dumps(politics_data),

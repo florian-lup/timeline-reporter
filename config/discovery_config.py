@@ -38,7 +38,7 @@ Operational protocol:
 • Remain strictly factual and neutral; do NOT speculate or extrapolate beyond what sources state.
 • If information is insufficient or no qualifying leads are found, output an empty JSON array ( [] )—never fabricate data.
 • For every qualifying lead, provide:
-  – tip: 50-80 words summarising who, what, when, where, why/how, and significance.
+  – title: 50-80 words summarising who, what, when, where, why/how, and significance.
   – report: a thorough analysis (at least 700 words) offering background, context, expert analysis, implications, and related developments.
   – sources: an array of all distinct, credible URLs you can find that corroborate the lead (minimum 1).
 • Write in concise journalistic style (present tense, active voice).
@@ -47,7 +47,7 @@ Operational protocol:
 Expected output schema (do not include this block in your response):
 [
   {
-    "tip": "<single paragraph summary>",
+    "title": "<single paragraph summary>",
     "report": "<comprehensive detailed analysis>",
     "sources": ["<source_url_1>", "<source_url_2>"]
   }
@@ -59,7 +59,7 @@ Expected output schema (do not include this block in your response):
 # ---------------------------------------------------------------------------
 DISCOVERY_JSON_FORMAT = """
 Return ONLY a JSON array where each element is an object with exactly these keys in this exact order:
-- 'tip': a single-paragraph string (50-80 words) summarising the core facts
+- 'title': a single-paragraph string (50-80 words) summarising the core facts
 - 'report': a comprehensive string (at least 700 words) providing detailed context, background, analysis, and implications
 - 'sources': an array of one or more credible source URLs that confirm the information (include as many as are available)
 
@@ -85,7 +85,7 @@ Focus on developments such as:
 • Diplomatic negotiations, sanctions, or conflict escalations with global repercussions
 
 For each qualifying lead:
-1. tip – 50-80 words summarising the who/what/when/where/why-how and significance.
+1. title – 50-80 words summarising the who/what/when/where/why-how and significance.
 2. report – a thorough analysis (≥ 700 words) covering:
    • Relevant background and timeline
    • Key stakeholders and their positions
@@ -107,7 +107,7 @@ Prioritise stories involving:
 • Major environmental legislation or court rulings
 
 For each qualifying lead:
-1. tip – 50-80 words summarising the core facts and impact.
+1. title – 50-80 words summarising the core facts and impact.
 2. report – a thorough analysis (≥ 700 words) including:
    • Scientific background and methodology (for research leads)
    • Environmental impact scope and affected regions
@@ -129,7 +129,7 @@ Include qualifying leads such as:
 • Championship outcomes or record-setting sporting achievements
 
 For each qualifying lead:
-1. tip – 50-80 words summarising the key details and relevance.
+1. title – 50-80 words summarising the key details and relevance.
 2. report – a thorough analysis (≥ 700 words) covering:
    • Background on personalities, productions, or events
    • Industry or competitive context and significance

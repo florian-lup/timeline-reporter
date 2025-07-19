@@ -29,7 +29,7 @@ Guidelines:
 • Use a 0–10 numeric rubric where 0 = not credible at all and 10 = fully credible.
 • Consider: source authority & reputation, corroboration across multiple outlets,
   primary vs. secondary sourcing, timeliness, presence of verifiable data, and the
-  relevance of context to the lead tip.
+  relevance of context to the lead title.
 • Be consistent: similar evidence should yield similar scores.
 • Output ONLY the final JSON object; do not add explanations outside the specified fields.
 """.strip()
@@ -41,7 +41,7 @@ VERIFICATION_INSTRUCTIONS = """
 Evaluate the credibility of the news lead using ONLY the information provided below.
 
 Input:
-Lead Tip: {lead_tip}
+Lead Title: {lead_tip}
 Date: {lead_date}
 Context:
 '''{lead_context}'''
@@ -61,7 +61,7 @@ Scoring rubric:
    • 9–10 – Context directly supports the lead with specific, timely facts or data.
    • 7–8 – Context largely supports but lacks some detail or independence.
    • 4–6 – Some linkage but notable gaps or outdated information.
-   • 1–3 – Weak or tangential relationship between context and lead tip.
+   • 1–3 – Weak or tangential relationship between context and lead title.
    • 0   – Context unrelated or contradicts the lead.
 
 3. Analysis
