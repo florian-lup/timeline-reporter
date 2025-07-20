@@ -56,7 +56,7 @@ def run_pipeline() -> None:  # noqa: D401
         "📚 STEP 3: Research - Gathering context and sources for %d leads...",
         len(unique_leads),
     )
-    researched_leads = research_lead(unique_leads, openai_client=openai_client, perplexity_client=perplexity_client)
+    researched_leads = research_lead(unique_leads, perplexity_client=perplexity_client)
     logger.info(
         "✅ Research complete: Enhanced %d leads with detailed context",
         len(researched_leads),

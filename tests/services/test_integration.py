@@ -104,13 +104,6 @@ class TestServicesIntegration:
         ]
         mock_perplexity.lead_research.side_effect = lead_research_responses
 
-        # Set up query formulation responses (for research service)
-        query_formulation_responses = [
-            "political summit world leaders international cooperation",
-            "climate summit 2024 environmental policies carbon targets",
-            "AI breakthrough healthcare diagnostics medical technology",
-        ]
-
         # Set up story writing responses (headline + summary + body)
         story_writing_responses = [
             json.dumps(
@@ -176,10 +169,9 @@ class TestServicesIntegration:
             }
         )
 
-        # Set up chat_completion to handle all calls: 1 curation + 3 query formulation + 3 story writing = 7 calls
+        # Set up chat_completion to handle all calls: 1 curation + 3 story writing = 4 calls
         mock_openai.chat_completion.side_effect = (
             [curation_response]  # 1 curation call
-            + query_formulation_responses  # 3 query formulation calls
             + story_writing_responses  # 3 story writing calls
         )
 
@@ -207,7 +199,7 @@ class TestServicesIntegration:
             pinecone_client=mock_clients["pinecone"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        researched_leads = research_lead(prioritized_leads, openai_client=mock_clients["openai"], perplexity_client=mock_clients["perplexity"])
+        researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
@@ -454,7 +446,7 @@ class TestServicesIntegration:
             pinecone_client=mock_clients["pinecone"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        researched_leads = research_lead(prioritized_leads, openai_client=mock_clients["openai"], perplexity_client=mock_clients["perplexity"])
+        researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
 
         # Store final stories
@@ -616,12 +608,9 @@ class TestServicesIntegration:
             }
         )
 
-        # Set up all responses for this test: 1 curation + 5 query formulation
-        query_formulation_responses = [f"optimized query {i}" for i in [1, 3, 5, 7, 9]]
-
+        # Set up all responses for this test: 1 curation only
         mock_clients["openai"].chat_completion.side_effect = (
             [large_scale_curation_response]  # 1 curation call
-            + query_formulation_responses  # 5 query formulation calls
         )
 
         # Override research responses for 5 stories
@@ -646,7 +635,7 @@ class TestServicesIntegration:
             pinecone_client=mock_clients["pinecone"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        stories = research_lead(prioritized_leads, openai_client=mock_clients["openai"], perplexity_client=mock_clients["perplexity"])
+        stories = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
 
         # Verify scalability
         assert len(leads) == 10  # 4 + 3 + 3 from three categories

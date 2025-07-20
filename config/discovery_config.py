@@ -10,12 +10,12 @@ from utils import get_today_formatted
 # Discovery Model Configuration
 # ---------------------------------------------------------------------------
 LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
-SEARCH_CONTEXT_SIZE: str = "low"
+SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
 # Discovery Timeout Configuration
 # ---------------------------------------------------------------------------
-DISCOVERY_TIMEOUT_SECONDS: float = 600  # Total timeout for discovery operations
+DISCOVERY_TIMEOUT_SECONDS: float = 240  # Total timeout for discovery operations
 
 # ---------------------------------------------------------------------------
 # Discovery Categories Configuration
@@ -39,17 +39,17 @@ Operational protocol:
 • For every qualifying lead, provide:
   – title: 50-80 words summarising who, what, when, where, why/how, and significance.
   – report: a thorough analysis (at least 700 words) offering background, context, expert analysis, implications, and related developments.
-  – sources: an array of all distinct, credible URLs you can find that corroborate the lead (minimum 1).
+  – sources: an array of all distinct, credible URLs you can find that corroborate the lead.
 • Write in concise journalistic style (present tense, active voice).
 • OUTPUT ONLY the JSON array described below—no markdown, no extra commentary.
 
 Expected output schema (do not include this block in your response):
 [
-  {
+  {{
     "title": "<single paragraph summary>",
     "report": "<comprehensive detailed analysis>",
     "sources": ["<source_url_1>", "<source_url_2>"]
-  }
+  }}
 ]
 """.strip()
 

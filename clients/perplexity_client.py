@@ -100,6 +100,9 @@ class PerplexityClient:
 
         Uses structured output for consistent JSON responses.
 
+        This includes reasoning tokens wrapped in <think> tags. The response is parsed to
+        extract only the JSON content.
+
         Args:
             prompt: The research query/prompt
 
@@ -124,14 +127,18 @@ class PerplexityClient:
             },
         }
 
-        # Set timeout for research operations that involve web search
+        # Set timeout for research operations that involve web search and reasoning
         timeout = httpx.Timeout(RESEARCH_TIMEOUT_SECONDS)
         with httpx.Client(timeout=timeout) as client:
             response = client.post(_PERPLEXITY_ENDPOINT, json=payload, headers=self._headers)
             response.raise_for_status()
             data = response.json()
 
-        return cast("str", data["choices"][0]["message"]["content"])
+        # Response contains reasoning tokens in <think> tags followed by JSON
+        raw_content: str = data["choices"][0]["message"]["content"]
+
+        # Extract JSON content after <think> section as per documentation
+        return self._extract_json_from_reasoning_response(raw_content)
 
     def lead_discovery(self, prompt: str) -> str:
         """Executes a research for leads.

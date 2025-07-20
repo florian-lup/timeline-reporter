@@ -2,30 +2,21 @@ from __future__ import annotations
 
 import json
 
-from clients import OpenAIClient, PerplexityClient
-from config.research_config import (
-    QUERY_FORMULATION_INSTRUCTIONS,
-    QUERY_FORMULATION_MODEL,
-    RESEARCH_INSTRUCTIONS,
-)
+from clients import PerplexityClient
+from config.research_config import RESEARCH_INSTRUCTIONS
 from models import Lead
-from utils import logger
+from utils import combine_and_deduplicate_sources, logger
 
-def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_client: PerplexityClient) -> list[Lead]:
-    """Calls OpenAI to formulate search queries, then Perplexity to gather context and sources."""
+def research_lead(leads: list[Lead], *, perplexity_client: PerplexityClient) -> list[Lead]:
+    """Research leads directly using Perplexity, similar to how discovery works."""
     enhanced_leads: list[Lead] = []
 
     for idx, lead in enumerate(leads, 1):
         first_words = " ".join(lead.title.split()[:5]) + "..."
         logger.info("  📚 Researching lead %d/%d - %s", idx, len(leads), first_words)
 
-        # Step 1: Use OpenAI to formulate an effective search query
-        logger.info("  🔍 Formulating search query for lead %d/%d", idx, len(leads))
-        search_query = _formulate_search_query(lead, openai_client=openai_client)
-        logger.info("  ✓ Query formulated: %s", search_query)
-
-        # Step 2: Use Perplexity to research the formulated query
-        prompt = RESEARCH_INSTRUCTIONS.format(search_query=search_query, lead_date=lead.date)
+        # Use Perplexity to research the lead directly
+        prompt = RESEARCH_INSTRUCTIONS.format(lead_title=lead.title)
         response_text = perplexity_client.lead_research(prompt)
         enhanced_lead = _enhance_lead_from_response(lead, response_text)
         enhanced_leads.append(enhanced_lead)
@@ -38,22 +29,6 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _formulate_search_query(lead: Lead, *, openai_client: OpenAIClient) -> str:
-    """Use OpenAI to transform the raw title into an effective search query for Perplexity."""
-    prompt = QUERY_FORMULATION_INSTRUCTIONS.format(lead_title=lead.title, lead_date=lead.date)
-
-    try:
-        search_query = openai_client.chat_completion(
-            prompt=prompt,
-            model=QUERY_FORMULATION_MODEL,
-        )
-        return search_query.strip()
-    except Exception as exc:  # pragma: no cover
-        logger.warning("Query formulation failed: %s. Using original title.", exc)
-        # Fallback to original title if query formulation fails
-        return lead.title
 
 
 def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead:
@@ -73,13 +48,25 @@ def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead
     new_sources = data.get("sources") or []
     
     # Combine existing sources from discovery with new research sources
-    # Use a set to avoid duplicates, then convert back to list
-    combined_sources = list(set(original_lead.sources + new_sources))
+    # Use URL-aware deduplication to catch similar URLs
+    combined_sources = combine_and_deduplicate_sources(original_lead.sources, new_sources)
 
-    # Create enhanced Lead with report and combined sources from the JSON data
+    # Append research findings to existing discovery report
+    research_report = data.get("report") or ""
+    if original_lead.report and research_report:
+        # Both discovery and research have content - combine them
+        combined_report = f"{original_lead.report}\n\n{research_report}"
+    elif research_report:
+        # Only research has content
+        combined_report = research_report
+    else:
+        # Keep original report (discovery only or empty)
+        combined_report = original_lead.report
+
+    # Create enhanced Lead with combined report and sources
     return Lead(
         title=original_lead.title,
-        report=data.get("report") or "",
+        report=combined_report,
         sources=combined_sources,
         date=original_lead.date,
     )

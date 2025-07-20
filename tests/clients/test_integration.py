@@ -222,7 +222,7 @@ class TestClientIntegration:
 
             # 1. Research phase - enhance leads with report
             test_leads = [Lead(title="Breaking News: Important lead")]
-            researched_leads = research_lead(test_leads, openai_client=openai_client, perplexity_client=perplexity_client)
+            researched_leads = research_lead(test_leads, perplexity_client=perplexity_client)
 
             # 2. Writing phase - convert enhanced leads to stories
             stories = write_stories(researched_leads, openai_client=openai_client)

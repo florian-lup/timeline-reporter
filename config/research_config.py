@@ -5,49 +5,15 @@ related to lead research and source gathering.
 """
 
 # ---------------------------------------------------------------------------
-# Query Formulation Configuration
-# ---------------------------------------------------------------------------
-QUERY_FORMULATION_MODEL: str = "o4-mini-2025-04-16"
-
-# ---------------------------------------------------------------------------
-# Query Formulation System Prompt
-# ---------------------------------------------------------------------------
-QUERY_FORMULATION_SYSTEM_PROMPT = """
-You are an expert research strategist who specializes in formulating effective search queries.
-Your job is to transform raw news titles into precise, actionable search queries that will help
-researchers find relevant background information and sources.
-
-Guidelines:
-• Identify the key entities, events, and concepts in the title.
-• Include an explicit time filter when appropriate (e.g., "past 24 hours") to improve relevance.
-• Anticipate authoritative sources that might surface (official statements, government releases, established outlets).
-• Keep queries concise yet comprehensive enough to capture the essential elements—avoid overly generic terms.
-• Focus on factual, verifiable information; avoid words that prompt speculation (e.g., "rumor", "opinion").
-""".strip()
-
-# ---------------------------------------------------------------------------
-# Query Formulation Instructions Template
-# ---------------------------------------------------------------------------
-QUERY_FORMULATION_INSTRUCTIONS = (
-    "Transform the news title below into ONE optimized search query that will surface "
-    "authoritative background, recent developments, and any useful historical context. "
-    "If timeliness is critical, append an appropriate date/time filter "
-    "(e.g., 'past 24 hours', '2025').\n\n"
-    "Lead Title: {lead_title}\n"
-    "Date: {lead_date}\n\n"
-    "Return ONLY the search query—no additional text, explanation, or formatting."
-).strip()
-
-# ---------------------------------------------------------------------------
 # Research Model Configuration
 # ---------------------------------------------------------------------------
-LEAD_RESEARCH_MODEL: str = "sonar-pro"
+LEAD_RESEARCH_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
 # Research Timeout Configuration  
 # ---------------------------------------------------------------------------
-RESEARCH_TIMEOUT_SECONDS: float = 90  # Total timeout for research operations
+RESEARCH_TIMEOUT_SECONDS: float = 240  # Total timeout for research operations
 
 # ---------------------------------------------------------------------------
 # Research System Prompt
@@ -75,7 +41,13 @@ Expected JSON format (do not include this block in your response):
 # ---------------------------------------------------------------------------
 # Research Instructions Template
 # ---------------------------------------------------------------------------
-RESEARCH_INSTRUCTIONS = """{search_query}""".strip()
+RESEARCH_INSTRUCTIONS = """
+Research and provide comprehensive background information about the following news lead.
+
+Lead Title: {lead_title}
+
+Provide detailed context, background information, key stakeholders, timeline of events, and significance. Focus on verifiable facts from authoritative sources.
+""".strip()
 
 # ---------------------------------------------------------------------------
 # Research JSON Format

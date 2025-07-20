@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from utils.date import get_today_formatted
+from utils.date_formatting import get_today_formatted
 
 
 @dataclass
