@@ -82,12 +82,13 @@ class PerplexityClient:
             "type": "object",
             "properties": {
                 "title": {"type": "string"},
+                "report": {"type": "string"},
                 "sources": {
                     "type": "array",
                     "items": {"type": "string"},
                 },
             },
-            "required": ["title", "sources"],
+            "required": ["title", "report", "sources"],
         },
     }
 

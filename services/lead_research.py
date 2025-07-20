@@ -21,8 +21,10 @@ def research_lead(leads: list[Lead], *, perplexity_client: PerplexityClient) -> 
         enhanced_lead = _enhance_lead_from_response(lead, response_text)
         enhanced_leads.append(enhanced_lead)
         source_count = len(enhanced_lead.sources) if enhanced_lead.sources else 0
+        report_length = len(enhanced_lead.report.split()) if enhanced_lead.report else 0
         logger.info("  ✓ Research complete for lead %d/%d - %s", idx, len(leads), first_words)
         logger.info("  📊 Sources found: %d", source_count)
+        logger.info("  📊 Report length: %d words", report_length)
     return enhanced_leads
 
 
