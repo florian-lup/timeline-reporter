@@ -220,8 +220,8 @@ class TestClientIntegration:
             mongodb_client = MongoDBClient()
             openai_client = OpenAIClient()
 
-            # 1. Research phase - enhance leads with context
-            test_leads = [Lead(tip="Breaking News: Important lead")]
+            # 1. Research phase - enhance leads with report
+            test_leads = [Lead(title="Breaking News: Important lead")]
             researched_leads = research_lead(test_leads, openai_client=openai_client, perplexity_client=perplexity_client)
 
             # 2. Writing phase - convert enhanced leads to stories
@@ -237,7 +237,7 @@ class TestClientIntegration:
 
             # Check research enhanced the lead
             researched_lead = researched_leads[0]
-            assert researched_lead.context == ("Enhanced context about breaking news from research")
+            assert researched_lead.report == ("Enhanced context about breaking news from research")
             assert researched_lead.sources == ["https://source.com"]
 
             # Check story was created from researched lead

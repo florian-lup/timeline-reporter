@@ -25,12 +25,12 @@ attribute or qualify them. Avoid sensationalism, speculation, or editorializing.
 # Writing Instructions Template
 # ---------------------------------------------------------------------------
 WRITING_INSTRUCTIONS = """
-Using ONLY the information provided in the lead context below, craft a complete news story.
+Using ONLY the information provided in the lead report below, craft a complete news story.
 
 Input:
 Date: {lead_date}
-Context:
-\"\"\"{lead_context}\"\"\"
+Report:
+\"\"\"{lead_report}\"\"\"
 
 Output requirements:
 1. headline – ≤ 15 words, Title Case, no period.
@@ -38,7 +38,7 @@ Output requirements:
 3. body – 1 200-2 000 words, AP style, includes:
    • Lead paragraph (25-40 words) summarizing the key news.
    • Subsequent paragraphs expanding on who, what, when, where, why, and how.
-   • Relevant background, quotes, and data from the context.
+   • Relevant background, quotes, and data from the report.
    • Balanced perspectives with clear attribution for claims.
    • Final paragraph that looks ahead or explains implications.
 4. tag – single lowercase category (e.g., politics, technology, business, health, etc.).

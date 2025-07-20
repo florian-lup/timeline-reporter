@@ -23,12 +23,12 @@ class TestLeadCuration:
         """Sample leads for testing."""
         return [
             Lead(
-                tip=(
+                title=(
                     "Climate Summit 2024: World leaders meet to discuss climate "
                     "change solutions and carbon reduction targets with major "
                     "implications for global policy and economy."
                 ),
-                context=(
+                report=(
                     "Climate Summit 2024: World leaders from 195 countries "
                     "gathered in Dubai for a critical climate summit to address "
                     "unprecedented global warming challenges. The summit focused "
@@ -41,12 +41,12 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                tip=(
+                title=(
                     "Major earthquake in Pacific: A 7.5 magnitude earthquake "
                     "struck the Pacific region causing widespread damage and "
                     "triggering tsunami warnings across multiple countries."
                 ),
-                context=(
+                report=(
                     "Major earthquake in Pacific: A devastating 7.5 magnitude "
                     "earthquake struck the Pacific Ring of Fire, causing "
                     "widespread destruction across multiple island nations. "
@@ -58,12 +58,12 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                tip=(
+                title=(
                     "Tech breakthrough: Scientists announce revolutionary AI "
                     "system that can predict diseases years before symptoms "
                     "appear, potentially saving millions of lives."
                 ),
-                context=(
+                report=(
                     "Tech breakthrough in medical AI: Researchers at Stanford "
                     "Medical Center announced a breakthrough artificial "
                     "intelligence system capable of predicting onset of diseases "
@@ -75,12 +75,12 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                tip=(
+                title=(
                     "Economic crisis deepens: Global markets tumble as inflation "
                     "reaches 40-year high, central banks struggle to respond "
                     "effectively to the growing financial instability."
                 ),
-                context=(
+                report=(
                     "Economic crisis deepens globally: Financial markets "
                     "experienced massive selloffs as inflation reached 8.9%, "
                     "the highest level in 40 years. The Federal Reserve and "
@@ -92,12 +92,12 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                tip=(
+                title=(
                     "Space milestone: First commercial space station successfully "
                     "launches, opening new era of private space exploration and "
                     "research opportunities."
                 ),
-                context=(
+                report=(
                     "Space milestone achieved: Axiom Space successfully launched "
                     "the first commercially operated space station, marking a "
                     "historic shift from government-led to private sector space "
@@ -109,8 +109,8 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                tip=("Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."),
-                context=(
+                title=("Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."),
+                report=(
                     "Local sports championship victory: The city's professional "
                     "baseball team won their first championship in 50 years, "
                     "triggering massive celebrations that boosted the local "
@@ -348,32 +348,32 @@ class TestLeadCurator:
         """Sample leads for testing."""
         return [
             Lead(
-                tip="Climate Summit 2024: World leaders meet to discuss climate "
+                title="Climate Summit 2024: World leaders meet to discuss climate "
                 "change solutions and carbon reduction targets with major implications "
                 "for global policy and economy.",
             ),
             Lead(
-                tip="Major earthquake in Pacific: A 7.5 magnitude earthquake "
+                title="Major earthquake in Pacific: A 7.5 magnitude earthquake "
                 "struck the Pacific region causing widespread damage and triggering "
                 "tsunami warnings across multiple countries.",
             ),
             Lead(
-                tip="Tech breakthrough: Scientists announce revolutionary AI "
+                title="Tech breakthrough: Scientists announce revolutionary AI "
                 "system that can predict diseases years before symptoms appear, "
                 "potentially saving millions of lives.",
             ),
             Lead(
-                tip="Economic crisis deepens: Global markets tumble as inflation "
+                title="Economic crisis deepens: Global markets tumble as inflation "
                 "reaches 40-year high, central banks struggle to respond effectively "
                 "to the growing financial instability.",
             ),
             Lead(
-                tip="Space milestone: First commercial space station successfully "
+                title="Space milestone: First commercial space station successfully "
                 "launches, opening new era of private space exploration and research "
                 "opportunities.",
             ),
             Lead(
-                tip="Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations.",
+                title="Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations.",
             ),
         ]
 
@@ -569,19 +569,19 @@ class TestLeadCurator:
         """Test final ranking calculation."""
         evaluations = [
             LeadEvaluation(
-                lead=Lead(tip="Lead 1"),
+                lead=Lead(title="Lead 1"),
                 criteria_scores={},
                 weighted_score=8.0,
                 pairwise_wins=2,
             ),
             LeadEvaluation(
-                lead=Lead(tip="Lead 2"),
+                lead=Lead(title="Lead 2"),
                 criteria_scores={},
                 weighted_score=7.5,
                 pairwise_wins=1,
             ),
             LeadEvaluation(
-                lead=Lead(tip="Lead 3"),
+                lead=Lead(title="Lead 3"),
                 criteria_scores={},
                 weighted_score=7.8,
                 pairwise_wins=0,
@@ -606,7 +606,7 @@ class TestLeadCurator:
         # Create ranked evaluations
         evaluations = [
             LeadEvaluation(
-                lead=Lead(tip=f"Lead {i}"),
+                lead=Lead(title=f"Lead {i}"),
                 criteria_scores={},
                 weighted_score=10 - i,
                 final_rank=10 - i,
@@ -732,8 +732,8 @@ class TestLeadCurationEdgeCases:
     def sample_lead(self):
         """Single sample lead for testing."""
         return Lead(
-            tip="Test lead for edge case testing",
-            context="Test context for edge case scenarios",
+            title="Test lead for edge case testing",
+            report="Test context for edge case scenarios",
         )
 
     @patch("services.lead_curation.logger")
@@ -822,7 +822,7 @@ class TestLeadCurationEdgeCases:
         """Test pairwise comparison is triggered when group size meets minimum."""
         # Create enough leads to trigger pairwise comparison
         leads = [
-            Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}")
+            Lead(title=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
             for i in range(6)  # More than MIN_GROUP_SIZE_FOR_PAIRWISE (usually 4-5)
         ]
 
@@ -856,7 +856,7 @@ class TestLeadCurationEdgeCases:
         """Test fallback to minimum leads selection when not enough leads pass
         thresholds."""
         # Create more leads than minimum required
-        leads = [Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}") for i in range(6)]
+        leads = [Lead(title=f"Test lead {i + 1}", report=f"Context for lead {i + 1}") for i in range(6)]
 
         # Mock response with low scores that won't pass normal selection
         mock_response = [
@@ -885,7 +885,7 @@ class TestLeadCurationEdgeCases:
         """Test pairwise comparison is skipped when group is too small."""
         # Create few leads - less than MIN_GROUP_SIZE_FOR_PAIRWISE
         leads = [
-            Lead(tip=f"Test lead {i + 1}", context=f"Context for lead {i + 1}")
+            Lead(title=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
             for i in range(2)  # Less than minimum group size
         ]
 

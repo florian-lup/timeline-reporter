@@ -33,7 +33,7 @@ QUERY_FORMULATION_INSTRUCTIONS = (
     "authoritative background, recent developments, and any useful historical context. "
     "If timeliness is critical, append an appropriate date/time filter "
     "(e.g., 'past 24 hours', '2025').\n\n"
-    "Lead Title: {lead_tip}\n"
+    "Lead Title: {lead_title}\n"
     "Date: {lead_date}\n\n"
     "Return ONLY the search query—no additional text, explanation, or formatting."
 ).strip()
@@ -67,7 +67,7 @@ Guidelines:
 
 Expected JSON format (do not include this block in your response):
 {
-  \"context\": \"<string>\",
+  \"report\": \"<string>\",
   \"sources\": [\"<url1>\", \"<url2>\", ...]
 }
 """.strip()
@@ -83,7 +83,7 @@ RESEARCH_INSTRUCTIONS = """{search_query}""".strip()
 RESEARCH_JSON_FORMAT = """
 Return ONLY a JSON object with the following keys in this exact order and no additional keys or text:
 {
-  \"context\": \"<string>\",
+  \"report\": \"<string>\",
   \"sources\": [\"<url1>\", \"<url2>\", ...]
 }
 Do NOT wrap the JSON in Markdown fences and do NOT include explanations before or after the JSON object.

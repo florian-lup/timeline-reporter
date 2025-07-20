@@ -224,10 +224,10 @@ class TestServicesIntegration:
         assert "Climate Summit 2024" in leads[1].title
         assert "AI Breakthrough Announced" in leads[2].title
 
-        # Researched leads have context
-        assert "international cooperation" in researched_leads[0].context
-        assert "environmental policies" in researched_leads[1].context
-        assert "breakthrough AI technology" in researched_leads[2].context
+        # Researched leads have report
+        assert "international cooperation" in researched_leads[0].report
+        assert "environmental policies" in researched_leads[1].report
+        assert "breakthrough AI technology" in researched_leads[2].report
 
         # Stories from writing
         assert stories[0].headline == "World Leaders Unite at Political Summit"
@@ -470,10 +470,10 @@ class TestServicesIntegration:
         assert isinstance(prioritized_leads[0], Lead)
         assert prioritized_leads[0].title in [lead.title for lead in unique_leads]
 
-        # Lead -> Enhanced Lead (research adds context and sources)
+        # Lead -> Enhanced Lead (research adds report and sources)
         assert len(researched_leads) == 3
         assert isinstance(researched_leads[0], Lead)
-        assert researched_leads[0].context == ("Enhanced context with research details")
+        assert researched_leads[0].report == ("Enhanced context with research details")
         assert len(researched_leads[0].sources) == 2
 
         # Enhanced Lead -> Story (writing transforms to full story)

@@ -41,8 +41,8 @@ def research_lead(leads: list[Lead], *, openai_client: OpenAIClient, perplexity_
 
 
 def _formulate_search_query(lead: Lead, *, openai_client: OpenAIClient) -> str:
-    """Use OpenAI to transform the raw tip into an effective search query for Perplexity."""
-    prompt = QUERY_FORMULATION_INSTRUCTIONS.format(lead_tip=lead.title, lead_date=lead.date)
+    """Use OpenAI to transform the raw title into an effective search query for Perplexity."""
+    prompt = QUERY_FORMULATION_INSTRUCTIONS.format(lead_title=lead.title, lead_date=lead.date)
 
     try:
         search_query = openai_client.chat_completion(
@@ -51,8 +51,8 @@ def _formulate_search_query(lead: Lead, *, openai_client: OpenAIClient) -> str:
         )
         return search_query.strip()
     except Exception as exc:  # pragma: no cover
-        logger.warning("Query formulation failed: %s. Using original tip.", exc)
-        # Fallback to original tip if query formulation fails
+        logger.warning("Query formulation failed: %s. Using original title.", exc)
+        # Fallback to original title if query formulation fails
         return lead.title
 
 
@@ -76,10 +76,10 @@ def _enhance_lead_from_response(original_lead: Lead, response_text: str) -> Lead
     # Use a set to avoid duplicates, then convert back to list
     combined_sources = list(set(original_lead.sources + new_sources))
 
-    # Create enhanced Lead with context and combined sources from the JSON data
+    # Create enhanced Lead with report and combined sources from the JSON data
     return Lead(
         title=original_lead.title,
-        context=data.get("context") or "",
+        report=data.get("report") or "",
         sources=combined_sources,
         date=original_lead.date,
     )

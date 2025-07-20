@@ -23,7 +23,7 @@ def deduplicate_leads(
 ) -> list[Lead]:
     """Removes near-duplicate leads based on vector similarity.
 
-    Each lead's context is embedded and compared against existing vectors in
+    Each lead's title is embedded and compared against existing vectors in
     Pinecone. Anything with a similarity ≥ threshold is dropped.
 
     Uses centralized configuration for similarity thresholds, vector storage,
@@ -33,7 +33,7 @@ def deduplicate_leads(
     duplicates_found = 0
 
     for idx, lead in enumerate(leads):
-        # Create embedding from the tip
+        # Create embedding from the title
         vector = openai_client.embed_text(lead.title)
 
         # Query for similar existing leads

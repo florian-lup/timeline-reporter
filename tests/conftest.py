@@ -83,7 +83,7 @@ def mock_mongodb_client():
 def sample_lead():
     """Sample Lead object for testing."""
     return Lead(
-        tip="Sample Lead Title: This is a sample lead summary for testing purposes.",
+        title="Sample Lead Title: This is a sample lead summary for testing purposes.",
     )
 
 
@@ -92,13 +92,13 @@ def sample_leads():
     """Sample list of Lead objects for testing."""
     return [
         Lead(
-            tip="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",
+            title="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",
         ),
         Lead(
-            tip="Climate Change Update: New climate research reveals important environmental findings.",
+            title="Climate Change Update: New climate research reveals important environmental findings.",
         ),
         Lead(
-            tip="Economic Development: Significant economic changes affecting global markets.",
+            title="Economic Development: Significant economic changes affecting global markets.",
         ),
     ]
 

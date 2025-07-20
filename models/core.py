@@ -10,7 +10,6 @@ class Lead:
     """Represents a news lead discovered in the discovery step."""
 
     title: str
-    context: str = ""
     report: str = ""
     sources: list[str] = field(default_factory=list)
     date: str = field(default_factory=get_today_formatted)

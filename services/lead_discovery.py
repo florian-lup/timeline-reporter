@@ -84,7 +84,7 @@ def _parse_leads_from_response(response_text: str) -> list[Lead]:
 
     leads: list[Lead] = [
         Lead(
-            tip=item["tip"], 
+            title=item["title"], 
             report=item.get("report", ""),
             sources=item.get("sources", [])
         ) 

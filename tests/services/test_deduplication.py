@@ -26,13 +26,13 @@ class TestDeduplicationService:
         """Sample leads for testing."""
         return [
             Lead(
-                tip="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                title="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
             ),
             Lead(
-                tip="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
+                title="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
             ),
             Lead(
-                tip="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
+                title="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
             ),
         ]
 

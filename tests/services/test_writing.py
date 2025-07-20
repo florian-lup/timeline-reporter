@@ -23,7 +23,7 @@ class TestWritingService:
         return [
             Lead(
                 title="Climate Summit 2024: World leaders meet to discuss climate change",
-                context=(
+                report=(
                     "The Climate Summit 2024 brings together world leaders from "
                     "over 190 countries to address the escalating climate crisis. "
                     "The summit focuses on implementing concrete measures to limit "
@@ -42,7 +42,7 @@ class TestWritingService:
             ),
             Lead(
                 title="Tech Innovation Expo: AI breakthroughs announced",
-                context=(
+                report=(
                     "The annual Tech Innovation Expo showcased groundbreaking AI "
                     "developments from major technology companies. Key announcements "
                     "included advances in natural language processing, autonomous "
@@ -134,8 +134,8 @@ class TestWritingService:
         call_args = mock_openai_client.chat_completion.call_args
         prompt = call_args[0][0]  # First positional argument is the prompt
 
-        # Should contain context but not title or sources
-        assert sample_researched_leads[0].context in prompt
+        # Should contain report but not title or sources
+        assert sample_researched_leads[0].report in prompt
         assert sample_researched_leads[0].date in prompt
         assert sample_researched_leads[0].title not in prompt
         # Sources should not be in prompt
@@ -226,11 +226,11 @@ class TestWritingService:
         assert stories[0].summary == ""  # Default empty
         assert stories[0].body == ""  # Default empty
 
-    def test_write_stories_empty_context(self, mock_openai_client):
-        """Test writing with lead that has empty context."""
-        lead_empty_context = Lead(
-            title="Empty context lead",
-            context="",
+    def test_write_stories_empty_report(self, mock_openai_client):
+        """Test writing with lead that has empty report."""
+        lead_empty_report = Lead(
+            title="Empty report lead",
+            report="",
             sources=["https://example.com"],
             date="2024-01-15",
         )
@@ -244,22 +244,22 @@ class TestWritingService:
         )
         mock_openai_client.chat_completion.return_value = response
 
-        stories = write_stories([lead_empty_context], openai_client=mock_openai_client)
+        stories = write_stories([lead_empty_report], openai_client=mock_openai_client)
 
         assert len(stories) == 1
         assert stories[0].sources == ["https://example.com"]
 
-        # Verify prompt still gets formatted (with empty context)
+        # Verify prompt still gets formatted (with empty report)
         call_args = mock_openai_client.chat_completion.call_args
         prompt = call_args[0][0]
-        assert "Context:" in prompt
+        assert "Report:" in prompt
 
     def test_write_stories_single_lead(self, mock_openai_client, sample_writing_response):
         """Test writing with single lead."""
         single_lead = [
             Lead(
                 title="Single test lead",
-                context="Context for single lead test",
+                report="Report for single lead test",
                 sources=["https://single.com"],
                 date="2024-01-20",
             )
@@ -306,7 +306,7 @@ class TestWritingService:
         """Test that lead attributes are properly preserved in stories."""
         lead_with_custom_date = Lead(
             title="Custom date lead",
-            context="Context with custom date",
+            report="Report with custom date",
             sources=["https://custom1.com", "https://custom2.com"],
             date="2024-12-25",
         )

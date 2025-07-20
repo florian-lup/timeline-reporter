@@ -66,13 +66,13 @@ class PerplexityClient:
     _LEAD_RESEARCH_JSON_SCHEMA = {
         "type": "object",
         "properties": {
-            "context": {"type": "string"},
+            "report": {"type": "string"},
             "sources": {
                 "type": "array",
                 "items": {"type": "string"},
             },
         },
-        "required": ["context", "sources"],
+        "required": ["report", "sources"],
     }
 
     # JSON schema for Discovery structured output (array of leads)
@@ -87,7 +87,7 @@ class PerplexityClient:
                     "items": {"type": "string"},
                 },
             },
-            "required": ["tip", "sources"],
+            "required": ["title", "sources"],
         },
     }
 

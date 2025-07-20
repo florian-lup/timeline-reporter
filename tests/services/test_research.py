@@ -72,9 +72,9 @@ class TestResearchService:
         assert isinstance(enhanced_leads[0], Lead)
         # Check that original title is preserved
         assert enhanced_leads[0].title == sample_leads[0].title
-        # Check that context was added
-        assert "Climate Summit 2024" in enhanced_leads[0].context
-        assert "190 countries" in enhanced_leads[0].context
+        # Check that report was added
+        assert "Climate Summit 2024" in enhanced_leads[0].report
+        assert "190 countries" in enhanced_leads[0].report
         
         # Check that sources were combined - discovery sources + research sources
         expected_sources = set([
@@ -121,7 +121,7 @@ class TestResearchService:
         enhanced_leads = research_lead(sample_leads[:1], openai_client=mock_openai_client, perplexity_client=mock_perplexity_client)
 
         assert len(enhanced_leads) == 1
-        assert enhanced_leads[0].context == ("Detailed context about the lead including background information")
+        assert enhanced_leads[0].report == ("Detailed context about the lead including background information")
         assert enhanced_leads[0].sources == [
             "https://example.com/test",
             "https://example.com/analysis",
@@ -139,7 +139,7 @@ class TestResearchService:
         assert len(enhanced_leads) == 1
         # Should return original lead unchanged on parse error
         assert enhanced_leads[0].title == sample_leads[0].title
-        assert enhanced_leads[0].context == ""  # Original empty context
+        assert enhanced_leads[0].report == ""  # Original empty report
         assert enhanced_leads[0].sources == []  # Original empty sources
         mock_logger.warning.assert_called()
 
@@ -190,7 +190,7 @@ class TestResearchService:
         assert len(enhanced_leads) == 1
         # Should return original lead due to JSON parse failure
         assert enhanced_leads[0].title == sample_leads[0].title
-        assert enhanced_leads[0].context == ""
+        assert enhanced_leads[0].report == ""
         assert enhanced_leads[0].sources == []
         mock_logger.warning.assert_called()
 
@@ -237,7 +237,7 @@ class TestResearchService:
 
         assert len(enhanced_leads) == 1
         # Verify handling of null values (converted to safe defaults)
-        assert enhanced_leads[0].context == ""  # None converted to empty string
+        assert enhanced_leads[0].report == ""  # None converted to empty string
         assert enhanced_leads[0].sources == []  # None converted to empty list
         # Original title preserved
         assert enhanced_leads[0].title == sample_leads[0].title

@@ -24,10 +24,10 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
         first_words = " ".join(lead.title.split()[:5]) + "..."
         logger.info("  ✍️ Writing story %d/%d - %s", idx, len(leads), first_words)
 
-        # Format the writing prompt with only context and date
+        # Format the writing prompt with only report and date
         user_prompt = WRITING_INSTRUCTIONS.format(
             lead_date=lead.date,
-            lead_context=lead.context,
+            lead_report=lead.report,
         )
 
         # Combine system prompt, user prompt, and JSON format instruction
