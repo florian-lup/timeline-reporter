@@ -45,11 +45,9 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
             # Log each individual lead with first 5 words for tracking
             for idx, lead in enumerate(category_leads, 1):
                 first_words = " ".join(lead.title.split()[:5]) + "..."
-                source_count = len(lead.sources) if lead.sources else 0
-                report_length = len(lead.report.split()) if lead.report else 0
                 logger.info(
-                    "    📋 Lead %d/%d - %s (sources: %d, report: %d words)", 
-                    idx, len(category_leads), first_words, source_count, report_length
+                    "    📋 Lead %d/%d - %s", 
+                    idx, len(category_leads), first_words
                 )
 
             all_leads.extend(category_leads)
@@ -84,9 +82,7 @@ def _parse_leads_from_response(response_text: str) -> list[Lead]:
 
     leads: list[Lead] = [
         Lead(
-            title=item["title"], 
-            report=item.get("report", ""),
-            sources=item.get("sources", [])
+            title=item["title"]
         ) 
         for item in data
     ]

@@ -24,12 +24,10 @@ class TestDiscoveryService:
         return json.dumps(
             [
                 {
-                    "title": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies.",
-                    "sources": ["https://example.com/climate-news", "https://example.com/summit-2024"]
+                    "title": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies."
                 },
                 {
-                    "title": "Earthquake Hits Pacific Region: 6.2 magnitude earthquake causes minimal damage but raises tsunami concerns.",
-                    "sources": ["https://example.com/earthquake-report", "https://example.com/pacific-news"]
+                    "title": "Earthquake Hits Pacific Region: 6.2 magnitude earthquake causes minimal damage but raises tsunami concerns."
                 },
             ]
         )
@@ -38,32 +36,28 @@ class TestDiscoveryService:
     def sample_politics_response(self):
         """Sample politics category response."""
         return json.dumps([{
-            "title": "Presidential Election Update: Major political shift as new candidate enters the race with strong support.",
-            "sources": ["https://example.com/election-news", "https://example.com/political-update"]
+            "title": "Presidential Election Update: Major political shift as new candidate enters the race with strong support."
         }])
 
     @pytest.fixture
     def sample_environment_response(self):
         """Sample environment category response."""
         return json.dumps([{
-            "title": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies.",
-            "sources": ["https://example.com/climate-summit", "https://example.com/environmental-policy"]
+            "title": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies."
         }])
 
     @pytest.fixture
     def sample_entertainment_response(self):
         """Sample entertainment category response."""
         return json.dumps([{
-            "title": "World Cup Final: Historic victory as underdog team wins championship in dramatic overtime.",
-            "sources": ["https://example.com/world-cup", "https://example.com/sports-news"]
+            "title": "World Cup Final: Historic victory as underdog team wins championship in dramatic overtime."
         }])
 
     @pytest.fixture
     def sample_leads_with_fences(self):
         """Sample response wrapped in markdown fences."""
         response_data = [{
-            "title": "Climate Summit Announced: World leaders gather to discuss climate action and set new environmental targets.",
-            "sources": ["https://example.com/climate-fences", "https://example.com/summit-fences"]
+            "title": "Climate Summit Announced: World leaders gather to discuss climate action and set new environmental targets."
         }]
         return f"```json\n{json.dumps(response_data)}\n```"
 
@@ -88,14 +82,6 @@ class TestDiscoveryService:
         assert "Presidential Election Update" in leads[0].title
         assert "Climate Summit Announced" in leads[1].title
         assert "World Cup Final" in leads[2].title
-        
-        # Check that sources are present from discovery
-        assert len(leads[0].sources) == 2
-        assert "https://example.com/election-news" in leads[0].sources
-        assert len(leads[1].sources) == 2
-        assert "https://example.com/climate-summit" in leads[1].sources
-        assert len(leads[2].sources) == 2
-        assert "https://example.com/world-cup" in leads[2].sources
 
         # Verify Perplexity client was called three times
         assert mock_perplexity_client.lead_discovery.call_count == 3
@@ -202,17 +188,16 @@ class TestDiscoveryService:
         # Verify category-specific logging - updated to match new emoji-based format
         mock_logger.info.assert_any_call("  📰 Scanning %s sources...", "politics")
         mock_logger.info.assert_any_call("  ✓ %s: %d leads found", "Politics", 1)
-        # Individual lead logging also happens - updated to match new format with source count
+        # Individual lead logging also happens - updated to match new format without source count
         mock_logger.info.assert_any_call(
-            "    📋 Lead %d/%d - %s (sources: %d)", 
-            1, 1, "World Cup Final: Historic victory...", 2
+            "    📋 Lead %d/%d - %s", 
+            1, 1, "World Cup Final: Historic victory..."
         )
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
-        """Test that discovery preserves original formatting in tip."""
+        """Test that discovery preserves original formatting in title."""
         response_with_formatting = json.dumps([{
-            "title": "  Spaced Title  : Summary with\nnewlines and extra   spaces",
-            "sources": ["https://example.com/formatted-news"]
+            "title": "  Spaced Title  : Summary with\nnewlines and extra   spaces"
         }])
         mock_perplexity_client.lead_discovery.side_effect = [
             response_with_formatting,
@@ -224,14 +209,11 @@ class TestDiscoveryService:
 
         assert len(leads) == 1
         assert leads[0].title == "  Spaced Title  : Summary with\nnewlines and extra   spaces"  # Preserves original formatting
-        assert len(leads[0].sources) == 1
-        assert leads[0].sources[0] == "https://example.com/formatted-news"
 
     def test_discover_leads_unicode_handling(self, mock_perplexity_client):
         """Test discovery with Unicode characters."""
         unicode_response = json.dumps([{
-            "title": "🌍 Climate Summit: Conférence sur les émissions de carbone et les objectifs environnementaux",
-            "sources": ["https://example.com/unicode-news", "https://example.com/international-news"]
+            "title": "🌍 Climate Summit: Conférence sur les émissions de carbone et les objectifs environnementaux"
         }])
         mock_perplexity_client.lead_discovery.side_effect = [
             "[]",
@@ -244,8 +226,6 @@ class TestDiscoveryService:
         assert len(leads) == 1
         assert "🌍" in leads[0].title
         assert "émissions" in leads[0].title
-        assert len(leads[0].sources) == 2
-        assert "https://example.com/unicode-news" in leads[0].sources
 
     def test_discover_leads_all_categories_fail(self, mock_perplexity_client):
         """Test when all category API calls fail."""
@@ -283,33 +263,30 @@ class TestDiscoveryService:
         """Test edge cases in lead parsing."""
         from services.lead_discovery import _parse_leads_from_response
 
-        # Test with missing fields
+        # Test with missing title field
         response_missing_field = json.dumps(
             [
-                {"title": "Only Title"}  # Missing tip field
+                {"other_field": "Some value"}  # Missing title field
             ]
         )
 
         with pytest.raises(KeyError):
             _parse_leads_from_response(response_missing_field)
 
-        # Test with empty strings
-        response_empty_strings = json.dumps([{
-            "title": "",
-            "sources": []
+        # Test with empty title
+        response_empty_title = json.dumps([{
+            "title": ""
         }])
 
-        leads = _parse_leads_from_response(response_empty_strings)
+        leads = _parse_leads_from_response(response_empty_title)
         assert len(leads) == 1
         assert leads[0].title == ""
-        assert leads[0].sources == []
         
-        # Test with missing sources field (should default to empty list)
-        response_missing_sources = json.dumps([{"title": "Test title"}])
-        leads = _parse_leads_from_response(response_missing_sources)
+        # Test with valid title
+        response_valid = json.dumps([{"title": "Test title"}])
+        leads = _parse_leads_from_response(response_valid)
         assert len(leads) == 1
         assert leads[0].title == "Test title"
-        assert leads[0].sources == []  # Should default to empty list
 
     def test_fence_regex_multiple_fences(self, mock_perplexity_client):
         """Test handling of multiple markdown fences.
