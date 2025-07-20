@@ -2,7 +2,7 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, researches, verifies,
+    python -m main  # discovers, deduplicates, researches,
                    # prioritizes, writes, and stores
 """
 
@@ -20,14 +20,13 @@ from services import (
     discover_leads,
     persist_stories,
     research_lead,
-    verify_leads,
     write_stories,
 )
 from utils import logger  # noqa: F401 – configure logging first
 
 
 def run_pipeline() -> None:  # noqa: D401
-    """Run the 7-step AI reporter pipeline."""
+    """Run the 6-step AI reporter pipeline."""
     logger.info("🚀 PIPELINE STARTED: Timeline Reporter")
 
     # Initialise clients
@@ -52,7 +51,7 @@ def run_pipeline() -> None:  # noqa: D401
         len(unique_leads),
     )
 
-    # 3️⃣ Research (enhance leads with context and sources)
+    # 3️⃣ Research
     logger.info(
         "📚 STEP 3: Research - Gathering context and sources for %d leads...",
         len(unique_leads),
@@ -63,40 +62,27 @@ def run_pipeline() -> None:  # noqa: D401
         len(researched_leads),
     )
 
-    # 4️⃣ Verification (check lead credibility)
+    # 4️⃣ Decision (prioritize most impactful leads based on research context)
     logger.info(
-        "🔎 STEP 4: Verification - Checking credibility of %d researched leads...",
+        "⚖️ STEP 4: Curation - Evaluating %d leads for impact and priority...",
         len(researched_leads),
     )
-    verified_leads = verify_leads(researched_leads, openai_client=openai_client)
-    rejected_count = len(researched_leads) - len(verified_leads)
-    logger.info(
-        "✅ Verification complete: %d leads verified, %d rejected for low credibility",
-        len(verified_leads),
-        rejected_count,
-    )
-
-    # 5️⃣ Decision (prioritize most impactful leads based on research context)
-    logger.info(
-        "⚖️ STEP 5: Curation - Evaluating %d leads for impact and priority...",
-        len(verified_leads),
-    )
-    prioritized_leads = curate_leads(verified_leads, openai_client=openai_client)
+    prioritized_leads = curate_leads(researched_leads, openai_client=openai_client)
     logger.info(
         "✅ Curation complete: Selected %d high-priority leads for publication",
         len(prioritized_leads),
     )
 
-    # 6️⃣ Writing (create stories from researched leads)
+    # 5️⃣ Writing (create stories from researched leads)
     logger.info(
-        "✍️ STEP 6: Writing - Generating stories from %d priority leads...",
+        "✍️ STEP 5: Writing - Generating stories from %d priority leads...",
         len(prioritized_leads),
     )
     stories = write_stories(prioritized_leads, openai_client=openai_client)
     logger.info("✅ Writing complete: Generated %d publication-ready stories", len(stories))
 
-    # 7️⃣ Storage
-    logger.info("💾 STEP 7: Storage - Saving %d stories to database...", len(stories))
+    # 6️⃣ Storage
+    logger.info("💾 STEP 6: Storage - Saving %d stories to database...", len(stories))
     persist_stories(stories, mongodb_client=mongodb_client)
 
     logger.info(
