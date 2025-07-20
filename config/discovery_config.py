@@ -30,8 +30,8 @@ DISCOVERY_CATEGORIES = [
 # ---------------------------------------------------------------------------
 # Discovery System Prompt
 # ---------------------------------------------------------------------------
-DISCOVERY_SYSTEM_PROMPT = """
-You are an investigative news scout for a global newsroom tasked with identifying fresh, highly newsworthy leads that have emerged within the last 24 hours.
+DISCOVERY_SYSTEM_PROMPT = f"""
+Today is {get_today_formatted()}. You are an investigative news scout for a global newsroom tasked with identifying fresh, highly newsworthy leads that have emerged within the last 24 hours.
 
 Operational protocol:
 • Perform iterative web research: generate precise keyword sets, run targeted searches, open and skim promising results, verify publication date (≤ 24 h), and cross-check facts across multiple independent, authoritative English-language sources.
@@ -66,11 +66,6 @@ Return ONLY a JSON array where each element is an object with exactly these keys
 Do NOT include any other keys, wrap the output in Markdown fences, or add explanations before/after the JSON.
 If no leads meet the criteria, return an empty array: []
 """.strip()
-
-# ---------------------------------------------------------------------------
-# Discovery Recency Filter Configuration
-# ---------------------------------------------------------------------------
-SEARCH_RECENCY_FILTER: str = "day"  # Limit web search to content from the last 24 hours
 
 # ---------------------------------------------------------------------------
 # Category-Specific Discovery Instructions

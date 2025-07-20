@@ -14,7 +14,6 @@ from config.discovery_config import (
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
     REASONING_EFFORT as DISCOVERY_REASONING_EFFORT,
-    SEARCH_RECENCY_FILTER,
     DISCOVERY_TIMEOUT_SECONDS,
 )
 from config.research_config import (
@@ -164,8 +163,6 @@ class PerplexityClient:
             "web_search_options": {
                 "search_context_size": DISCOVERY_SEARCH_CONTEXT_SIZE,
             },
-            # Restrict search results to the specified recency window (today)
-            "search_recency_filter": SEARCH_RECENCY_FILTER,
             "reasoning_effort": DISCOVERY_REASONING_EFFORT,
             "response_format": {
                 "type": "json_schema",
