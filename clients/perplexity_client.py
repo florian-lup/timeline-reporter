@@ -13,14 +13,12 @@ from config.discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
-    REASONING_EFFORT as DISCOVERY_REASONING_EFFORT,
     DISCOVERY_TIMEOUT_SECONDS,
 )
 from config.research_config import (
     LEAD_RESEARCH_MODEL,
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
-    REASONING_EFFORT as RESEARCH_REASONING_EFFORT,
     RESEARCH_TIMEOUT_SECONDS,
 )
 
@@ -120,7 +118,6 @@ class PerplexityClient:
             "web_search_options": {
                 "search_context_size": RESEARCH_SEARCH_CONTEXT_SIZE,
             },
-            "reasoning_effort": RESEARCH_REASONING_EFFORT,
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {"schema": self._LEAD_RESEARCH_JSON_SCHEMA},
@@ -163,7 +160,6 @@ class PerplexityClient:
             "web_search_options": {
                 "search_context_size": DISCOVERY_SEARCH_CONTEXT_SIZE,
             },
-            "reasoning_effort": DISCOVERY_REASONING_EFFORT,
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {"schema": self._LEAD_JSON_SCHEMA},

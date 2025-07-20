@@ -43,7 +43,6 @@ QUERY_FORMULATION_INSTRUCTIONS = (
 # ---------------------------------------------------------------------------
 LEAD_RESEARCH_MODEL: str = "sonar-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
-REASONING_EFFORT: str = "high"
 
 # ---------------------------------------------------------------------------
 # Research Timeout Configuration  
