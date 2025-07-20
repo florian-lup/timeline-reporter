@@ -49,14 +49,4 @@ Lead Title: {lead_title}
 Provide detailed context, background information, key stakeholders, timeline of events, and significance. Focus on verifiable facts from authoritative sources.
 """.strip()
 
-# ---------------------------------------------------------------------------
-# Research JSON Format
-# ---------------------------------------------------------------------------
-RESEARCH_JSON_FORMAT = """
-Return ONLY a JSON object with the following keys in this exact order and no additional keys or text:
-{
-  \"report\": \"<string>\",
-  \"sources\": [\"<url1>\", \"<url2>\", ...]
-}
-Do NOT wrap the JSON in Markdown fences and do NOT include explanations before or after the JSON object.
-""".strip()
+

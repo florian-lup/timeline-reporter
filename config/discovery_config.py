@@ -54,19 +54,6 @@ Expected output schema (do not include this block in your response):
 """.strip()
 
 # ---------------------------------------------------------------------------
-# Discovery JSON Format Instructions
-# ---------------------------------------------------------------------------
-DISCOVERY_JSON_FORMAT = """
-Return ONLY a JSON array where each element is an object with exactly these keys in this exact order:
-- 'title': a single-paragraph string (50-80 words) summarising the core facts
-- 'report': a comprehensive string (at least 700 words) providing detailed context, background, analysis, and implications
-- 'sources': an array of one or more credible source URLs that confirm the information (include as many as are available)
-
-Do NOT include any other keys, wrap the output in Markdown fences, or add explanations before/after the JSON.
-If no leads meet the criteria, return an empty array: []
-""".strip()
-
-# ---------------------------------------------------------------------------
 # Category-Specific Discovery Instructions
 # ---------------------------------------------------------------------------
 

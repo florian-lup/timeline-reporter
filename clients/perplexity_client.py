@@ -47,21 +47,6 @@ class PerplexityClient:
             raise ValueError("PERPLEXITY_API_KEY is missing, cannot initialise Perplexity client.")
         self._headers = {**self._DEFAULT_HEADERS, "Authorization": f"Bearer {api_key}"}
 
-    # JSON schema for Story structured output as per docs
-    _STORY_JSON_SCHEMA = {
-        "type": "object",
-        "properties": {
-            "headline": {"type": "string"},
-            "summary": {"type": "string"},
-            "body": {"type": "string"},
-            "sources": {
-                "type": "array",
-                "items": {"type": "string"},
-            },
-        },
-        "required": ["headline", "summary", "body", "sources"],
-    }
-
     # JSON schema for Lead Research structured output
     _LEAD_RESEARCH_JSON_SCHEMA = {
         "type": "object",
@@ -76,7 +61,7 @@ class PerplexityClient:
     }
 
     # JSON schema for Discovery structured output (array of leads)
-    _LEAD_JSON_SCHEMA = {
+    _LEAD_DISCOVERY_JSON_SCHEMA = {
         "type": "array",
         "items": {
             "type": "object",
@@ -170,7 +155,7 @@ class PerplexityClient:
             },
             "response_format": {
                 "type": "json_schema",
-                "json_schema": {"schema": self._LEAD_JSON_SCHEMA},
+                "json_schema": {"schema": self._LEAD_DISCOVERY_JSON_SCHEMA},
             },
         }
 
