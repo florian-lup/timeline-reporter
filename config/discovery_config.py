@@ -34,6 +34,7 @@ Today is {get_today_formatted()}. You are an investigative news scout for a glob
 
 Operational protocol:
 • Remain strictly factual and neutral; do NOT speculate or extrapolate beyond what sources state, never fabricate data.
+• Prioritize global coverage across different regions and countries, not just major markets.
 • For every qualifying lead, provide only a concise title summarizing the key newsworthy development.
 • Write in concise journalistic style (present tense, active voice).
 • OUTPUT ONLY the JSON array described below—no markdown, no extra commentary, no extra text.
@@ -51,12 +52,7 @@ Expected output schema (do not include this block in your response):
 # ---------------------------------------------------------------------------
 
 DISCOVERY_POLITICS_INSTRUCTIONS = f"""
-Identify 3-5 impactful political or geopolitical developments reported today.
-
-Focus on developments such as:
-• Government decisions, policy shifts, or legislative milestones
-• Key elections or leadership changes
-• Diplomatic negotiations, sanctions, or conflict escalations with global repercussions
+Identify the most impactful political or geopolitical developments reported today.
 
 """.strip()
 
