@@ -81,19 +81,14 @@ class PerplexityClient:
     # Public methods
     # ---------------------------------------------------------------------------
 
-    def lead_research(self, prompt: str) -> str:
-        """Executes research for a lead and returns structured JSON.
-
-        Uses structured output for consistent JSON responses.
-
-        This includes reasoning tokens wrapped in <think> tags. The response is parsed to
-        extract only the JSON content.
+    def lead_research(self, prompt: str) -> tuple[str, list[str]]:
+        """Executes research for a lead and returns the content and citations.
 
         Args:
             prompt: The research query/prompt
 
         Returns:
-            JSON string containing the structured research results
+            Tuple containing (content, citations_list)
         """
         payload = {
             "model": LEAD_RESEARCH_MODEL,
@@ -107,10 +102,7 @@ class PerplexityClient:
             "web_search_options": {
                 "search_context_size": RESEARCH_SEARCH_CONTEXT_SIZE,
             },
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {"schema": self._LEAD_RESEARCH_JSON_SCHEMA},
-            },
+            "return_citations": True,
         }
 
         # Set timeout for research operations that involve web search and reasoning
@@ -120,11 +112,18 @@ class PerplexityClient:
             response.raise_for_status()
             data = response.json()
 
-        # Response contains reasoning tokens in <think> tags followed by JSON
+        # Extract content and citations from the response
         raw_content: str = data["choices"][0]["message"]["content"]
-
-        # Extract JSON content after <think> section as per documentation
-        return self._extract_json_from_reasoning_response(raw_content)
+        
+        # For reasoning models, remove <think> sections to get clean content
+        clean_content = self._extract_content_from_reasoning_response(raw_content)
+        
+        # Citations are in the search_results field, extract URLs from the search results
+        citations: list[str] = []
+        if "search_results" in data and data["search_results"]:
+            citations = [result["url"] for result in data["search_results"] if result.get("url")]
+        
+        return clean_content, citations
 
     def lead_discovery(self, prompt: str) -> str:
         """Executes a research for leads.
@@ -190,3 +189,19 @@ class PerplexityClient:
         # Clean up any remaining markdown or XML-like tags
         json_part = re.sub(r"```(?:json)?\n?", "", json_part)
         return re.sub(r"\n?```", "", json_part)
+
+    def _extract_content_from_reasoning_response(self, raw_content: str) -> str:
+        """Extract clean content from reasoning model responses.
+        
+        Reasoning models like sonar-reasoning-pro include <think> sections
+        that should be removed for cleaner output.
+        """
+        import re
+        
+        # Remove <think>...</think> sections
+        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL)
+        
+        # Clean up extra whitespace
+        clean_content = clean_content.strip()
+        
+        return clean_content

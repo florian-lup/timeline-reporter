@@ -7,7 +7,7 @@ related to lead research and source gathering.
 # ---------------------------------------------------------------------------
 # Research Model Configuration
 # ---------------------------------------------------------------------------
-LEAD_RESEARCH_MODEL: str = "sonar-reasoning-pro"
+LEAD_RESEARCH_MODEL: str = "sonar-reasoning"
 SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
@@ -23,19 +23,11 @@ You are a senior investigative research analyst at a global news desk.
 Your job is to collect verifiable facts and authoritative sources about developing news leads.
 
 Guidelines:
-• Use only publicly available, reputable information. If multiple sources conflict, note the discrepancy.
 • Prioritize primary documents (official statements, court filings, scientific papers) and well-established outlets (Reuters, Associated Press, BBC).
 • Avoid speculative commentary and opinion pieces unless they are central to the lead—and clearly label them.
 • Remain neutral and avoid political or ideological bias.
 • Provide an in-depth report (≈ 600–1000 words) detailing relevant background, key actors, chronology, significance, and controversies.
-• Supply an array of unique, fully-qualified URLs that support the context. List primary sources first.
-• OUTPUT ONLY the JSON object described below—no markdown, headers, or extra commentary.
-
-Expected JSON format (do not include this block in your response):
-{
-  \"report\": \"<string>\",
-  \"sources\": [\"<url1>\", \"<url2>\", ...]
-}
+• Write in a clear, professional journalistic style.
 """.strip()
 
 # ---------------------------------------------------------------------------
