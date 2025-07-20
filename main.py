@@ -18,6 +18,7 @@ from services import (
     curate_leads,
     deduplicate_leads,
     discover_leads,
+    generate_podcast,
     persist_stories,
     research_lead,
     write_stories,
@@ -84,6 +85,18 @@ def run_pipeline() -> None:  # noqa: D401
     # 6️⃣ Storage
     logger.info("💾 STEP 6: Storage - Saving %d stories to database...", len(stories))
     persist_stories(stories, mongodb_client=mongodb_client)
+
+    # 7️⃣ Audio Generation
+    if stories:  # Only generate podcast if we have stories
+        try:
+            podcast = generate_podcast(stories, openai_client=openai_client, mongodb_client=mongodb_client)
+            logger.info(
+                "🎙️ Podcast generated: %d-story briefing",
+                podcast.story_count,
+            )
+        except Exception as e:
+            logger.error("Failed to generate podcast: %s", str(e))
+            # Continue pipeline even if audio generation fails
 
     logger.info(
         "🎉 PIPELINE COMPLETE: Successfully processed %d leads → %d stories published",

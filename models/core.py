@@ -25,3 +25,13 @@ class Story:
     tag: str
     sources: list[str]
     date: str = field(default_factory=get_today_formatted)
+
+
+@dataclass
+class Podcast:
+    """Represents an audio podcast generated from story summaries."""
+
+    anchor_script: str
+    audio_url: str  # Path or URL to the audio file
+    story_count: int
+    date: str = field(default_factory=get_today_formatted)

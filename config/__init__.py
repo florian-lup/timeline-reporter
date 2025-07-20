@@ -62,6 +62,7 @@ from .settings import (
     CLOUD_PROVIDER,
     CLOUD_REGION,
     MONGODB_COLLECTION_NAME,
+    MONGODB_COLLECTION_NAME_AUDIO,
     # MongoDB Configuration
     MONGODB_DATABASE_NAME,
     MONGODB_URI,
@@ -87,6 +88,7 @@ __all__ = [
     # MongoDB Configuration
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
+    "MONGODB_COLLECTION_NAME_AUDIO",
     # Discovery Configuration
     "LEAD_DISCOVERY_MODEL",
     "SEARCH_CONTEXT_SIZE",

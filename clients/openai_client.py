@@ -11,6 +11,7 @@ from config import (
     EMBEDDING_MODEL,
     OPENAI_API_KEY,
 )
+from config.audio_config import TTS_MODEL, TTS_SPEED, TTS_VOICE
 
 
 class OpenAIClient:
@@ -79,3 +80,30 @@ class OpenAIClient:
         )
         vector: list[float] = response.data[0].embedding
         return vector
+
+    def text_to_speech(
+        self,
+        text: str,
+        *,
+        model: str = TTS_MODEL,
+        voice: str = TTS_VOICE,
+        speed: float = TTS_SPEED,
+    ) -> bytes:
+        """Convert text to speech using OpenAI TTS.
+
+        Args:
+            text: The text to convert to speech
+            model: TTS model to use (default from config: TTS_MODEL)
+            voice: Voice to use (default from config: TTS_VOICE)
+            speed: Speech speed (default from config: TTS_SPEED)
+
+        Returns:
+            Audio data as bytes
+        """
+        response = self._client.audio.speech.create(
+            model=model,
+            voice=voice,
+            input=text,
+            speed=speed,
+        )
+        return response.content

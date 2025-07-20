@@ -6,7 +6,7 @@ from typing import Any
 
 from pymongo import MongoClient
 
-from config import MONGODB_COLLECTION_NAME, MONGODB_DATABASE_NAME, MONGODB_URI
+from config import MONGODB_COLLECTION_NAME, MONGODB_DATABASE_NAME, MONGODB_URI, MONGODB_COLLECTION_NAME_AUDIO
 from utils import logger
 
 
@@ -33,11 +33,18 @@ class MongoDBClient:
         self._client: MongoClient[dict[str, Any]] = MongoClient(uri)
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]
+        self._audio_collection = self._db[MONGODB_COLLECTION_NAME_AUDIO] if MONGODB_COLLECTION_NAME_AUDIO else None
         logger.info(
             "  ✓ MongoDB connected: %s/%s",
             MONGODB_DATABASE_NAME,
             MONGODB_COLLECTION_NAME,
         )
+        if self._audio_collection is not None:
+            logger.info(
+                "  ✓ MongoDB audio collection ready: %s/%s",
+                MONGODB_DATABASE_NAME,
+                MONGODB_COLLECTION_NAME_AUDIO,
+            )
 
     # ------------------------------------------------------------------
     # Public helpers
@@ -45,4 +52,11 @@ class MongoDBClient:
     def insert_story(self, story: dict[str, Any]) -> str:
         """Inserts *story* dict and returns inserted document id as str."""
         result = self._collection.insert_one(story)
+        return str(result.inserted_id)
+
+    def insert_podcast(self, podcast: dict[str, Any]) -> str:
+        """Inserts *podcast* dict into audio collection and returns inserted document id as str."""
+        if self._audio_collection is None:
+            raise ValueError("Audio collection not configured. Set MONGODB_COLLECTION_NAME_AUDIO in environment.")
+        result = self._audio_collection.insert_one(podcast)
         return str(result.inserted_id)

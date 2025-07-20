@@ -7,8 +7,10 @@ This package provides the core pipeline services:
 - Decision: Prioritizing most impactful leads
 - Writing: Creating full stories from researched leads
 - Storage: Saving stories to MongoDB
+- Audio: Generating podcast from story summaries
 """
 
+from .audio_generation import generate_podcast
 from .lead_curation import LeadCurator, curate_leads
 from .lead_deduplication import deduplicate_leads
 from .lead_discovery import discover_leads
@@ -24,6 +26,7 @@ __all__ = [
     "curate_leads",
     "write_stories",
     "persist_stories",
+    "generate_podcast",
     # Advanced curation
     "LeadCurator",
 ]
