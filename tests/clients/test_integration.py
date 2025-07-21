@@ -90,7 +90,7 @@ class TestClientIntegration:
             # Test research
             perplexity_client = PerplexityClient()
             research_prompt = "Research this lead: Breaking news about technology"
-            result = perplexity_client.lead_research(research_prompt)
+            content, citations = perplexity_client.lead_research(research_prompt)
 
             # Verify API call
             mock_http_client.post.assert_called_once()
@@ -98,7 +98,7 @@ class TestClientIntegration:
             assert "senior investigative research analyst" in call_args[1]["json"]["messages"][0]["content"]
 
             # Verify result parsing - lead research returns context + sources
-            result_data = json.loads(result)
+            result_data = json.loads(content)
             assert result_data["context"] == ("Comprehensive research context about breaking technology news")
             assert len(result_data["sources"]) == 2
 

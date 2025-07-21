@@ -102,7 +102,7 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.lead_research("test prompt")
+            content, citations = client.lead_research("test prompt")
 
             expected_content = json.dumps(
                 {
@@ -115,7 +115,7 @@ class TestPerplexityClient:
                     ],
                 }
             )
-            assert result == expected_content
+            assert content == expected_content
 
     def test_research_request_structure(self, mock_httpx_client, sample_response_data):
         """Test that research creates proper request structure."""
@@ -214,15 +214,15 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.lead_research(prompt)
+            content, citations = client.lead_research(prompt)
 
             # Verify the prompt was passed correctly
             payload = mock_client.post.call_args[1]["json"]
             assert payload["messages"][1]["content"] == prompt
 
             # Should return valid JSON content
-            assert isinstance(result, str)
-            json.loads(result)  # Should not raise exception
+            assert isinstance(content, str)
+            json.loads(content)  # Should not raise exception
 
     def test_system_message_content(self, mock_httpx_client, sample_response_data):
         """Test that system message contains proper instructions."""
@@ -254,9 +254,9 @@ class TestPerplexityClient:
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
-            result = client.lead_research("test prompt")
+            content, citations = client.lead_research("test prompt")
 
-            assert result == test_content
+            assert content == test_content
 
     def test_default_headers_immutability(self):
         """Test that default headers are not modified by instance creation."""

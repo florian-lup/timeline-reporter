@@ -4,12 +4,18 @@ This module contains all settings, prompts, and configuration data
 related to podcast/audio generation from story summaries.
 """
 
+from typing import Literal
+
 # ---------------------------------------------------------------------------
 # Audio Model Configuration
 # ---------------------------------------------------------------------------
+
+# Type alias for valid OpenAI TTS voices
+TTSVoice = Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+
 ANCHOR_SCRIPT_MODEL: str = "gpt-4.1-mini-2025-04-14"  # For generating anchor scripts
 TTS_MODEL: str = "gpt-4o-mini-tts"  # OpenAI TTS model
-TTS_VOICE: str = "alloy"  # Voice selection: alloy, echo, fable, onyx, nova, shimmer
+TTS_VOICE: TTSVoice = "alloy"  # Voice selection: alloy, echo, fable, onyx, nova, shimmer
 TTS_SPEED: float = 1.0  # Speed: 0.25 to 4.0
 
 # ---------------------------------------------------------------------------

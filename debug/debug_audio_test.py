@@ -17,7 +17,7 @@ from services.audio_generation import generate_podcast
 from utils import get_today_formatted
 
 
-def run_real_audio_generation_test():
+def run_real_audio_generation_test() -> bool:
     """Debug real audio generation with the user-provided story summaries.
     
     This will:
