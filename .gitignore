@@ -51,4 +51,7 @@ site/
 .DS_Store
 Thumbs.db 
 
+# Debug outputs
+debug/test_output/
+
 guides/

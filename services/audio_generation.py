@@ -42,7 +42,7 @@ def generate_podcast(
     logger.info("  📝 Extracting summaries from %d stories...", len(stories))
     summaries = []
     for i, story in enumerate(stories, 1):
-        summaries.append(f"Story {i} ({story.tag}): {story.summary}")
+        summaries.append(f"Story {i}: {story.summary}")
     
     summaries_text = "\n\n".join(summaries)
     
