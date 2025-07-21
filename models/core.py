@@ -32,6 +32,5 @@ class Podcast:
     """Represents an audio podcast generated from story summaries."""
 
     anchor_script: str
-    audio_url: str  # Path or URL to the audio file
+    audio_file: bytes
     story_count: int
-    date: str = field(default_factory=get_today_formatted)

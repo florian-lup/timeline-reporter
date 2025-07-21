@@ -81,17 +81,14 @@ def generate_podcast(
         file_size_bytes / (1024 * 1024),
     )
     
-    # Step 4: Create Podcast object (audio stored in MongoDB as reference)
-    audio_filename = f"news_briefing_{get_today_formatted()}.{AUDIO_FORMAT}"
-    
+    # Step 4: Create Podcast object with audio bytes
     podcast = Podcast(
         anchor_script=anchor_script,
-        audio_url=audio_filename,  # Reference filename for the audio
+        audio_file=audio_bytes,
         story_count=len(stories),
-        date=get_today_formatted(),
     )
     
-    # Step 5: Persist to MongoDB
+    # Step 5: Store podcast directly in MongoDB
     logger.info("  💾 Saving podcast to database...")
     podcast_dict = podcast.__dict__.copy()
     inserted_id = mongodb_client.insert_podcast(podcast_dict)
