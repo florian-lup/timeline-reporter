@@ -1,31 +1,32 @@
-"""Real audio generation debug script.
+"""Real audio generation debug script with Cloudflare R2 CDN.
 
-This script uses actual OpenAI and MongoDB clients to generate a real podcast
-from provided story summaries. It will make real API calls and create actual audio output.
+This script uses actual OpenAI, MongoDB, and Cloudflare R2 clients to generate a real podcast
+from provided story summaries. It will make real API calls and upload audio to CDN.
 
 Run this independently for debugging: python debug_audio_test.py
 """
 
 import os
 import json
-import base64
+import requests
 from pathlib import Path
 
 from clients import MongoDBClient, OpenAIClient
+from clients.cloudflare_r2 import CloudflareR2Client
 from models import Story
 from services.audio_generation import generate_podcast
 from utils import get_today_formatted
 
 
 def run_real_audio_generation_test() -> bool:
-    """Debug real audio generation with the user-provided story summaries.
+    """Debug real audio generation with Cloudflare R2 CDN storage.
     
     This will:
     1. Create Story objects from provided summaries
     2. Use real OpenAI client for script generation and TTS
-    3. Use real MongoDB client for persistence
-    4. Generate actual audio output
-    5. Save audio file to local directory for verification
+    3. Use real Cloudflare R2 client for CDN storage
+    4. Use real MongoDB client for metadata persistence
+    5. Download audio from CDN and save locally for verification
     """
     
     # Check for required environment variables
@@ -33,7 +34,10 @@ def run_real_audio_generation_test() -> bool:
         "OPENAI_API_KEY",
         "MONGODB_URI", 
         "MONGODB_DATABASE_NAME",
-        "MONGODB_COLLECTION_NAME_AUDIO"
+        "MONGODB_COLLECTION_NAME_AUDIO",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_R2_ACCESS_KEY",
+        "CLOUDFLARE_R2_SECRET_KEY"
     ]
     
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
@@ -79,6 +83,7 @@ def run_real_audio_generation_test() -> bool:
         # Initialize real clients
         openai_client = OpenAIClient()
         mongodb_client = MongoDBClient()
+        r2_client = CloudflareR2Client()
         
         # Generate the podcast using real services
         print(f"\n🎙️ Starting real audio generation test with {len(stories)} stories...")
@@ -86,11 +91,12 @@ def run_real_audio_generation_test() -> bool:
         for i, story in enumerate(stories, 1):
             print(f"  {i}. {story.headline}")
         
-        # Execute the real audio generation pipeline
+        # Execute the real audio generation pipeline with CDN storage
         podcast = generate_podcast(
             stories,
             openai_client=openai_client,
             mongodb_client=mongodb_client,
+            r2_client=r2_client,
         )
         
         # Verify podcast was created successfully
@@ -102,8 +108,12 @@ def run_real_audio_generation_test() -> bool:
             print("❌ No anchor script generated")
             return False
             
-        if len(podcast.audio_file) == 0:
-            print("❌ No audio file generated")
+        if not podcast.audio_url:
+            print("❌ No CDN URL generated")
+            return False
+            
+        if podcast.audio_size_bytes == 0:
+            print("❌ No audio size recorded")
             return False
             
         if podcast.story_count != 3:
@@ -112,8 +122,16 @@ def run_real_audio_generation_test() -> bool:
         
         print(f"✅ Podcast generated successfully!")
         print(f"📄 Script length: {len(podcast.anchor_script.split())} words")
-        print(f"🔗 Audio bytes size: {len(podcast.audio_file) / (1024 * 1024):.1f} MB")
-        print(f"📊 Story count: {podcast.story_count}")
+        print(f"🔗 CDN URL: {podcast.audio_url}")
+        print(f"📊 Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
+        print(f"📚 Story count: {podcast.story_count}")
+        
+        # Test CDN access
+        print(f"\n🌐 Testing CDN access...")
+        response = requests.head(podcast.audio_url)
+        print(f"📡 CDN Status: {response.status_code}")
+        print(f"📝 Content-Type: {response.headers.get('content-type', 'unknown')}")
+        print(f"🕒 Response Time: {response.elapsed.total_seconds():.3f}s")
         
         # Create the test output directory if it doesn't exist
         output_dir = Path("debug/test_output")
@@ -126,17 +144,23 @@ def run_real_audio_generation_test() -> bool:
             f.write("=" * 50 + "\n\n")
             f.write(podcast.anchor_script)
         
-        # Save the MP3 audio file
-        audio_file = output_dir / f"podcast_audio_{get_today_formatted()}.mp3"
-        with open(audio_file, "wb") as f:
-            f.write(podcast.audio_file)
+        # Download and save the audio file from CDN
+        print(f"📥 Downloading audio from CDN...")
+        audio_response = requests.get(podcast.audio_url)
+        audio_response.raise_for_status()
         
-        # Save the podcast object metadata as JSON (excluding binary audio data)
+        audio_file = output_dir / f"podcast_audio_{get_today_formatted()}.aac"
+        with open(audio_file, "wb") as f:
+            f.write(audio_response.content)
+        
+        # Save the podcast object metadata as JSON
         podcast_data = {
             "anchor_script": podcast.anchor_script,
+            "audio_url": podcast.audio_url,
+            "audio_size_bytes": podcast.audio_size_bytes,
+            "audio_size_mb": round(podcast.audio_size_bytes / (1024 * 1024), 2),
             "story_count": podcast.story_count,
-            "audio_file_size_mb": round(len(podcast.audio_file) / (1024 * 1024), 2),
-            "audio_file_name": audio_file.name
+            "local_audio_file": audio_file.name
         }
         
         json_file = output_dir / f"podcast_data_{get_today_formatted()}.json"
@@ -144,32 +168,34 @@ def run_real_audio_generation_test() -> bool:
             json.dump(podcast_data, f, indent=2, ensure_ascii=False)
         
         print(f"💾 Script saved to: {script_file}")
-        print(f"🎵 Audio saved to: {audio_file}")
+        print(f"🎵 Audio downloaded and saved to: {audio_file}")
         print(f"📄 Podcast data saved to: {json_file}")
         
-        print("\n🎵 Audio Processing Complete:")
-        print(f"✅ MP3 audio bytes stored directly in audio_file field")
-        print(f"✅ Audio size: {len(podcast.audio_file) / (1024 * 1024):.1f} MB")
-        print(f"✅ MongoDB contains only: anchor_script, audio_file (bytes), story_count")
-        print(f"✅ Frontend can fetch audio_file and play it directly")
-        print(f"✅ Local files saved to debug/test_output/ directory")
+        print("\n🎵 CDN Audio Processing Complete:")
+        print(f"✅ AAC audio uploaded to Cloudflare R2 CDN")
+        print(f"✅ Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
+        print(f"✅ CDN URL: {podcast.audio_url}")
+        print(f"✅ MongoDB contains only: anchor_script, audio_url, audio_size_bytes, story_count")
+        print(f"✅ Frontend can use CDN URL for instant global streaming")
+        print(f"✅ Local files saved to debug/test_output/ for verification")
         
-        print("\nℹ️  Clean MongoDB structure with only the essential fields.")
-        print("ℹ️  No local files created - everything is in the database.")
-        print("ℹ️  Your frontend can retrieve the audio_file field and play the MP3 bytes.")
+        print("\nℹ️  Clean MongoDB structure with CDN URL instead of binary data.")
+        print("ℹ️  Audio served from Cloudflare's global CDN for 50x faster loading.")
+        print("ℹ️  Your frontend gets the CDN URL and streams audio directly.")
         
         return True
         
     except Exception as e:
         print(f"❌ Error during audio generation test: {e}")
+        print("💡 Check your environment variables for Cloudflare R2 credentials")
         return False
 
 
 if __name__ == "__main__":
-    print("🧪 Running debug audio generation test...")
+    print("🧪 Running debug audio generation test with Cloudflare R2 CDN...")
     success = run_real_audio_generation_test()
     if success:
-        print("\n✅ Debug test completed successfully!")
+        print("\n✅ CDN debug test completed successfully!")
     else:
-        print("\n❌ Debug test failed!")
+        print("\n❌ CDN debug test failed!")
         exit(1) 

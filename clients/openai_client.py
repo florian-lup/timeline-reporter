@@ -88,6 +88,7 @@ class OpenAIClient:
         model: str = TTS_MODEL,
         voice: TTSVoice = TTS_VOICE,
         speed: float = TTS_SPEED,
+        response_format: str = "mp3",
     ) -> bytes:
         """Convert text to speech using OpenAI TTS.
 
@@ -96,6 +97,7 @@ class OpenAIClient:
             model: TTS model to use (default from config: TTS_MODEL)
             voice: Voice to use (default from config: TTS_VOICE)
             speed: Speech speed (default from config: TTS_SPEED)
+            response_format: Audio format (mp3, opus, aac, flac)
 
         Returns:
             Audio data as bytes
@@ -105,5 +107,6 @@ class OpenAIClient:
             voice=voice,
             input=text,
             speed=speed,
+            response_format=response_format,
         )
         return response.content

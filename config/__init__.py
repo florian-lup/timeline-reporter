@@ -7,8 +7,21 @@ This package provides centralized configuration including:
 - All prompts used across the pipeline
 """
 
-# Import all settings, prompts, curation, discovery, research and deduplication
+# Import all settings, prompts, curation, discovery, research, deduplication and cloudflare
 # configuration
+from .cloudflare_config import (
+    AUDIO_CONTENT_TYPE_MAP,
+    AUDIO_FILE_METADATA,
+    CDN_CACHE_CONTROL,
+    CDN_ENABLE_COMPRESSION,
+    CLOUDFLARE_R2_CUSTOM_DOMAIN,
+    DEFAULT_AUDIO_CONTENT_TYPE,
+    R2_CDN_URL_TEMPLATE,
+    R2_ENDPOINT_URL_TEMPLATE,
+    R2_REGION,
+    R2_SIGNATURE_VERSION,
+    STORAGE_PATH_PREFIX,
+)
 from .curation_config import (
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
     CRITERIA_WEIGHTS,
@@ -59,6 +72,12 @@ from .research_config import (
     RESEARCH_TIMEOUT_SECONDS,
 )
 from .settings import (
+    # Cloudflare R2 Configuration
+    CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_R2_ACCESS_KEY,
+    CLOUDFLARE_R2_BUCKET,
+    CLOUDFLARE_R2_CUSTOM_DOMAIN,
+    CLOUDFLARE_R2_SECRET_KEY,
     CLOUD_PROVIDER,
     CLOUD_REGION,
     MONGODB_COLLECTION_NAME,
@@ -89,6 +108,22 @@ __all__ = [
     "MONGODB_DATABASE_NAME",
     "MONGODB_COLLECTION_NAME",
     "MONGODB_COLLECTION_NAME_AUDIO",
+    # Cloudflare R2 Configuration
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_R2_ACCESS_KEY", 
+    "CLOUDFLARE_R2_SECRET_KEY",
+    "CLOUDFLARE_R2_BUCKET",
+    "CLOUDFLARE_R2_CUSTOM_DOMAIN",
+    "CDN_CACHE_CONTROL",
+    "CDN_ENABLE_COMPRESSION",
+    "STORAGE_PATH_PREFIX",
+    "AUDIO_FILE_METADATA",
+    "AUDIO_CONTENT_TYPE_MAP",
+    "DEFAULT_AUDIO_CONTENT_TYPE",
+    "R2_ENDPOINT_URL_TEMPLATE",
+    "R2_CDN_URL_TEMPLATE",
+    "R2_SIGNATURE_VERSION",
+    "R2_REGION",
     # Discovery Configuration
     "LEAD_DISCOVERY_MODEL",
     "SEARCH_CONTEXT_SIZE",
