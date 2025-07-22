@@ -9,6 +9,7 @@ Usage::
 from __future__ import annotations
 
 from clients import (
+    CloudflareR2Client,
     MongoDBClient,
     OpenAIClient,
     PerplexityClient,
@@ -36,6 +37,7 @@ def run_pipeline() -> None:  # noqa: D401
     pinecone_client = PineconeClient()
     perplexity_client = PerplexityClient()
     mongodb_client = MongoDBClient()
+    r2_client = CloudflareR2Client()
 
     # 1️⃣ Discovery
     logger.info("🔍 STEP 1: Lead Discovery - Scanning news sources for breaking stories...")
@@ -89,7 +91,7 @@ def run_pipeline() -> None:  # noqa: D401
     # 7️⃣ Audio Generation
     if stories:  # Only generate podcast if we have stories
         try:
-            podcast = generate_podcast(stories, openai_client=openai_client, mongodb_client=mongodb_client)
+            podcast = generate_podcast(stories, openai_client=openai_client, mongodb_client=mongodb_client, r2_client=r2_client)
             logger.info(
                 "🎙️ Podcast generated: %d-story briefing",
                 len(stories),

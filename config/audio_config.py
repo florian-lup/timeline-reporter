@@ -38,10 +38,27 @@ def get_random_anchor() -> tuple[TTSVoice, str]:
     anchor_name = VOICE_ANCHOR_MAPPING[voice]
     return voice, anchor_name
 
-ANCHOR_SCRIPT_MODEL: str = "gpt-4.1-mini-2025-04-14"  # For generating anchor scripts
+ANCHOR_SCRIPT_MODEL: str = "gpt-4.1-2025-04-14"  # For generating anchor scripts
 TTS_MODEL: str = "gpt-4o-mini-tts"  # OpenAI TTS model
 TTS_VOICE: TTSVoice = "nova"  # Fallback voice (random anchors used in practice)
-TTS_SPEED: float = 0.90  # Speed: 0.25 to 4.0
+TTS_SPEED: float = 1.0  # Speed: 0.25 to 4.0
+
+# ---------------------------------------------------------------------------
+# TTS Instructions Configuration (2025 Feature)
+# ---------------------------------------------------------------------------
+
+# TTS instruction for news podcast delivery
+TTS_INSTRUCTION = """Voice Affect: Professional news anchor delivery with warmth and authority; project confidence while remaining approachable.
+
+Tone: Balanced between informative and engaging - maintain journalistic professionalism while keeping listeners interested and connected.
+
+Pacing: Steady, measured pace that allows for clear comprehension; vary slightly to emphasize important points or transitions between stories.
+
+Emotion: Controlled enthusiasm and genuine interest in the content; show appropriate emotional response to story significance while maintaining objectivity.
+
+Pronunciation: Clear, precise articulation with particular attention to proper nouns, statistics, and technical terms. Ensure all information is easily understood.
+
+Pauses: Natural breaks between distinct stories and after key information; use brief pauses to signal transitions and allow listeners to process important details."""
 
 # ---------------------------------------------------------------------------
 # Audio File Configuration

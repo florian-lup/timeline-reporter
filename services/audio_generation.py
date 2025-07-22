@@ -10,6 +10,7 @@ from config.audio_config import (
     ANCHOR_SCRIPT_MODEL,
     ANCHOR_SCRIPT_SYSTEM_PROMPT,
     AUDIO_FORMAT,
+    TTS_INSTRUCTION,
     TTS_MODEL,
     TTS_SPEED,
     get_random_anchor,
@@ -76,12 +77,19 @@ def generate_podcast(
     # Step 4: Convert script to speech using TTS
     logger.info("  🔊 Converting script to speech using %s...", TTS_MODEL)
     
+    # Get TTS instruction for enhanced voice control (2025 feature)
+    tts_instruction = None
+    if "gpt-4o-mini-tts" in TTS_MODEL:
+        tts_instruction = TTS_INSTRUCTION
+        logger.info("  🎯 Using TTS instructions for enhanced voice control")
+    
     audio_bytes = openai_client.text_to_speech(
         anchor_script,
         model=TTS_MODEL,
         voice=tts_voice,
         speed=TTS_SPEED,
         response_format=AUDIO_FORMAT,
+        instruction=tts_instruction,
     )
     
     file_size_bytes = len(audio_bytes)

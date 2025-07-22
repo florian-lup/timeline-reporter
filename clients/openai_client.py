@@ -89,6 +89,7 @@ class OpenAIClient:
         voice: TTSVoice = TTS_VOICE,
         speed: float = TTS_SPEED,
         response_format: str = "mp3",
+        instruction: str | None = None,
     ) -> bytes:
         """Convert text to speech using OpenAI TTS.
 
@@ -98,15 +99,23 @@ class OpenAIClient:
             voice: Voice to use (default from config: TTS_VOICE)
             speed: Speech speed (default from config: TTS_SPEED)
             response_format: Audio format (mp3, opus, aac, flac)
+            instruction: TTS instruction for enhanced voice control (gpt-4o-mini-tts only)
 
         Returns:
             Audio data as bytes
         """
-        response = self._client.audio.speech.create(
-            model=model,
-            voice=voice,
-            input=text,
-            speed=speed,
-            response_format=response_format,
-        )
+        # Prepare request parameters
+        request_params = {
+            "model": model,
+            "voice": voice,
+            "input": text,
+            "speed": speed,
+            "response_format": response_format,
+        }
+        
+        # Add instruction parameter for gpt-4o-mini-tts model
+        if instruction is not None and "gpt-4o-mini-tts" in model:
+            request_params["instructions"] = instruction
+        
+        response = self._client.audio.speech.create(**request_params)
         return response.content

@@ -3,6 +3,20 @@
 This script uses actual OpenAI, MongoDB, and Cloudflare R2 clients to generate a real podcast
 from provided story summaries. It will make real API calls and upload audio to CDN.
 
+TTS INSTRUCTION FEATURE (2025):
+The script now supports OpenAI's gpt-4o-mini-tts instruction parameter for enhanced voice control.
+Uses a single optimized instruction for professional news podcast delivery with:
+- Professional news anchor delivery style
+- Balanced informative and engaging tone
+- Clear articulation and proper pacing
+- Natural transitions between stories
+
+Usage:
+    python debug_audio_test.py
+
+The script will automatically use TTS instructions when:
+- TTS_MODEL = "gpt-4o-mini-tts" in config/audio_config.py
+
 Run this independently for debugging: python debug_audio_test.py
 """
 
@@ -49,8 +63,8 @@ def run_real_audio_generation_test() -> bool:
     stories = [
         Story(
             headline="Trump Orders Release of Epstein Grand Jury Transcripts",
-            summary="President Donald Trump orders the Justice Department to seek the release of grand jury transcripts related to Jeffrey Epstein and Ghislaine Maxwell, citing public interest following a disputed DOJ memo on Epstein's death.",
-            body="In a significant move for transparency, President Trump has directed the Justice Department to pursue the release of previously sealed grand jury materials related to the Jeffrey Epstein case. The order comes in response to ongoing public interest and follows controversial DOJ memos regarding Epstein's death in federal custody.",
+            summary="The United States announces plans to confront China about its continued purchases of Russian and Iranian oil, nations under heavy U.S. sanctions, during upcoming trade negotiations. Treasury Secretary Scott Bessent says the talks will expand beyond tariffs to include national security concerns, marking a strategic escalation. China, now the largest buyer of Iranian oil and a leading importer of Russian crude, responds cautiously, urging dialogue. The U.S. warns of potential secondary tariffs on China and urges European allies to align, creating new tensions in global markets and international diplomacy.",
+            body="The United States announces plans to confront China about its continued purchases of Russian and Iranian oil, nations under heavy U.S. sanctions, during upcoming trade negotiations. Treasury Secretary Scott Bessent says the talks will expand beyond tariffs to include national security concerns, marking a strategic escalation. China, now the largest buyer of Iranian oil and a leading importer of Russian crude, responds cautiously, urging dialogue. The U.S. warns of potential secondary tariffs on China and urges European allies to align, creating new tensions in global markets and international diplomacy.",
             tag="politics",
             sources=[
                 "https://example.com/trump-epstein-transcripts",
@@ -59,8 +73,8 @@ def run_real_audio_generation_test() -> bool:
         ),
         Story(
             headline="Guadalupe River Flood Kills 144 in Central Texas",
-            summary="The Guadalupe River flood in Central Texas killed at least 144 people, including 27 at Camp Mystic, during and after the July 4, 2025, weekend.",
-            body="A devastating flood along the Guadalupe River in Central Texas has claimed 144 lives, making it one of the deadliest natural disasters in the region's history. The tragedy struck during the July 4th weekend when heavy rains caused rapid river rises. Camp Mystic, a popular summer camp, suffered particularly heavy losses with 27 fatalities.",
+            summary="At least 135 people are confirmed dead after catastrophic flooding swept through Central Texas in July 2025, marking one of the deadliest inland flood events in U.S. history. Triggered by intense rainfall and a sudden Guadalupe River surge, the disaster decimated communities, including tragic losses at Camp Mystic. Officials face scrutiny over delayed flood alerts and preparedness. State and federal agencies, along with relief organizations, continue recovery and aid efforts. The Texas Legislature begins a special session to address systemic failures and bolster disaster response, as devastated regions focus on long-term recovery and improved early-warning systems.",
+            body="At least 135 people are confirmed dead after catastrophic flooding swept through Central Texas in July 2025, marking one of the deadliest inland flood events in U.S. history. Triggered by intense rainfall and a sudden Guadalupe River surge, the disaster decimated communities, including tragic losses at Camp Mystic. Officials face scrutiny over delayed flood alerts and preparedness. State and federal agencies, along with relief organizations, continue recovery and aid efforts. The Texas Legislature begins a special session to address systemic failures and bolster disaster response, as devastated regions focus on long-term recovery and improved early-warning systems.",
             tag="disaster",
             sources=[
                 "https://example.com/guadalupe-river-flood",
@@ -69,7 +83,7 @@ def run_real_audio_generation_test() -> bool:
         ),
         Story(
             headline="Trump Administration Overhauls Immigration Enforcement",
-            summary="The second Trump administration rapidly overhauls U.S. immigration enforcement, declaring a border emergency, deploying troops, and expanding deportations since taking office in January 2025.",
+            summary="The Pentagon has begun withdrawing about 700 active-duty U.S. Marines from Los Angeles, ending a month-long deployment ordered by President Donald Trump during protests over federal immigration raids. The move follows weeks of legal and political controversy over the use of federal troops for domestic law enforcement. Local and state officials, including California’s governor, condemned the military presence as excessive and unconstitutional. While thousands of National Guard members had already been pulled out, around 2,000 remain, leaving ongoing questions about federal oversight and the future use of military force during civil unrest.",
             body="Since returning to office in January 2025, the Trump administration has implemented sweeping changes to U.S. immigration policy. The administration declared a national emergency at the southern border, authorized military deployment for border security, and significantly expanded deportation operations across the country.",
             tag="immigration",
             sources=[
@@ -90,6 +104,16 @@ def run_real_audio_generation_test() -> bool:
         print("📝 Story summaries:")
         for i, story in enumerate(stories, 1):
             print(f"  {i}. {story.headline}")
+        
+        # Check if TTS instructions are enabled for enhanced testing
+        from config.audio_config import TTS_MODEL
+        if "gpt-4o-mini-tts" in TTS_MODEL:
+            print("🎯 TTS Instructions feature: ENABLED (2025 Feature)")
+            print("   This will provide enhanced voice control with professional news delivery")
+        else:
+            print("📢 TTS Instructions feature: DISABLED")
+            print("   Using standard TTS without instruction parameters")
+            print(f"   Current model: {TTS_MODEL} (instructions require gpt-4o-mini-tts)")
         
         # Execute the real audio generation pipeline with CDN storage
         podcast = generate_podcast(
@@ -177,6 +201,13 @@ def run_real_audio_generation_test() -> bool:
         print(f"✅ Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
         print(f"✅ CDN URL: {podcast.audio_url}")
         print(f"✅ Anchor: {podcast.anchor_name} with personalized script")
+        
+        # Report TTS instruction usage
+        if "gpt-4o-mini-tts" in TTS_MODEL:
+            print(f"✅ TTS Instructions: Enhanced voice control enabled (2025 Feature)")
+        else:
+            print(f"✅ TTS Instructions: Standard TTS mode")
+            
         print(f"✅ MongoDB contains: anchor_script, anchor_name, audio_url, audio_size_bytes")
         print(f"✅ Frontend can use CDN URL for instant global streaming")
         print(f"✅ Local files saved to debug/test_output/ for verification")
@@ -185,6 +216,9 @@ def run_real_audio_generation_test() -> bool:
         print("ℹ️  Audio served from Cloudflare's global CDN for 50x faster loading.")
         print("ℹ️  Your frontend gets the CDN URL and streams audio directly.")
         print("ℹ️  Each podcast features a randomly selected anchor with personalized intro/outro.")
+        
+        if "gpt-4o-mini-tts" in TTS_MODEL:
+            print("ℹ️  TTS Instructions provide enhanced control over voice delivery, tone, and pacing.")
         
         return True
         
@@ -199,6 +233,39 @@ if __name__ == "__main__":
     success = run_real_audio_generation_test()
     if success:
         print("\n✅ CDN debug test completed successfully!")
+        
     else:
         print("\n❌ CDN debug test failed!")
-        exit(1) 
+        exit(1)
+
+
+def demonstrate_tts_instruction():
+    """Demonstrate the TTS instruction for news podcast delivery."""
+    from config.audio_config import (
+        TTS_INSTRUCTION,
+        TTS_MODEL,
+    )
+    
+    print("\n" + "="*60)
+    print("🎯 TTS INSTRUCTION DEMONSTRATION (2025 Feature)")
+    print("="*60)
+    
+    if "gpt-4o-mini-tts" not in TTS_MODEL:
+        print(f"⚠️  Current TTS model: {TTS_MODEL}")
+        print("   TTS Instructions require gpt-4o-mini-tts model.")
+        print("   Set TTS_MODEL = 'gpt-4o-mini-tts' in config/audio_config.py")
+        return
+    
+    print(f"✅ TTS Instructions: ENABLED")
+    print(f"✅ TTS Model: {TTS_MODEL}")
+    print("\nOptimized News Podcast Instruction:")
+    print("-" * 40)
+    
+    print(TTS_INSTRUCTION)
+    
+    print("\n💡 Usage Example:")
+    print("   # Use in your code:")
+    print("   from config.audio_config import TTS_INSTRUCTION")
+    print("   audio_bytes = openai_client.text_to_speech(text, instruction=TTS_INSTRUCTION)")
+
+ 

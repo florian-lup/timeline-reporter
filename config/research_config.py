@@ -7,7 +7,7 @@ related to lead research and source gathering.
 # ---------------------------------------------------------------------------
 # Research Model Configuration
 # ---------------------------------------------------------------------------
-LEAD_RESEARCH_MODEL: str = "sonar-reasoning"
+LEAD_RESEARCH_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
