@@ -63,7 +63,7 @@ Pauses: Natural breaks between distinct stories and after key information; use b
 # ---------------------------------------------------------------------------
 # Audio File Configuration
 # ---------------------------------------------------------------------------
-AUDIO_FORMAT: str = "aac"
+AUDIO_FORMAT: str = "mp3"
 
 # ---------------------------------------------------------------------------
 # Anchor Script System Prompt

@@ -115,13 +115,15 @@ class TestWritingService:
 
     def test_write_stories_openai_parameters(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test that OpenAI client is called with correct parameters."""
+        from config.writing_config import WRITING_MODEL
+        
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
         write_stories(sample_researched_leads[:1], openai_client=mock_openai_client)
 
         # Verify OpenAI client was called with correct parameters
         call_args = mock_openai_client.chat_completion.call_args
-        assert call_args[1]["model"] == "gpt-4.1-2025-04-14"
+        assert call_args[1]["model"] == WRITING_MODEL
         assert call_args[1]["response_format"] == {"type": "json_object"}
 
     def test_write_stories_prompt_formatting(self, mock_openai_client, sample_researched_leads, sample_writing_response):

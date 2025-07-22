@@ -123,6 +123,8 @@ class TestAudioGeneration:
 
     def test_generate_podcast_tts_parameters(self, mock_openai_client, mock_mongodb_client, sample_stories):
         """Test that text-to-speech uses correct parameters."""
+        from config.audio_config import TTS_MODEL, TTS_SPEED, AUDIO_FORMAT, VOICE_ANCHOR_MAPPING
+        
         anchor_script = "Test anchor script content"
         mock_openai_client.chat_completion.return_value = anchor_script
 
@@ -135,9 +137,10 @@ class TestAudioGeneration:
         # Verify TTS was called with correct parameters
         call_args = mock_openai_client.text_to_speech.call_args
         assert call_args[0][0] == anchor_script  # First arg is the script text
-        assert call_args[1]["model"] == "gpt-4o-mini-tts"
-        assert call_args[1]["voice"] == "alloy"
-        assert call_args[1]["speed"] == 1.0
+        assert call_args[1]["model"] == TTS_MODEL
+        assert call_args[1]["voice"] in VOICE_ANCHOR_MAPPING  # Voice should be one of the configured voices
+        assert call_args[1]["speed"] == TTS_SPEED
+        assert call_args[1]["response_format"] == AUDIO_FORMAT
 
     def test_generate_podcast_prompt_formatting(self, mock_openai_client, mock_mongodb_client, sample_stories):
         """Test that prompts are formatted correctly with story summaries."""

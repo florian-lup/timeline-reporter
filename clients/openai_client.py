@@ -11,7 +11,7 @@ from config import (
     EMBEDDING_MODEL,
     OPENAI_API_KEY,
 )
-from config.audio_config import TTS_MODEL, TTS_SPEED, TTS_VOICE, TTSVoice
+from config.audio_config import TTS_MODEL, TTS_SPEED, TTS_VOICE, TTSVoice, AUDIO_FORMAT
 
 
 class OpenAIClient:
@@ -88,7 +88,7 @@ class OpenAIClient:
         model: str = TTS_MODEL,
         voice: TTSVoice = TTS_VOICE,
         speed: float = TTS_SPEED,
-        response_format: str = "mp3",
+        response_format: str = AUDIO_FORMAT,
         instruction: str | None = None,
     ) -> bytes:
         """Convert text to speech using OpenAI TTS.
