@@ -32,6 +32,6 @@ class Podcast:
     """Represents an audio podcast generated from story summaries."""
 
     anchor_script: str
+    anchor_name: str
     audio_url: str
     audio_size_bytes: int
-    story_count: int

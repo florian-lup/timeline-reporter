@@ -108,6 +108,10 @@ def run_real_audio_generation_test() -> bool:
             print("❌ No anchor script generated")
             return False
             
+        if not podcast.anchor_name:
+            print("❌ No anchor name assigned")
+            return False
+            
         if not podcast.audio_url:
             print("❌ No CDN URL generated")
             return False
@@ -115,16 +119,12 @@ def run_real_audio_generation_test() -> bool:
         if podcast.audio_size_bytes == 0:
             print("❌ No audio size recorded")
             return False
-            
-        if podcast.story_count != 3:
-            print(f"❌ Expected 3 stories, got {podcast.story_count}")
-            return False
         
         print(f"✅ Podcast generated successfully!")
+        print(f"🎭 Anchor: {podcast.anchor_name}")
         print(f"📄 Script length: {len(podcast.anchor_script.split())} words")
         print(f"🔗 CDN URL: {podcast.audio_url}")
         print(f"📊 Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
-        print(f"📚 Story count: {podcast.story_count}")
         
         # Test CDN access
         print(f"\n🌐 Testing CDN access...")
@@ -138,9 +138,10 @@ def run_real_audio_generation_test() -> bool:
         output_dir.mkdir(exist_ok=True)
         
         # Save the script to a text file
-        script_file = output_dir / f"podcast_script_{get_today_formatted()}.txt"
+        script_file = output_dir / f"podcast_script_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.txt"
         with open(script_file, "w", encoding="utf-8") as f:
             f.write(f"PODCAST SCRIPT - {get_today_formatted()}\n")
+            f.write(f"ANCHOR: {podcast.anchor_name}\n")
             f.write("=" * 50 + "\n\n")
             f.write(podcast.anchor_script)
         
@@ -149,21 +150,21 @@ def run_real_audio_generation_test() -> bool:
         audio_response = requests.get(podcast.audio_url)
         audio_response.raise_for_status()
         
-        audio_file = output_dir / f"podcast_audio_{get_today_formatted()}.aac"
+        audio_file = output_dir / f"podcast_audio_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.aac"
         with open(audio_file, "wb") as f:
             f.write(audio_response.content)
         
         # Save the podcast object metadata as JSON
         podcast_data = {
             "anchor_script": podcast.anchor_script,
+            "anchor_name": podcast.anchor_name,
             "audio_url": podcast.audio_url,
             "audio_size_bytes": podcast.audio_size_bytes,
             "audio_size_mb": round(podcast.audio_size_bytes / (1024 * 1024), 2),
-            "story_count": podcast.story_count,
             "local_audio_file": audio_file.name
         }
         
-        json_file = output_dir / f"podcast_data_{get_today_formatted()}.json"
+        json_file = output_dir / f"podcast_data_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.json"
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump(podcast_data, f, indent=2, ensure_ascii=False)
         
@@ -175,13 +176,15 @@ def run_real_audio_generation_test() -> bool:
         print(f"✅ AAC audio uploaded to Cloudflare R2 CDN")
         print(f"✅ Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
         print(f"✅ CDN URL: {podcast.audio_url}")
-        print(f"✅ MongoDB contains only: anchor_script, audio_url, audio_size_bytes, story_count")
+        print(f"✅ Anchor: {podcast.anchor_name} with personalized script")
+        print(f"✅ MongoDB contains: anchor_script, anchor_name, audio_url, audio_size_bytes")
         print(f"✅ Frontend can use CDN URL for instant global streaming")
         print(f"✅ Local files saved to debug/test_output/ for verification")
         
         print("\nℹ️  Clean MongoDB structure with CDN URL instead of binary data.")
         print("ℹ️  Audio served from Cloudflare's global CDN for 50x faster loading.")
         print("ℹ️  Your frontend gets the CDN URL and streams audio directly.")
+        print("ℹ️  Each podcast features a randomly selected anchor with personalized intro/outro.")
         
         return True
         

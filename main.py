@@ -92,7 +92,7 @@ def run_pipeline() -> None:  # noqa: D401
             podcast = generate_podcast(stories, openai_client=openai_client, mongodb_client=mongodb_client)
             logger.info(
                 "🎙️ Podcast generated: %d-story briefing",
-                podcast.story_count,
+                len(stories),
             )
         except Exception as e:
             logger.error("Failed to generate podcast: %s", str(e))

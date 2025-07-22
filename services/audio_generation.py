@@ -12,7 +12,7 @@ from config.audio_config import (
     AUDIO_FORMAT,
     TTS_MODEL,
     TTS_SPEED,
-    TTS_VOICE,
+    get_random_anchor,
 )
 from models import Podcast, Story
 from utils import get_today_formatted, logger
@@ -42,7 +42,11 @@ def generate_podcast(
     
     logger.info("🎙️ STEP 7: Audio Generation - Creating news briefing podcast...")
     
-    # Step 1: Extract summaries from stories
+    # Step 1: Select random anchor for this podcast
+    tts_voice, anchor_name = get_random_anchor()
+    logger.info("  🎭 Selected anchor: %s (voice: %s)", anchor_name, tts_voice)
+    
+    # Step 2: Extract summaries from stories
     logger.info("  📝 Extracting summaries from %d stories...", len(stories))
     summaries = []
     for i, story in enumerate(stories, 1):
@@ -50,12 +54,12 @@ def generate_podcast(
     
     summaries_text = "\n\n".join(summaries)
     
-    # Step 2: Generate anchor script using GPT-4o
+    # Step 3: Generate anchor script using GPT-4o
     logger.info("  🎬 Generating anchor script with %s...", ANCHOR_SCRIPT_MODEL)
     
     user_prompt = ANCHOR_SCRIPT_INSTRUCTIONS.format(
         date=get_today_formatted(),
-        story_count=len(stories),
+        anchor_name=anchor_name,
         summaries=summaries_text,
     )
     
@@ -69,13 +73,13 @@ def generate_podcast(
     script_word_count = len(anchor_script.split())
     logger.info("  ✓ Anchor script generated: %d words", script_word_count)
     
-    # Step 3: Convert script to speech using TTS
+    # Step 4: Convert script to speech using TTS
     logger.info("  🔊 Converting script to speech using %s...", TTS_MODEL)
     
     audio_bytes = openai_client.text_to_speech(
         anchor_script,
         model=TTS_MODEL,
-        voice=TTS_VOICE,
+        voice=tts_voice,
         speed=TTS_SPEED,
         response_format=AUDIO_FORMAT,
     )
@@ -86,27 +90,28 @@ def generate_podcast(
         file_size_bytes / (1024 * 1024),
     )
     
-    # Step 4: Upload to Cloudflare R2 CDN and store metadata
+    # Step 5: Upload to Cloudflare R2 CDN and store metadata
     logger.info("  ☁️ Uploading to Cloudflare R2 CDN...")
     cdn_url = r2_client.upload_audio(audio_bytes)
     
-    # Step 5: Create Podcast object with CDN URL
+    # Step 6: Create Podcast object with CDN URL
     podcast = Podcast(
         anchor_script=anchor_script,
+        anchor_name=anchor_name,
         audio_url=cdn_url,
         audio_size_bytes=file_size_bytes,
-        story_count=len(stories),
     )
     
-    # Step 6: Store podcast metadata in MongoDB
+    # Step 7: Store podcast metadata in MongoDB
     logger.info("  💾 Saving podcast metadata to database...")
     podcast_dict = podcast.__dict__.copy()
     inserted_id = mongodb_client.insert_podcast(podcast_dict)
     logger.info("  ✓ Podcast saved with CDN URL (ID: %s)", inserted_id[:12] + "...")
     
     logger.info(
-        "✅ Audio generation complete: %d-story podcast created",
+        "✅ Audio generation complete: %d-story podcast created by %s",
         len(stories),
+        anchor_name,
     )
     
     return podcast

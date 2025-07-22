@@ -72,7 +72,6 @@ class TestAudioGeneration:
         )
 
         assert isinstance(podcast, Podcast)
-        assert podcast.story_count == 2
         assert len(podcast.anchor_script) > 0
         assert len(podcast.audio_file) > 0
         assert podcast.audio_file == b"fake_audio_bytes_content"
@@ -93,7 +92,6 @@ class TestAudioGeneration:
         )
 
         assert isinstance(podcast, Podcast)
-        assert podcast.story_count == 1
         assert len(podcast.anchor_script) > 0
         assert len(podcast.audio_file) > 0
 
@@ -163,8 +161,7 @@ class TestAudioGeneration:
         assert "professional news anchor" in prompt.lower()
         assert "news briefing podcast" in prompt.lower()
 
-        # Should contain date and story count
-        assert "2 stories" in prompt or "Number of stories: 2" in prompt
+        # Prompt should not include explicit story count now
 
     def test_generate_podcast_mongodb_insertion(self, mock_openai_client, mock_mongodb_client, sample_stories):
         """Test that podcast is properly inserted into MongoDB."""
@@ -183,8 +180,6 @@ class TestAudioGeneration:
         
         assert "anchor_script" in inserted_data
         assert "audio_file" in inserted_data
-        assert "story_count" in inserted_data
-        assert inserted_data["story_count"] == 2
 
     @patch("services.audio_generation.logger")
     def test_generate_podcast_logging(self, mock_logger, mock_openai_client, mock_mongodb_client, sample_stories):

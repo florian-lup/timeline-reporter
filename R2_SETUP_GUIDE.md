@@ -94,7 +94,6 @@ podcast = generate_podcast(
 # Access the CDN URL and metadata
 print(f"Audio available at: {podcast.audio_url}")
 print(f"Audio size: {podcast.audio_size_bytes} bytes")
-print(f"Stories included: {podcast.story_count}")
 ```
 
 ## 📊 What's Stored in MongoDB
@@ -103,8 +102,7 @@ print(f"Stories included: {podcast.story_count}")
 {
   "anchor_script": "Welcome to today's news briefing...",
   "audio_url": "https://bucket.account.r2.dev/podcasts/123.aac",
-  "audio_size_bytes": 2097152,
-  "story_count": 2
+  "audio_size_bytes": 2097152
 }
 ```
 
