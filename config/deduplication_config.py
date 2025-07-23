@@ -34,3 +34,27 @@ REQUIRED_METADATA_FIELDS = [
     "discovered_lead",
     "date",
 ]
+
+# ---------------------------------------------------------------------------
+# GPT-4o Deduplication Configuration
+# ---------------------------------------------------------------------------
+DEDUPLICATION_MODEL: str = "o4-mini-2025-04-16"
+LOOKBACK_HOURS: int = 24  # Hours to look back in database for comparison
+
+# ---------------------------------------------------------------------------
+# GPT Comparison Prompt Template
+# ---------------------------------------------------------------------------
+DEDUPLICATION_PROMPT_TEMPLATE: str = """You are comparing a new lead against existing story summaries to detect duplicates.
+
+NEW LEAD:
+"{lead_text}"
+
+EXISTING STORY SUMMARIES FROM LAST {lookback_hours} HOURS:
+{existing_summaries}
+
+TASK: Determine if the new lead covers the same core event/story as any existing summary.
+Consider that leads are brief discovery summaries while existing records are detailed story summaries.
+Focus on the fundamental event or topic, not minor details or different perspectives.
+
+Respond with ONLY "DUPLICATE" if the lead matches an existing story, or "UNIQUE" if it's genuinely new.
+"""

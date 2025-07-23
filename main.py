@@ -46,7 +46,7 @@ def run_pipeline() -> None:  # noqa: D401
 
     # 2️⃣ Deduplication
     logger.info("🔄 STEP 2: Deduplication - Removing duplicate stories...")
-    unique_leads = deduplicate_leads(leads, openai_client=openai_client, pinecone_client=pinecone_client)
+    unique_leads = deduplicate_leads(leads, openai_client=openai_client, pinecone_client=pinecone_client, mongodb_client=mongodb_client)
     duplicates_removed = len(leads) - len(unique_leads)
     logger.info(
         "✅ Deduplication complete: %d duplicates removed, %d unique leads remain",

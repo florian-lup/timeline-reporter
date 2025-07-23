@@ -7,6 +7,7 @@ from typing import Any
 from pymongo import MongoClient
 
 from config import MONGODB_COLLECTION_NAME, MONGODB_DATABASE_NAME, MONGODB_URI, MONGODB_COLLECTION_NAME_AUDIO
+from config.deduplication_config import LOOKBACK_HOURS
 from utils import logger
 
 
@@ -60,3 +61,32 @@ class MongoDBClient:
             raise ValueError("Audio collection not configured. Set MONGODB_COLLECTION_NAME_AUDIO in environment.")
         result = self._audio_collection.insert_one(podcast)
         return str(result.inserted_id)
+
+    def get_recent_stories(self, hours: int = LOOKBACK_HOURS) -> list[dict[str, Any]]:
+        """Retrieves stories from the last N hours using _id timestamp.
+        
+        Args:
+            hours: Number of hours to look back from now
+            
+        Returns:
+            List of story documents with summary fields for comparison
+        """
+        from datetime import datetime, timedelta
+        from bson import ObjectId
+        
+        # Calculate the cutoff datetime
+        cutoff_time = datetime.now() - timedelta(hours=hours)
+        
+        # Create ObjectId for the cutoff time
+        # ObjectId.from_datetime() creates an ObjectId with the specified timestamp
+        cutoff_object_id = ObjectId.from_datetime(cutoff_time)
+        
+        # Query for stories with _id greater than the cutoff ObjectId
+        query = {"_id": {"$gte": cutoff_object_id}}
+        
+        # Only fetch summary field for comparison
+        projection = {"summary": 1}
+        
+        stories = list(self._collection.find(query, projection))
+        logger.info("  📖 Retrieved %d stories from last %d hours", len(stories), hours)
+        return stories

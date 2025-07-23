@@ -25,7 +25,7 @@ def main():
     logger.info("🔍 Starting debug test for lead discovery...")
     
     # Create debug output directory
-    debug_dir = Path("debug/output")
+    debug_dir = Path("debug/output/discovery_output")
     debug_dir.mkdir(exist_ok=True)
     
     # Initialize Perplexity client
