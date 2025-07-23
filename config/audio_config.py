@@ -44,26 +44,28 @@ TTS_VOICE: TTSVoice = "nova"  # Fallback voice (random anchors used in practice)
 TTS_SPEED: float = 1.0  # Speed: 0.25 to 4.0
 
 # ---------------------------------------------------------------------------
+# Audio File Configuration
+# ---------------------------------------------------------------------------
+AUDIO_FORMAT: str = "aac"
+
+# ---------------------------------------------------------------------------
 # TTS Instructions Configuration (2025 Feature)
 # ---------------------------------------------------------------------------
 
 # TTS instruction for news podcast delivery
-TTS_INSTRUCTION = """Voice Affect: Professional news anchor delivery with warmth and authority; project confidence while remaining approachable.
+TTS_INSTRUCTION = """Voice Affect: Low, hushed, and suspenseful; convey tension and intrigue.
 
-Tone: Balanced between informative and engaging - maintain journalistic professionalism while keeping listeners interested and connected.
+Tone: Deeply serious and mysterious, maintaining an undercurrent of unease throughout.
 
-Pacing: Steady, measured pace that allows for clear comprehension; vary slightly to emphasize important points or transitions between stories.
+Pacing: Slow, deliberate, pausing slightly after suspenseful moments to heighten drama.
 
-Emotion: Controlled enthusiasm and genuine interest in the content; show appropriate emotional response to story significance while maintaining objectivity.
+Emotion: Restrained yet intense—voice should subtly tremble or tighten at key suspenseful points.
 
-Pronunciation: Clear, precise articulation with particular attention to proper nouns, statistics, and technical terms. Ensure all information is easily understood.
+Emphasis: Highlight sensory descriptions ("footsteps echoed," "heart hammering," "shadows melting into darkness") to amplify atmosphere.
 
-Pauses: Natural breaks between distinct stories and after key information; use brief pauses to signal transitions and allow listeners to process important details."""
+Pronunciation: Slightly elongated vowels and softened consonants for an eerie, haunting effect.
 
-# ---------------------------------------------------------------------------
-# Audio File Configuration
-# ---------------------------------------------------------------------------
-AUDIO_FORMAT: str = "mp3"
+Pauses: Insert meaningful pauses after phrases like "only shadows melting into darkness," and especially before the final line, to enhance suspense dramatically."""
 
 # ---------------------------------------------------------------------------
 # Anchor Script System Prompt
