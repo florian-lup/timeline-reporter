@@ -52,6 +52,6 @@ site/
 Thumbs.db 
 
 # Debug outputs
-debug/test_output/
+debug/output/
 
 guides/

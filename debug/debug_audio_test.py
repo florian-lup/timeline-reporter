@@ -243,7 +243,7 @@ def run_real_audio_generation_test() -> bool:
         print(f"🕒 Response Time: {response.elapsed.total_seconds():.3f}s")
         
         # Create the test output directory if it doesn't exist
-        output_dir = Path("debug/test_output")
+        output_dir = Path("debug/output")
         output_dir.mkdir(exist_ok=True)
         
         # Save the script to a text file

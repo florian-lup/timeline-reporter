@@ -4,18 +4,19 @@ This module contains all settings, prompts, and configuration data
 related to lead discovery across different news categories.
 """
 
-from utils import get_today_formatted
+from utils import get_today_formatted, get_today_api_format
 
 # ---------------------------------------------------------------------------
 # Discovery Model Configuration
 # ---------------------------------------------------------------------------
 LEAD_DISCOVERY_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
+SEARCH_AFTER_DATE_FILTER: str = get_today_api_format()  # Only content from today
 
 # ---------------------------------------------------------------------------
 # Discovery Timeout Configuration
 # ---------------------------------------------------------------------------
-DISCOVERY_TIMEOUT_SECONDS: float = 240  # Total timeout for discovery operations
+DISCOVERY_TIMEOUT_SECONDS: float = 300  # Total timeout for discovery operations
 
 # ---------------------------------------------------------------------------
 # Discovery Categories Configuration

@@ -13,6 +13,7 @@ from config.discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
     LEAD_DISCOVERY_MODEL,
     SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
+    SEARCH_AFTER_DATE_FILTER as DISCOVERY_SEARCH_AFTER_DATE_FILTER,
     DISCOVERY_TIMEOUT_SECONDS,
 )
 from config.research_config import (
@@ -67,13 +68,8 @@ class PerplexityClient:
             "type": "object",
             "properties": {
                 "title": {"type": "string"},
-                "report": {"type": "string"},
-                "sources": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                },
             },
-            "required": ["title", "report", "sources"],
+            "required": ["title"],
         },
     }
 
@@ -157,6 +153,10 @@ class PerplexityClient:
                 "json_schema": {"schema": self._LEAD_DISCOVERY_JSON_SCHEMA},
             },
         }
+
+        # Add precise date filtering
+        if DISCOVERY_SEARCH_AFTER_DATE_FILTER:
+            payload["search_after_date_filter"] = DISCOVERY_SEARCH_AFTER_DATE_FILTER
 
         # Set timeout for discovery operations that involve web search and reasoning
         timeout = httpx.Timeout(DISCOVERY_TIMEOUT_SECONDS)

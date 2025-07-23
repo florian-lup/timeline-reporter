@@ -6,13 +6,14 @@ This package provides common utilities including:
 - URL normalization and deduplication
 """
 
-from .date_formatting import get_today_formatted
+from .date_formatting import get_today_formatted, get_today_api_format
 from .logger import logger
 from .url_deduplication import combine_and_deduplicate_sources, deduplicate_sources, normalize_url
 
 __all__ = [
     # Date utilities
     "get_today_formatted",
+    "get_today_api_format",
     # Logging
     "logger",
     # URL utilities
