@@ -26,13 +26,13 @@ class TestDeduplicationService:
         """Sample leads for testing."""
         return [
             Lead(
-                title="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                discovered_lead="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
             ),
             Lead(
-                title="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
+                discovered_lead="Earthquake in Pacific: A 6.5 magnitude earthquake struck the Pacific region with minimal damage reported.",
             ),
             Lead(
-                title="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
+                discovered_lead="Tech Conference Announced: Major technology companies announce new AI developments at annual conference.",
             ),
         ]
 
@@ -64,9 +64,9 @@ class TestDeduplicationService:
 
         # Verify embedding calls
         assert mock_openai_client.embed_text.call_count == 3
-        mock_openai_client.embed_text.assert_any_call(sample_leads[0].title)
-        mock_openai_client.embed_text.assert_any_call(sample_leads[1].title)
-        mock_openai_client.embed_text.assert_any_call(sample_leads[2].title)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[0].discovered_lead)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[1].discovered_lead)
+        mock_openai_client.embed_text.assert_any_call(sample_leads[2].discovered_lead)
 
         # Verify upsert calls
         assert mock_pinecone_client.upsert_vector.call_count == 3
@@ -161,5 +161,5 @@ class TestDeduplicationService:
             metadata = kwargs["metadata"]
             assert vector_id == f"lead-{i}"
             assert vector == sample_embeddings[i]
-            assert metadata["title"] == sample_leads[i].title
+            assert metadata["discovered_lead"] == sample_leads[i].discovered_lead
             assert metadata["date"] == sample_leads[i].date

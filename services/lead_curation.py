@@ -110,7 +110,7 @@ class LeadCurator:
 
         # Log the final selected leads with their scores
         for i, evaluation in enumerate(selected, 1):
-            first_words = " ".join(evaluation.lead.title.split()[:5]) + "..."
+            first_words = " ".join(evaluation.lead.discovered_lead.split()[:5]) + "..."
             logger.info(
                 "  🏆 Selected #%d: Score %.1f - %s",
                 i,
@@ -204,7 +204,7 @@ class LeadCurator:
                     )
                 )
 
-                first_words = " ".join(lead.title.split()[:5]) + "..."
+                first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
                 reasoning = lead_scores.get("brief_reasoning", "No reasoning provided")
                 reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + ("..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else "")
                 logger.info(

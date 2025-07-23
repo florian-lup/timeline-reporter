@@ -16,7 +16,7 @@ from config.discovery_config import (
     DISCOVERY_CATEGORIES,
     DISCOVERY_CATEGORY_INSTRUCTIONS,
 )
-from services.lead_discovery import _parse_leads_from_response
+from services.lead_discovery import _json_to_leads
 from utils import logger
 
 
@@ -63,7 +63,7 @@ def main():
             
             # Get the clean JSON response (structured output - same as normal flow)
             response_text = perplexity_client.lead_discovery(instructions)
-            category_leads = _parse_leads_from_response(response_text)
+            category_leads = _json_to_leads(response_text)
             
             # ALSO test unstructured output for comparison
             unstructured_response = _debug_unstructured_discovery(perplexity_client, instructions)
@@ -77,7 +77,7 @@ def main():
 
             # Log each individual lead with first 5 words for tracking (same as real service)
             for idx, lead in enumerate(category_leads, 1):
-                first_words = " ".join(lead.title.split()[:5]) + "..."
+                first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
                 logger.info(
                     "    📋 Lead %d/%d - %s", 
                     idx, len(category_leads), first_words
@@ -92,7 +92,7 @@ def main():
         
             leads_data = [
                 {
-                    "title": lead.title,
+                    "discovered_lead": lead.discovered_lead,
                     "date": lead.date,
                 }
                     for lead in category_leads
@@ -131,7 +131,7 @@ def main():
                     "unstructured_response_length": len(unstructured_content),
                     "thinking_length": len(thinking_content) if thinking_content else 0,
                     "leads_count": len(category_leads),
-                    "leads_titles": [lead.title for lead in category_leads],
+                    "leads_titles": [lead.discovered_lead for lead in category_leads],
                     "raw_file": str(raw_file),
                     "leads_file": str(leads_file),
                     "unstructured_file": str(unstructured_file),
@@ -220,6 +220,7 @@ def _debug_lead_discovery_with_thinking(perplexity_client: PerplexityClient, pro
     from config.discovery_config import (
         DISCOVERY_SYSTEM_PROMPT,
         LEAD_DISCOVERY_MODEL,
+        LEAD_DISCOVERY_JSON_SCHEMA,
         SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
         SEARCH_AFTER_DATE_FILTER as DISCOVERY_SEARCH_AFTER_DATE_FILTER,
         DISCOVERY_TIMEOUT_SECONDS,
@@ -240,7 +241,7 @@ def _debug_lead_discovery_with_thinking(perplexity_client: PerplexityClient, pro
         },
         "response_format": {
             "type": "json_schema",
-            "json_schema": {"schema": perplexity_client._LEAD_DISCOVERY_JSON_SCHEMA},
+            "json_schema": {"schema": LEAD_DISCOVERY_JSON_SCHEMA},
         },
     }
 

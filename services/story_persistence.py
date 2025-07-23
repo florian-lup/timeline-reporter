@@ -12,7 +12,7 @@ from utils import logger
 def persist_stories(stories: list[Story], *, mongodb_client: MongoDBClient) -> None:
     """Stores stories in MongoDB."""
     for idx, story in enumerate(stories, 1):
-        # Get first 5 words from the story's original lead title
+        # Get first 5 words from the story's original discovered_lead
         # (stored in metadata if available)
         # For now, use story headline as fallback
         first_words = " ".join(story.headline.split()[:5]) + "..."

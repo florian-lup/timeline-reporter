@@ -12,6 +12,7 @@ from config import (
 from config.discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
     LEAD_DISCOVERY_MODEL,
+    LEAD_DISCOVERY_JSON_SCHEMA,
     SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
     SEARCH_AFTER_DATE_FILTER as DISCOVERY_SEARCH_AFTER_DATE_FILTER,
     DISCOVERY_TIMEOUT_SECONDS,
@@ -61,18 +62,6 @@ class PerplexityClient:
         "required": ["report", "sources"],
     }
 
-    # JSON schema for Discovery structured output (array of leads)
-    _LEAD_DISCOVERY_JSON_SCHEMA = {
-        "type": "array",
-        "items": {
-            "type": "object",
-            "properties": {
-                "title": {"type": "string"},
-            },
-            "required": ["title"],
-        },
-    }
-
     # ---------------------------------------------------------------------------
     # Public methods
     # ---------------------------------------------------------------------------
@@ -112,7 +101,7 @@ class PerplexityClient:
         raw_content: str = data["choices"][0]["message"]["content"]
         
         # For reasoning models, remove <think> sections to get clean content
-        clean_content = self._extract_content_from_reasoning_response(raw_content)
+        clean_content = self._extract_text(raw_content)
         
         # Citations are in the search_results field, extract URLs from the search results
         citations: list[str] = []
@@ -150,7 +139,7 @@ class PerplexityClient:
             },
             "response_format": {
                 "type": "json_schema",
-                "json_schema": {"schema": self._LEAD_DISCOVERY_JSON_SCHEMA},
+                "json_schema": {"schema": LEAD_DISCOVERY_JSON_SCHEMA},
             },
         }
 
@@ -169,13 +158,21 @@ class PerplexityClient:
         raw_content: str = data["choices"][0]["message"]["content"]
 
         # Extract JSON content after <think> section as per documentation
-        return self._extract_json_from_reasoning_response(raw_content)
+        return self._extract_json(raw_content)
 
     # ---------------------------------------------------------------------------
     # Helpers
     # ---------------------------------------------------------------------------
 
-    def _extract_json_from_reasoning_response(self, raw_content: str) -> str:
+    def _remove_think_tags(self, content: str) -> str:
+        """Remove <think>...</think> reasoning sections from response content."""
+        import re
+        
+        # Remove <think>...</think> sections and clean up whitespace
+        cleaned = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+        return cleaned.strip()
+
+    def _extract_json(self, raw_content: str) -> str:
         """Extract JSON from response with reasoning tokens.
 
         Perplexity Pro models return reasoning tokens in <think> tags,
@@ -190,18 +187,10 @@ class PerplexityClient:
         json_part = re.sub(r"```(?:json)?\n?", "", json_part)
         return re.sub(r"\n?```", "", json_part)
 
-    def _extract_content_from_reasoning_response(self, raw_content: str) -> str:
+    def _extract_text(self, raw_content: str) -> str:
         """Extract clean content from reasoning model responses.
         
         Reasoning models like sonar-reasoning-pro include <think> sections
         that should be removed for cleaner output.
         """
-        import re
-        
-        # Remove <think>...</think> sections
-        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL)
-        
-        # Clean up extra whitespace
-        clean_content = clean_content.strip()
-        
-        return clean_content
+        return self._remove_think_tags(raw_content)

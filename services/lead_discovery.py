@@ -34,7 +34,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
         try:
             instructions = DISCOVERY_CATEGORY_INSTRUCTIONS[category_name]
             response_text = perplexity_client.lead_discovery(instructions)
-            category_leads = _parse_leads_from_response(response_text)
+            category_leads = _json_to_leads(response_text)
 
             logger.info(
                 "  ✓ %s: %d leads found",
@@ -44,7 +44,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 
             # Log each individual lead with first 5 words for tracking
             for idx, lead in enumerate(category_leads, 1):
-                first_words = " ".join(lead.title.split()[:5]) + "..."
+                first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
                 logger.info(
                     "    📋 Lead %d/%d - %s", 
                     idx, len(category_leads), first_words
@@ -64,8 +64,8 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
 # ---------------------------------------------------------------------------
 
 
-def _parse_leads_from_response(response_text: str) -> list[Lead]:
-    """Extracts JSON from the model response and maps to Lead objects.
+def _json_to_leads(response_text: str) -> list[Lead]:
+    """Converts JSON response text to Lead objects.
 
     The Perplexity client uses structured output and returns clean JSON.
     """
@@ -82,7 +82,7 @@ def _parse_leads_from_response(response_text: str) -> list[Lead]:
 
     leads: list[Lead] = [
         Lead(
-            title=item["title"]
+            discovered_lead=item["lead_summary"]
         ) 
         for item in data
     ]

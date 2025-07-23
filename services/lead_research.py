@@ -10,11 +10,11 @@ def research_lead(leads: list[Lead], *, perplexity_client: PerplexityClient) -> 
     enhanced_leads: list[Lead] = []
 
     for idx, lead in enumerate(leads, 1):
-        first_words = " ".join(lead.title.split()[:5]) + "..."
+        first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
         logger.info("  📚 Researching lead %d/%d - %s", idx, len(leads), first_words)
 
         # Use Perplexity to research the lead directly
-        prompt = RESEARCH_INSTRUCTIONS.format(lead_title=lead.title)
+        prompt = RESEARCH_INSTRUCTIONS.format(lead_title=lead.discovered_lead)
         content, citations = perplexity_client.lead_research(prompt)
         
         enhanced_lead = _enhance_lead_from_response(lead, content, citations)
@@ -45,7 +45,7 @@ def _enhance_lead_from_response(original_lead: Lead, content: str, citations: li
     
     # Create enhanced Lead with research results
     return Lead(
-        title=original_lead.title,
+        discovered_lead=original_lead.discovered_lead,
         report=report,
         sources=sources,
         date=original_lead.date,

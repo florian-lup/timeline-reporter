@@ -22,11 +22,11 @@ class TestResearchService:
         """Sample leads for testing."""
         return [
             Lead(
-                title="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
+                discovered_lead="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
                 sources=["https://example.com/discovery-climate-1", "https://example.com/discovery-climate-2"]
             ),
             Lead(
-                title="Tech Innovation Expo: Major technology companies showcase AI and renewable energy innovations.",
+                discovered_lead="Tech Innovation Expo: Major technology companies showcase AI and renewable energy innovations.",
                 sources=["https://example.com/discovery-tech-1"]
             ),
         ]
@@ -62,8 +62,8 @@ class TestResearchService:
 
         assert len(enhanced_leads) == 2
         assert isinstance(enhanced_leads[0], Lead)
-        # Check that original title is preserved
-        assert enhanced_leads[0].title == sample_leads[0].title
+        # Check that original discovered_lead is preserved
+        assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
         # Check that report was added
         assert "Climate Summit 2024" in enhanced_leads[0].report
         assert "190 countries" in enhanced_leads[0].report
@@ -82,21 +82,21 @@ class TestResearchService:
         assert mock_perplexity_client.lead_research.call_count == 2
 
     def test_research_lead_prompt_formatting(self, mock_perplexity_client, sample_leads, sample_research_response):
-        """Test that research prompts are formatted correctly with lead titles directly."""
+        """Test that research prompts are formatted correctly with lead discovered_leads directly."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
         research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
-        # Verify prompts were formatted with original lead titles (not search queries)
+        # Verify prompts were formatted with original lead discovered_leads (not search queries)
         call_args_list = mock_perplexity_client.lead_research.call_args_list
 
-        # Check that both calls contain the original lead titles
+        # Check that both calls contain the original lead discovered_leads
         first_call_prompt = call_args_list[0][0][0]
         second_call_prompt = call_args_list[1][0][0]
         
-        # Should contain lead titles directly since we're not using query formulation
-        assert sample_leads[0].title in first_call_prompt
-        assert sample_leads[1].title in second_call_prompt
+        # Should contain lead discovered_leads directly since we're not using query formulation
+        assert sample_leads[0].discovered_lead in first_call_prompt
+        assert sample_leads[1].discovered_lead in second_call_prompt
 
     def test_research_lead_json_parsing(self, mock_perplexity_client, sample_leads):
         """Test JSON parsing from research response."""
@@ -116,8 +116,8 @@ class TestResearchService:
             "https://example.com/test",
             "https://example.com/analysis",
         ]
-        # Original title should be preserved
-        assert enhanced_leads[0].title == sample_leads[0].title
+        # Original discovered_lead should be preserved
+        assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
 
     def test_research_lead_malformed_json(self, mock_perplexity_client, sample_leads, sample_malformed_research_response):
         """Test handling of malformed JSON response."""
@@ -128,7 +128,7 @@ class TestResearchService:
 
         assert len(enhanced_leads) == 1
         # Should return original lead unchanged on parse error
-        assert enhanced_leads[0].title == sample_leads[0].title
+        assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
         assert enhanced_leads[0].report == ""  # Original empty report
         assert enhanced_leads[0].sources == []  # Original empty sources
         mock_logger.warning.assert_called()
@@ -178,14 +178,14 @@ class TestResearchService:
 
         assert len(enhanced_leads) == 1
         # Should return original lead due to JSON parse failure
-        assert enhanced_leads[0].title == sample_leads[0].title
+        assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
         assert enhanced_leads[0].report == ""
         assert enhanced_leads[0].sources == []
         mock_logger.warning.assert_called()
 
     def test_research_preserves_date(self, mock_perplexity_client):
         """Test that research preserves the original lead date."""
-        lead_with_date = Lead(title="Test lead", date="2024-01-15")
+        lead_with_date = Lead(discovered_lead="Test lead", date="2024-01-15")
         response = json.dumps({"report": "Context text", "sources": ["https://example.com"]})
         mock_perplexity_client.lead_research.return_value = response
 
@@ -196,7 +196,7 @@ class TestResearchService:
     def test_research_lead_empty_discovery_sources(self, mock_perplexity_client):
         """Test research with lead that has empty sources from discovery."""
         lead_no_sources = Lead(
-            title="Lead with no discovery sources",
+            discovered_lead="Lead with no discovery sources",
             sources=[]  # Empty sources from discovery
         )
         
@@ -228,12 +228,12 @@ class TestResearchService:
         # Verify handling of null values (converted to safe defaults)
         assert enhanced_leads[0].report == ""  # None converted to empty string
         assert enhanced_leads[0].sources == []  # None converted to empty list
-        # Original title preserved
-        assert enhanced_leads[0].title == sample_leads[0].title
+        # Original discovered_lead preserved
+        assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
 
     def test_research_lead_single_lead(self, mock_perplexity_client, sample_research_response):
         """Test research with single lead."""
-        single_lead = [Lead(title="Single Lead: Description of a single lead")]
+        single_lead = [Lead(discovered_lead="Single Lead: Description of a single lead")]
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
         enhanced_leads = research_lead(single_lead, perplexity_client=mock_perplexity_client)
@@ -245,7 +245,7 @@ class TestResearchService:
         """Test that research combines existing sources from discovery with new research sources."""
         # Lead with existing sources from discovery
         lead_with_discovery_sources = Lead(
-            title="Test lead with discovery sources",
+            discovered_lead="Test lead with discovery sources",
             sources=["https://discovery-source-1.com", "https://discovery-source-2.com"]
         )
         
@@ -272,7 +272,7 @@ class TestResearchService:
         """Test that duplicate sources are removed when combining discovery and research sources."""
         # Lead with discovery sources
         lead_with_sources = Lead(
-            title="Test lead",
+            discovered_lead="Test lead",
             sources=["https://duplicate-source.com", "https://discovery-only.com"]
         )
         

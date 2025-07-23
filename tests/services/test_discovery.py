@@ -34,24 +34,51 @@ class TestDiscoveryService:
 
     @pytest.fixture
     def sample_politics_response(self):
-        """Sample politics category response."""
-        return json.dumps([{
-            "title": "Presidential Election Update: Major political shift as new candidate enters the race with strong support."
-        }])
+        """Sample politics response from Perplexity discovery."""
+        return json.dumps([
+            {
+                "discovered_lead": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies."
+            },
+            {
+                "discovered_lead": "Earthquake Hits Pacific Region: 6.2 magnitude earthquake causes minimal damage but raises tsunami concerns."
+            }
+        ])
 
     @pytest.fixture
     def sample_environment_response(self):
-        """Sample environment category response."""
-        return json.dumps([{
-            "title": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies."
-        }])
+        """Sample environment response from Perplexity discovery."""
+        return json.dumps([
+            {
+                "discovered_lead": "Presidential Election Update: Major political shift as new candidate enters the race with strong support."
+            }
+        ])
 
     @pytest.fixture
     def sample_entertainment_response(self):
-        """Sample entertainment category response."""
-        return json.dumps([{
-            "title": "World Cup Final: Historic victory as underdog team wins championship in dramatic overtime."
-        }])
+        """Sample entertainment response from Perplexity discovery."""
+        return json.dumps([
+            {
+                "discovered_lead": "Climate Summit Announced: World leaders gather to discuss climate action and environmental policies."
+            }
+        ])
+
+    @pytest.fixture
+    def sample_entertainment_response_2(self):
+        """Alternative sample entertainment response from Perplexity discovery."""
+        return json.dumps([
+            {
+                "discovered_lead": "World Cup Final: Historic victory as underdog team wins championship in dramatic overtime."
+            }
+        ])
+
+    @pytest.fixture
+    def sample_environment_response_2(self):
+        """Alternative sample environment response from Perplexity discovery."""
+        return json.dumps([
+            {
+                "discovered_lead": "Climate Summit Announced: World leaders gather to discuss climate action and set new environmental targets."
+            }
+        ])
 
     @pytest.fixture
     def sample_leads_with_fences(self):
@@ -79,9 +106,9 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 3
-        assert "Presidential Election Update" in leads[0].title
-        assert "Climate Summit Announced" in leads[1].title
-        assert "World Cup Final" in leads[2].title
+        assert "Presidential Election Update" in leads[0].discovered_lead
+        assert "Climate Summit Announced" in leads[1].discovered_lead
+        assert "World Cup Final" in leads[2].discovered_lead
 
         # Verify Perplexity client was called three times
         assert mock_perplexity_client.lead_discovery.call_count == 3
@@ -113,8 +140,8 @@ class TestDiscoveryService:
             leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 2
-        assert "Presidential Election Update" in leads[0].title
-        assert "World Cup Final" in leads[1].title
+        assert "Presidential Election Update" in leads[0].discovered_lead
+        assert "World Cup Final" in leads[1].discovered_lead
 
         # Verify error was logged
         mock_logger.error.assert_called()
@@ -132,7 +159,7 @@ class TestDiscoveryService:
             leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert "Presidential Election Update" in leads[0].title
+        assert "Presidential Election Update" in leads[0].discovered_lead
         mock_logger.warning.assert_called()
 
     def test_discover_leads_json_with_fences(self, mock_perplexity_client, sample_leads_with_fences):
@@ -195,9 +222,9 @@ class TestDiscoveryService:
         )
 
     def test_discover_leads_preserves_formatting(self, mock_perplexity_client):
-        """Test that discovery preserves original formatting in title."""
+        """Test that discovery preserves original formatting in discovered_lead."""
         response_with_formatting = json.dumps([{
-            "title": "  Spaced Title  : Summary with\nnewlines and extra   spaces"
+            "discovered_lead": "  Spaced Title  : Summary with\nnewlines and extra   spaces"
         }])
         mock_perplexity_client.lead_discovery.side_effect = [
             response_with_formatting,
@@ -208,24 +235,24 @@ class TestDiscoveryService:
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert leads[0].title == "  Spaced Title  : Summary with\nnewlines and extra   spaces"  # Preserves original formatting
+        assert leads[0].discovered_lead == "  Spaced Title  : Summary with\nnewlines and extra   spaces"  # Preserves original formatting
 
     def test_discover_leads_unicode_handling(self, mock_perplexity_client):
-        """Test discovery with Unicode characters."""
-        unicode_response = json.dumps([{
-            "title": "🌍 Climate Summit: Conférence sur les émissions de carbone et les objectifs environnementaux"
+        """Test that discovery handles Unicode characters properly."""
+        response_unicode = json.dumps([{
+            "discovered_lead": "🌍 Climate Summit: Conférence sur les émissions de carbone et les objectifs environnementaux"
         }])
         mock_perplexity_client.lead_discovery.side_effect = [
+            response_unicode,
             "[]",
-            unicode_response,
             "[]",
         ]
 
         leads = discover_leads(mock_perplexity_client)
 
         assert len(leads) == 1
-        assert "🌍" in leads[0].title
-        assert "émissions" in leads[0].title
+        assert "🌍" in leads[0].discovered_lead
+        assert "émissions" in leads[0].discovered_lead
 
     def test_discover_leads_all_categories_fail(self, mock_perplexity_client):
         """Test when all category API calls fail."""
@@ -261,32 +288,32 @@ class TestDiscoveryService:
 
     def test_parse_leads_from_response_edge_cases(self):
         """Test edge cases in lead parsing."""
-        from services.lead_discovery import _parse_leads_from_response
+        from services.lead_discovery import _json_to_leads
 
-        # Test with missing title field
+        # Test with missing discovered_lead field
         response_missing_field = json.dumps(
             [
-                {"other_field": "Some value"}  # Missing title field
+                {"other_field": "Some value"}  # Missing discovered_lead field
             ]
         )
 
         with pytest.raises(KeyError):
-            _parse_leads_from_response(response_missing_field)
+            _json_to_leads(response_missing_field)
 
-        # Test with empty title
-        response_empty_title = json.dumps([{
-            "title": ""
+        # Test with empty discovered_lead
+        response_empty_discovered_lead = json.dumps([{
+            "discovered_lead": ""
         }])
 
-        leads = _parse_leads_from_response(response_empty_title)
+        leads = _json_to_leads(response_empty_discovered_lead)
         assert len(leads) == 1
-        assert leads[0].title == ""
+        assert leads[0].discovered_lead == ""
         
-        # Test with valid title
-        response_valid = json.dumps([{"title": "Test title"}])
-        leads = _parse_leads_from_response(response_valid)
+        # Test with valid discovered_lead
+        response_valid = json.dumps([{"discovered_lead": "Test title"}])
+        leads = _json_to_leads(response_valid)
         assert len(leads) == 1
-        assert leads[0].title == "Test title"
+        assert leads[0].discovered_lead == "Test title"
 
     def test_fence_regex_multiple_fences(self, mock_perplexity_client):
         """Test handling of multiple markdown fences.
@@ -297,7 +324,7 @@ class TestDiscoveryService:
         response_multiple_fences = """
         Some text here
         ```json
-                    [{"title": "Lead 1: Summary 1"}]
+                    [{"discovered_lead": "Lead 1: Summary 1"}]
         ```
         More text
         ```

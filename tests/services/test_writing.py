@@ -22,7 +22,7 @@ class TestWritingService:
         """Sample researched leads for testing."""
         return [
             Lead(
-                title="Climate Summit 2024: World leaders meet to discuss climate change",
+                discovered_lead="Climate Summit 2024: World leaders meet to discuss climate change",
                 report=(
                     "The Climate Summit 2024 brings together world leaders from "
                     "over 190 countries to address the escalating climate crisis. "
@@ -41,7 +41,7 @@ class TestWritingService:
                 date="2024-01-15",
             ),
             Lead(
-                title="Tech Innovation Expo: AI breakthroughs announced",
+                discovered_lead="Tech Innovation Expo: AI breakthroughs announced",
                 report=(
                     "The annual Tech Innovation Expo showcased groundbreaking AI "
                     "developments from major technology companies. Key announcements "
@@ -136,10 +136,10 @@ class TestWritingService:
         call_args = mock_openai_client.chat_completion.call_args
         prompt = call_args[0][0]  # First positional argument is the prompt
 
-        # Should contain report but not title or sources
+        # Should contain report but not discovered_lead or sources
         assert sample_researched_leads[0].report in prompt
         assert sample_researched_leads[0].date in prompt
-        assert sample_researched_leads[0].title not in prompt
+        assert sample_researched_leads[0].discovered_lead not in prompt
         # Sources should not be in prompt
         assert "https://example.com" not in prompt
 
@@ -231,7 +231,7 @@ class TestWritingService:
     def test_write_stories_empty_report(self, mock_openai_client):
         """Test writing with lead that has empty report."""
         lead_empty_report = Lead(
-            title="Empty report lead",
+            discovered_lead="Empty report lead",
             report="",
             sources=["https://example.com"],
             date="2024-01-15",
@@ -260,7 +260,7 @@ class TestWritingService:
         """Test writing with single lead."""
         single_lead = [
             Lead(
-                title="Single test lead",
+                discovered_lead="Single test lead",
                 report="Report for single lead test",
                 sources=["https://single.com"],
                 date="2024-01-20",
@@ -307,7 +307,7 @@ class TestWritingService:
     def test_write_stories_preserves_lead_attributes(self, mock_openai_client, sample_writing_response):
         """Test that lead attributes are properly preserved in stories."""
         lead_with_custom_date = Lead(
-            title="Custom date lead",
+            discovered_lead="Custom date lead",
             report="Report with custom date",
             sources=["https://custom1.com", "https://custom2.com"],
             date="2024-12-25",

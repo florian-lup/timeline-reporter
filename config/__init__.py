@@ -57,6 +57,7 @@ from .discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
     # Discovery Configuration
     LEAD_DISCOVERY_MODEL,
+    LEAD_DISCOVERY_JSON_SCHEMA,
     SEARCH_CONTEXT_SIZE,
     # Discovery Timeouts
     DISCOVERY_TIMEOUT_SECONDS,
@@ -126,6 +127,7 @@ __all__ = [
     "R2_REGION",
     # Discovery Configuration
     "LEAD_DISCOVERY_MODEL",
+    "LEAD_DISCOVERY_JSON_SCHEMA",
     "SEARCH_CONTEXT_SIZE",
     "DISCOVERY_CATEGORIES",
     "DISCOVERY_CATEGORY_INSTRUCTIONS",

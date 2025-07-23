@@ -286,12 +286,14 @@ Let me search for current information.
 </think>
 [
   {
-    "title": "Climate Summit Reaches Agreement: World leaders at COP29 "
-    "reach historic agreement on climate funding."
+    "discovered_lead": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "successfully negotiate binding carbon reduction targets with developing "
+    "nations committing to renewable energy transition timelines."
   },
   {
-    "title": "Geopolitical Tensions Rise: Recent diplomatic developments show "
-    "increasing tensions."
+    "discovered_lead": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "escalating tensions between major powers as trade negotiations stall "
+    "amid concerns over technology transfer restrictions."
   }
 ]"""
 
@@ -307,12 +309,14 @@ Let me search for current information.
             # Should extract JSON after <think> section
             expected_json = """[
   {
-    "title": "Climate Summit Reaches Agreement: World leaders at COP29 "
-    "reach historic agreement on climate funding."
+    "discovered_lead": "Climate Summit Reaches Agreement: World leaders at COP29 "
+    "successfully negotiate binding carbon reduction targets with developing "
+    "nations committing to renewable energy transition timelines."
   },
   {
-    "title": "Geopolitical Tensions Rise: Recent diplomatic developments show "
-    "increasing tensions."
+    "discovered_lead": "Geopolitical Tensions Rise: Recent diplomatic developments show "
+    "escalating tensions between major powers as trade negotiations stall "
+    "amid concerns over technology transfer restrictions."
   }
 ]"""
             assert result == expected_json
@@ -378,7 +382,7 @@ Let me search for current information.
         # Response without <think> tags
         raw_response = """[
   {
-                    "title": "Direct Response: This response doesn't have think tags."
+                    "discovered_lead": "Direct Response: This response doesn't have think tags."
   }
 ]"""
 
@@ -394,35 +398,36 @@ Let me search for current information.
             # Should return the full response as-is
             assert result == raw_response
 
-    def test_extract_json_from_reasoning_response_with_think(self):
-        """Test the _extract_json_from_reasoning_response method.
+    def test_extract_json_with_think(self):
+        """Test the _extract_json method.
 
-        Should work with <think> tags.
+        When the response contains <think> tags, it should extract
+        the JSON content that comes after the </think> tag.
         """
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            client = PerplexityClient()
-
-            response_with_think = """<think>
-Let me analyze the request and find relevant information.
-This is reasoning content that should be removed.
-</think>
-{"result": "extracted json"}"""
-
-            result = client._extract_json_from_reasoning_response(response_with_think)
-            assert result == '{"result": "extracted json"}'
-
-    def test_extract_json_from_reasoning_response_without_think(self):
-        """Test the _extract_json_from_reasoning_response method.
-
-        Should work without <think> tags.
+        client = PerplexityClient(api_key="fake-api-key")
+        response_with_think = """
+        <think>Some reasoning here</think>
+        ```json
+        [{"discovered_lead": "Test lead"}]
+        ```
         """
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
-            client = PerplexityClient()
+        result = client._extract_json(response_with_think)
+        assert result == '[{"discovered_lead": "Test lead"}]'
 
-            response_without_think = '{"result": "direct json"}'
+    def test_extract_json_without_think(self):
+        """Test the _extract_json method.
 
-            result = client._extract_json_from_reasoning_response(response_without_think)
-            assert result == '{"result": "direct json"}'
+        When the response doesn't contain <think> tags,
+        it should still clean markdown formatting.
+        """
+        client = PerplexityClient(api_key="fake-api-key")
+        response_without_think = """
+        ```json
+        [{"discovered_lead": "Direct response"}]
+        ```
+        """
+        result = client._extract_json(response_without_think)
+        assert result == '[{"discovered_lead": "Direct response"}]'
 
     def test_lead_discovery_system_prompt(self, mock_httpx_client):
         """Test that deep research uses appropriate system prompt."""

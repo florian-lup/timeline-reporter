@@ -30,7 +30,7 @@ class TestServicesIntegration:
             "global conflicts, policy changes, natural disasters, and tech "
             "Return your findings as a JSON array of leads, where each lead "
             "includes comprehensive context and details. Format: "
-            '[{"title": "Lead description with comprehensive details..."}]'
+            '[{"discovered_lead": "Lead description with comprehensive details..."}]'
         )
 
     @pytest.fixture
@@ -42,12 +42,12 @@ class TestServicesIntegration:
         mock_mongodb = Mock()
 
         # Set up discovery responses for three categories
-        politics_response = json.dumps([{"title": "Political Summit 2024: World leaders discuss global governance and international cooperation."}])
+        politics_response = json.dumps([{"discovered_lead": "Political Summit 2024: World leaders discuss global governance and international cooperation."}])
         environment_response = json.dumps(
-            [{"title": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
+            [{"discovered_lead": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
         )
         entertainment_response = json.dumps(
-            [{"title": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
+            [{"discovered_lead": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
         )
 
         # Set lead_discovery to return different responses for each call
@@ -212,9 +212,9 @@ class TestServicesIntegration:
 
         # Verify data flow through pipeline
         # Leads from discovery
-        assert "Political Summit 2024" in leads[0].title
-        assert "Climate Summit 2024" in leads[1].title
-        assert "AI Breakthrough Announced" in leads[2].title
+        assert "Political Summit 2024" in leads[0].discovered_lead
+        assert "Climate Summit 2024" in leads[1].discovered_lead
+        assert "AI Breakthrough Announced" in leads[2].discovered_lead
 
         # Researched leads have report
         assert "international cooperation" in researched_leads[0].report
@@ -251,19 +251,19 @@ class TestServicesIntegration:
         # Set up discovery with multiple leads per category
         politics_json = json.dumps(
             [
-                            {"title": "Lead 1: First political lead description"},
-            {"title": "Lead 2: Second political lead description"},
+                            {"discovered_lead": "Lead 1: First political lead description"},
+            {"discovered_lead": "Lead 2: Second political lead description"},
             ]
         )
         environment_json = json.dumps(
             [
-                {"title": "Lead 3: Environmental lead description"},
+                {"discovered_lead": "Lead 3: Environmental lead description"},
             ]
         )
         entertainment_json = json.dumps(
             [
-                            {"title": "Lead 4: Entertainment lead description"},
-            {"title": "Lead 5: Sports lead description"},
+                            {"discovered_lead": "Lead 4: Entertainment lead description"},
+            {"discovered_lead": "Lead 5: Sports lead description"},
             ]
         )
         mock_clients["perplexity"].lead_discovery.side_effect = [
@@ -343,7 +343,7 @@ class TestServicesIntegration:
 
         # Verify selected leads are the expected ones
         # (order may vary due to scoring)
-        selected_titles = [lead.title for lead in prioritized_leads]
+        selected_titles = [lead.discovered_lead for lead in prioritized_leads]
         # Lead 2 selected
         assert any("Lead 2" in title for title in selected_titles)
         # Lead 3 selected
@@ -357,9 +357,9 @@ class TestServicesIntegration:
         """Test data transformation through pipeline stages."""
 
         # Mock simple discovery response - one lead per category
-        politics_json = json.dumps([{"title": "Political Lead: Political news"}])
-        environment_json = json.dumps([{"title": "Environmental Lead: Climate news"}])
-        entertainment_json = json.dumps([{"title": "Entertainment Lead: Celebrity news"}])
+        politics_json = json.dumps([{"discovered_lead": "Political Lead: Political news"}])
+        environment_json = json.dumps([{"discovered_lead": "Environmental Lead: Climate news"}])
+        entertainment_json = json.dumps([{"discovered_lead": "Entertainment Lead: Celebrity news"}])
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             politics_json,
@@ -456,11 +456,11 @@ class TestServicesIntegration:
         # Lead -> Lead (deduplication preserves structure)
         assert isinstance(leads[0], Lead)
         assert isinstance(unique_leads[0], Lead)
-        assert leads[0].title == unique_leads[0].title
+        assert leads[0].discovered_lead == unique_leads[0].discovered_lead
 
         # Lead -> Lead (curation preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].title in [lead.title for lead in unique_leads]
+        assert prioritized_leads[0].discovered_lead in [lead.discovered_lead for lead in unique_leads]
 
         # Lead -> Enhanced Lead (research adds report and sources)
         assert len(researched_leads) == 3
@@ -480,9 +480,9 @@ class TestServicesIntegration:
         """Test pipeline performance with larger data volume."""
 
         # Create large discovery responses across categories
-        politics_data = [{"title": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
-        environment_data = [{"title": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
-        entertainment_data = [{"title": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
+        politics_data = [{"discovered_lead": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
+        environment_data = [{"discovered_lead": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
+        entertainment_data = [{"discovered_lead": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             json.dumps(politics_data),

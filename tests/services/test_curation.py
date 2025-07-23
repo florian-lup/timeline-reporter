@@ -23,7 +23,7 @@ class TestLeadCuration:
         """Sample leads for testing."""
         return [
             Lead(
-                title=(
+                discovered_lead=(
                     "Climate Summit 2024: World leaders meet to discuss climate "
                     "change solutions and carbon reduction targets with major "
                     "implications for global policy and economy."
@@ -41,7 +41,7 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                title=(
+                discovered_lead=(
                     "Major earthquake in Pacific: A 7.5 magnitude earthquake "
                     "struck the Pacific region causing widespread damage and "
                     "triggering tsunami warnings across multiple countries."
@@ -58,7 +58,7 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                title=(
+                discovered_lead=(
                     "Tech breakthrough: Scientists announce revolutionary AI "
                     "system that can predict diseases years before symptoms "
                     "appear, potentially saving millions of lives."
@@ -75,7 +75,7 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                title=(
+                discovered_lead=(
                     "Economic crisis deepens: Global markets tumble as inflation "
                     "reaches 40-year high, central banks struggle to respond "
                     "effectively to the growing financial instability."
@@ -92,7 +92,7 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                title=(
+                discovered_lead=(
                     "Space milestone: First commercial space station successfully "
                     "launches, opening new era of private space exploration and "
                     "research opportunities."
@@ -109,7 +109,7 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                title=("Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."),
+                discovered_lead=("Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."),
                 report=(
                     "Local sports championship victory: The city's professional "
                     "baseball team won their first championship in 50 years, "
@@ -348,32 +348,32 @@ class TestLeadCurator:
         """Sample leads for testing."""
         return [
             Lead(
-                title="Climate Summit 2024: World leaders meet to discuss climate "
+                discovered_lead="Climate Summit 2024: World leaders meet to discuss climate "
                 "change solutions and carbon reduction targets with major implications "
                 "for global policy and economy.",
             ),
             Lead(
-                title="Major earthquake in Pacific: A 7.5 magnitude earthquake "
+                discovered_lead="Major earthquake in Pacific: A 7.5 magnitude earthquake "
                 "struck the Pacific region causing widespread damage and triggering "
                 "tsunami warnings across multiple countries.",
             ),
             Lead(
-                title="Tech breakthrough: Scientists announce revolutionary AI "
+                discovered_lead="Tech breakthrough: Scientists announce revolutionary AI "
                 "system that can predict diseases years before symptoms appear, "
                 "potentially saving millions of lives.",
             ),
             Lead(
-                title="Economic crisis deepens: Global markets tumble as inflation "
+                discovered_lead="Economic crisis deepens: Global markets tumble as inflation "
                 "reaches 40-year high, central banks struggle to respond effectively "
                 "to the growing financial instability.",
             ),
             Lead(
-                title="Space milestone: First commercial space station successfully "
+                discovered_lead="Space milestone: First commercial space station successfully "
                 "launches, opening new era of private space exploration and research "
                 "opportunities.",
             ),
             Lead(
-                title="Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations.",
+                discovered_lead="Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations.",
             ),
         ]
 
@@ -569,19 +569,19 @@ class TestLeadCurator:
         """Test final ranking calculation."""
         evaluations = [
             LeadEvaluation(
-                lead=Lead(title="Lead 1"),
+                lead=Lead(discovered_lead="Lead 1"),
                 criteria_scores={},
                 weighted_score=8.0,
                 pairwise_wins=2,
             ),
             LeadEvaluation(
-                lead=Lead(title="Lead 2"),
+                lead=Lead(discovered_lead="Lead 2"),
                 criteria_scores={},
                 weighted_score=7.5,
                 pairwise_wins=1,
             ),
             LeadEvaluation(
-                lead=Lead(title="Lead 3"),
+                lead=Lead(discovered_lead="Lead 3"),
                 criteria_scores={},
                 weighted_score=7.8,
                 pairwise_wins=0,
@@ -595,9 +595,9 @@ class TestLeadCurator:
         # Lead 2 should rank second: 0.7 * 7.5 + 0.3 * 5 = 6.75
         # Lead 3 should rank third: 0.7 * 7.8 + 0.3 * 0 = 5.46
 
-        assert ranked[0].lead.title == "Lead 1"
-        assert ranked[1].lead.title == "Lead 2"
-        assert ranked[2].lead.title == "Lead 3"
+        assert ranked[0].lead.discovered_lead == "Lead 1"
+        assert ranked[1].lead.discovered_lead == "Lead 2"
+        assert ranked[2].lead.discovered_lead == "Lead 3"
 
     def test_top_selection(self, mock_openai_client):
         """Test top lead selection."""
@@ -606,7 +606,7 @@ class TestLeadCurator:
         # Create ranked evaluations
         evaluations = [
             LeadEvaluation(
-                lead=Lead(title=f"Lead {i}"),
+                lead=Lead(discovered_lead=f"Lead {i}"),
                 criteria_scores={},
                 weighted_score=10 - i,
                 final_rank=10 - i,
@@ -621,7 +621,7 @@ class TestLeadCurator:
 
         # Should be the highest ranked ones
         for i, eval in enumerate(selected):
-            assert eval.lead.title == f"Lead {i}"
+            assert eval.lead.discovered_lead == f"Lead {i}"
 
     def test_full_pipeline_integration(self, mock_openai_client, sample_leads):
         """Test the complete curation pipeline."""
@@ -662,7 +662,7 @@ class TestLeadCurator:
         assert curator.MIN_LEADS_TO_SELECT <= len(result) <= curator.MAX_LEADS_TO_SELECT
 
         # Verify high-scoring leads are included
-        result_titles = [lead.title for lead in result]
+        result_titles = [lead.discovered_lead for lead in result]
         assert any("Climate Summit" in title for title in result_titles)
 
     def test_fallback_behavior(self, mock_openai_client, sample_leads):
@@ -732,7 +732,7 @@ class TestLeadCurationEdgeCases:
     def sample_lead(self):
         """Single sample lead for testing."""
         return Lead(
-            title="Test lead for edge case testing",
+            discovered_lead="Test lead for edge case testing",
             report="Test context for edge case scenarios",
         )
 
@@ -822,7 +822,7 @@ class TestLeadCurationEdgeCases:
         """Test pairwise comparison is triggered when group size meets minimum."""
         # Create enough leads to trigger pairwise comparison
         leads = [
-            Lead(title=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
+            Lead(discovered_lead=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
             for i in range(6)  # More than MIN_GROUP_SIZE_FOR_PAIRWISE (usually 4-5)
         ]
 
@@ -856,7 +856,7 @@ class TestLeadCurationEdgeCases:
         """Test fallback to minimum leads selection when not enough leads pass
         thresholds."""
         # Create more leads than minimum required
-        leads = [Lead(title=f"Test lead {i + 1}", report=f"Context for lead {i + 1}") for i in range(6)]
+        leads = [Lead(discovered_lead=f"Test lead {i + 1}", report=f"Context for lead {i + 1}") for i in range(6)]
 
         # Mock response with low scores that won't pass normal selection
         mock_response = [
@@ -885,7 +885,7 @@ class TestLeadCurationEdgeCases:
         """Test pairwise comparison is skipped when group is too small."""
         # Create few leads - less than MIN_GROUP_SIZE_FOR_PAIRWISE
         leads = [
-            Lead(title=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
+            Lead(discovered_lead=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
             for i in range(2)  # Less than minimum group size
         ]
 

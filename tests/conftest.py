@@ -83,7 +83,7 @@ def mock_mongodb_client():
 def sample_lead():
     """Sample Lead object for testing."""
     return Lead(
-        title="Sample Lead Title: This is a sample lead summary for testing purposes.",
+        discovered_lead="Sample Lead Title: This is a sample lead summary for testing purposes.",
     )
 
 
@@ -92,13 +92,13 @@ def sample_leads():
     """Sample list of Lead objects for testing."""
     return [
         Lead(
-            title="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",
+            discovered_lead="Technology Breakthrough: Major advancement in artificial intelligence technology announced.",
         ),
         Lead(
-            title="Climate Change Update: New climate research reveals important environmental findings.",
+            discovered_lead="Climate Change Update: New climate research reveals important environmental findings.",
         ),
         Lead(
-            title="Economic Development: Significant economic changes affecting global markets.",
+            discovered_lead="Economic Development: Significant economic changes affecting global markets.",
         ),
     ]
 
@@ -143,3 +143,12 @@ def sample_stories():
             ],
         ),
     ]
+
+
+@pytest.fixture
+def sample_discovery_response():
+    """Sample discovery response from Perplexity API."""
+    return json.dumps([
+        {"discovered_lead": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."},
+        {"discovered_lead": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."},
+    ])
