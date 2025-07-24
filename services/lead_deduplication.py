@@ -9,6 +9,7 @@ from config.deduplication_config import (
     VECTOR_ID_PREFIX,
     DEDUPLICATION_MODEL,
     LOOKBACK_HOURS,
+    DEDUPLICATION_SYSTEM_PROMPT,
     DEDUPLICATION_PROMPT_TEMPLATE,
 )
 from models.core import Lead
@@ -187,15 +188,18 @@ def _compare_with_database_records(
     # Create comparison prompt using centralized template
     existing_summaries_text = chr(10).join([f"{i+1}. {summary}" for i, summary in enumerate(story_summaries)])
     
-    prompt = DEDUPLICATION_PROMPT_TEMPLATE.format(
+    user_prompt = DEDUPLICATION_PROMPT_TEMPLATE.format(
         lead_text=lead.discovered_lead,
         lookback_hours=LOOKBACK_HOURS,
         existing_summaries=existing_summaries_text,
     )
+    
+    # Combine system prompt with user prompt
+    full_prompt = f"{DEDUPLICATION_SYSTEM_PROMPT}\n\n{user_prompt}"
 
     try:
         response = openai_client.chat_completion(
-            prompt=prompt,
+            prompt=full_prompt,
             model=DEDUPLICATION_MODEL,
         )
         

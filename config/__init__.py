@@ -46,6 +46,12 @@ from .deduplication_config import (
     SIMILARITY_THRESHOLD,
     TOP_K_RESULTS,
     VECTOR_ID_PREFIX,
+    # Deduplication Prompts
+    DEDUPLICATION_SYSTEM_PROMPT,
+    DEDUPLICATION_PROMPT_TEMPLATE,
+    # Deduplication Model Configuration
+    DEDUPLICATION_MODEL,
+    LOOKBACK_HOURS,
 )
 from .discovery_config import (
     DISCOVERY_CATEGORIES,
@@ -156,6 +162,11 @@ __all__ = [
     "VECTOR_ID_PREFIX",
     "INCLUDE_METADATA",
     "REQUIRED_METADATA_FIELDS",
+    "DEDUPLICATION_MODEL",
+    "LOOKBACK_HOURS",
+    # Deduplication Prompts
+    "DEDUPLICATION_SYSTEM_PROMPT",
+    "DEDUPLICATION_PROMPT_TEMPLATE",
     # Discovery Prompts
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_POLITICS_INSTRUCTIONS",

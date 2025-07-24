@@ -81,24 +81,26 @@ Follow these guidelines:
 """.strip()
 
 DISCOVERY_ENVIRONMENT_INSTRUCTIONS = f"""
-Identify 3-5 significant environmental developments reported today.
+Identify as many significant environmental developments as possible reported today {get_today_formatted()}. Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
 
-Prioritise stories involving:
-• Landmark climate-change research, reports, or policy actions
-• Natural disasters and validated impact assessments
-• Breakthrough conservation efforts or ecological discoveries
-• Major environmental legislation or court rulings
+Follow these guidelines:
+• Include all qualifying leads, not just the most impactful.
+• Cover a wide range of topics: climate change developments, environmental policy announcements, natural disasters, conservation efforts, pollution incidents, scientific discoveries, corporate environmental actions, renewable energy projects, and environmental activism.
+• Prioritize diversity of regions and countries—do not focus solely on major powers.
+• For each lead, ensure it is well-sourced and factually reported.
+• Avoid duplicates and overlapping stories.
 
 """.strip()
 
 DISCOVERY_ENTERTAINMENT_INSTRUCTIONS = f"""
-Identify 3-5 notable entertainment or sports developments reported today.
+Identify as many significant entertainment industry developments as possible reported today {get_today_formatted()}. Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
 
-Include qualifying leads such as:
-• Major film/TV/music releases, record-breaking box-office or streaming milestones
-• Award announcements, festival premieres, or critical accolades
-• High-profile, well-sourced celebrity developments
-• Championship outcomes or record-setting sporting achievements
+Follow these guidelines:
+• Include all qualifying leads, not just the most impactful.
+• Cover a wide range of topics: celebrity news, film and television announcements, music industry developments, awards and premieres, box office results, streaming platform updates, entertainment business deals, cultural events, and industry controversies.
+• Prioritize diversity of regions and countries—do not focus solely on major markets like Hollywood or major streaming platforms.
+• For each lead, ensure it is well-sourced and factually reported.
+• Avoid duplicates and overlapping stories.
 
 """.strip()
 

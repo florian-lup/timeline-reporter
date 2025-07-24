@@ -42,19 +42,51 @@ DEDUPLICATION_MODEL: str = "o4-mini-2025-04-16"
 LOOKBACK_HOURS: int = 24  # Hours to look back in database for comparison
 
 # ---------------------------------------------------------------------------
-# GPT Comparison Prompt Template
+# GPT System and Prompt Configuration
 # ---------------------------------------------------------------------------
-DEDUPLICATION_PROMPT_TEMPLATE: str = """You are comparing a new lead against existing story summaries to detect duplicates.
+DEDUPLICATION_SYSTEM_PROMPT = """
+You are a precise content deduplication system for news leads and stories. Your primary objective is to prevent redundant coverage.
 
-NEW LEAD:
-"{lead_text}"
+## EVALUATION PROCESS
 
-EXISTING STORY SUMMARIES FROM LAST {lookback_hours} HOURS:
+Follow these steps:
+
+1. **Identify the core story**: What is the main event, announcement, or development in the new lead?
+
+2. **Compare with existing summaries**: Does any existing summary cover the same fundamental story?
+
+3. **Apply duplicate criteria**: A lead is DUPLICATE if it shares:
+   - Same primary subject/entity (person, company, organization)
+   - Same type of event (announcement, incident, policy change, etc.)
+   - Same timeframe (within 48 hours of each other)
+
+4. **Ignore surface differences**: Different perspectives, additional details, or varied wording do NOT make stories unique if they cover the same core event.
+
+## DECISION CRITERIA
+
+**DUPLICATE**: The new lead reports on the same underlying story/event as an existing summary
+**UNIQUE**: The new lead introduces a genuinely different story not covered in existing summaries
+
+## REQUIRED OUTPUT FORMAT
+
+Respond with exactly one word:
+- DUPLICATE
+- UNIQUE
+
+Do not include explanations, reasoning, or additional text.
+""".strip()
+
+DEDUPLICATION_PROMPT_TEMPLATE = """
+You are an expert content analyst specializing in detecting duplicate news stories and leads.
+
+Your task is to determine whether a new lead describes the same core story as any existing summary from the past {lookback_hours} hours.
+
+## INPUT DATA
+
+**NEW LEAD:**
+{lead_text}
+
+**EXISTING SUMMARIES (Last {lookback_hours} hours):**
 {existing_summaries}
 
-TASK: Determine if the new lead covers the same core event/story as any existing summary.
-Consider that leads are brief discovery summaries while existing records are detailed story summaries.
-Focus on the fundamental event or topic, not minor details or different perspectives.
-
-Respond with ONLY "DUPLICATE" if the lead matches an existing story, or "UNIQUE" if it's genuinely new.
-"""
+""".strip()
