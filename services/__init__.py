@@ -3,8 +3,8 @@
 This package provides the core pipeline services:
 - Discovery: Finding current leads
 - Deduplication: Removing similar leads
-- Research: Gathering context and sources for leads
 - Decision: Prioritizing most impactful leads
+- Research: Gathering context and sources for priority leads
 - Writing: Creating full stories from researched leads
 - Storage: Saving stories to MongoDB
 - Audio: Generating podcast from story summaries

@@ -46,7 +46,7 @@ PAIRWISE_SCORE_WEIGHT: float = 0.3  # Weight for pairwise comparison results
 # ---------------------------------------------------------------------------
 
 CRITERIA_EVALUATION_PROMPT_TEMPLATE = """
-You are a senior news editor evaluating researched news leads for their newsworthiness.
+You are a senior news editor evaluating discovered news leads for their newsworthiness.
 
 Guidelines:
 • Rate each criterion on an integer scale from 1 (very low) to 10 (exceptionally high).
@@ -87,7 +87,7 @@ Do NOT wrap the JSON in Markdown fences and do NOT add explanations before or af
 # ---------------------------------------------------------------------------
 
 PAIRWISE_COMPARISON_PROMPT_TEMPLATE = """
-You are comparing pairs of researched leads to decide which is more newsworthy for a global audience.
+You are comparing pairs of discovered leads to decide which is more newsworthy for a global audience.
 
 Guidelines:
 • Consider all evaluation criteria (impact, proximity, prominence, relevance, hook, novelty, conflict)

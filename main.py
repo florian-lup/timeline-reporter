@@ -2,8 +2,8 @@
 
 Usage::
 
-    python -m main  # discovers, deduplicates, researches,
-                   # prioritizes, writes, and stores
+    python -m main  # discovers, deduplicates, curates,
+                   # researches, writes, and stores
 """
 
 from __future__ import annotations
@@ -54,34 +54,34 @@ def run_pipeline() -> None:  # noqa: D401
         len(unique_leads),
     )
 
-    # 3️⃣ Research
+    # 3️⃣ Decision (prioritize most impactful leads based on discovered content)
     logger.info(
-        "📚 STEP 3: Research - Gathering context and sources for %d leads...",
+        "⚖️ STEP 3: Curation - Evaluating %d leads for impact and priority...",
         len(unique_leads),
     )
-    researched_leads = research_lead(unique_leads, perplexity_client=perplexity_client)
+    prioritized_leads = curate_leads(unique_leads, openai_client=openai_client)
+    logger.info(
+        "✅ Curation complete: Selected %d high-priority leads for research",
+        len(prioritized_leads),
+    )
+
+    # 4️⃣ Research
+    logger.info(
+        "📚 STEP 4: Research - Gathering context and sources for %d priority leads...",
+        len(prioritized_leads),
+    )
+    researched_leads = research_lead(prioritized_leads, perplexity_client=perplexity_client)
     logger.info(
         "✅ Research complete: Enhanced %d leads with detailed context",
         len(researched_leads),
     )
 
-    # 4️⃣ Decision (prioritize most impactful leads based on research context)
-    logger.info(
-        "⚖️ STEP 4: Curation - Evaluating %d leads for impact and priority...",
-        len(researched_leads),
-    )
-    prioritized_leads = curate_leads(researched_leads, openai_client=openai_client)
-    logger.info(
-        "✅ Curation complete: Selected %d high-priority leads for publication",
-        len(prioritized_leads),
-    )
-
     # 5️⃣ Writing (create stories from researched leads)
     logger.info(
-        "✍️ STEP 5: Writing - Generating stories from %d priority leads...",
-        len(prioritized_leads),
+        "✍️ STEP 5: Writing - Generating stories from %d researched leads...",
+        len(researched_leads),
     )
-    stories = write_stories(prioritized_leads, openai_client=openai_client)
+    stories = write_stories(researched_leads, openai_client=openai_client)
     logger.info("✅ Writing complete: Generated %d publication-ready stories", len(stories))
 
     # 6️⃣ Storage
