@@ -11,7 +11,7 @@ from config import (
     EMBEDDING_MODEL,
     OPENAI_API_KEY,
 )
-from config.audio_config import TTS_MODEL, TTS_SPEED, TTS_VOICE, TTSVoice, AUDIO_FORMAT
+from config.audio_config import TTS_MODEL, TTS_SPEED, TTSVoice, AUDIO_FORMAT, get_random_anchor
 
 
 class OpenAIClient:
@@ -93,20 +93,20 @@ class OpenAIClient:
         text: str,
         *,
         model: str = TTS_MODEL,
-        voice: TTSVoice = TTS_VOICE,
+        voice: TTSVoice,
         speed: float = TTS_SPEED,
         response_format: str = AUDIO_FORMAT,
-        instruction: str | None = None,
+        instruction: str,
     ) -> bytes:
         """Convert text to speech using OpenAI TTS.
 
         Args:
             text: The text to convert to speech
             model: TTS model to use (default from config: TTS_MODEL)
-            voice: Voice to use (default from config: TTS_VOICE)
+            voice: Voice to use (required)
             speed: Speech speed (default from config: TTS_SPEED)
             response_format: Audio format (mp3, opus, aac, flac)
-            instruction: TTS instruction for enhanced voice control (gpt-4o-mini-tts only)
+            instruction: TTS instruction for enhanced voice control (required)
 
         Returns:
             Audio data as bytes
@@ -121,7 +121,7 @@ class OpenAIClient:
         }
         
         # Add instruction parameter for gpt-4o-mini-tts model
-        if instruction is not None and "gpt-4o-mini-tts" in model:
+        if instruction and "gpt-4o-mini-tts" in model:
             request_params["instructions"] = instruction
         
         response = self._client.audio.speech.create(**request_params)

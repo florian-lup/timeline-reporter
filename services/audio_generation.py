@@ -77,10 +77,11 @@ def generate_podcast(
     logger.info("  🔊 Converting script to speech using %s...", TTS_MODEL)
     
     # Get TTS instruction for enhanced voice control (2025 feature)
-    tts_instruction = None
     if "gpt-4o-mini-tts" in TTS_MODEL:
         tts_instruction = TTS_INSTRUCTION
         logger.info("  🎯 Using TTS instructions for enhanced voice control")
+    else:
+        tts_instruction = ""  # Empty string for models that don't support instructions
     
     audio_bytes = openai_client.text_to_speech(
         anchor_script,

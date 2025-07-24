@@ -12,19 +12,18 @@ from typing import Literal
 # ---------------------------------------------------------------------------
 
 # Type alias for valid OpenAI TTS voices
-TTSVoice = Literal["alloy", "ash","ballad","coral","echo","fable","onyx","nova","sage","shimmer"]
+TTSVoice = Literal["alloy", "ash","ballad","coral","echo","fable","nova","sage","shimmer"]
 
 # Voice to anchor name mapping
 VOICE_ANCHOR_MAPPING = {
     "alloy": "Sarah Mitchell",
     "ash": "Marcus Thompson", 
-    "ballad": "Elena Rodriguez",
+    "ballad": "Carlos Rodriguez",
     "coral": "Jessica Chen",
     "echo": "David Williams",
     "fable": "Amanda Foster",
-    "onyx": "Michael Roberts",
     "nova": "Rachel Davis",
-    "sage": "Christopher Lee",
+    "sage": "Samantha Lee",
     "shimmer": "Natalie Brooks"
 }
 
@@ -40,7 +39,6 @@ def get_random_anchor() -> tuple[TTSVoice, str]:
 
 ANCHOR_SCRIPT_MODEL: str = "gpt-4.1-2025-04-14"  # For generating anchor scripts
 TTS_MODEL: str = "gpt-4o-mini-tts"  # OpenAI TTS model
-TTS_VOICE: TTSVoice = "nova"  # Fallback voice (random anchors used in practice)
 TTS_SPEED: float = 1.0  # Speed: 0.25 to 4.0
 
 # ---------------------------------------------------------------------------
@@ -53,19 +51,14 @@ AUDIO_FORMAT: str = "wav"
 # ---------------------------------------------------------------------------
 
 # TTS instruction for news podcast delivery
-TTS_INSTRUCTION = """Voice Affect: Low, hushed, and suspenseful; convey tension and intrigue.
+TTS_INSTRUCTION = """Voice: Staccato, fast-paced, energetic, and rhythmic, with the classic charm of a seasoned auctioneer.
 
-Tone: Deeply serious and mysterious, maintaining an undercurrent of unease throughout.
+Tone: Exciting, high-energy, and persuasive, creating urgency and anticipation.
 
-Pacing: Slow, deliberate, pausing slightly after suspenseful moments to heighten drama.
+Delivery: Rapid-fire yet clear, with dynamic inflections to keep engagement high and momentum strong.
 
-Emotion: Restrained yet intense—voice should subtly tremble or tighten at key suspenseful points.
-
-Emphasis: Highlight sensory descriptions ("footsteps echoed," "heart hammering," "shadows melting into darkness") to amplify atmosphere.
-
-Pronunciation: Slightly elongated vowels and softened consonants for an eerie, haunting effect.
-
-Pauses: Insert meaningful pauses after phrases like "only shadows melting into darkness," and especially before the final line, to enhance suspense dramatically."""
+Pronunciation: Crisp and precise, with emphasis on key action words like bid, buy, checkout, and sold to drive urgency.
+""".strip()
 
 # ---------------------------------------------------------------------------
 # Anchor Script System Prompt

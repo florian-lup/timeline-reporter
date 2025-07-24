@@ -39,7 +39,7 @@ def test_tts_instructions_verification():
     print("🔍 TTS INSTRUCTIONS VERIFICATION TEST")
     print("="*60)
     
-    from config.audio_config import TTS_MODEL, TTS_INSTRUCTION, AUDIO_FORMAT
+    from config.audio_config import TTS_MODEL, TTS_INSTRUCTION, AUDIO_FORMAT, get_random_anchor
     
     print(f"📋 Current Configuration:")
     print(f"   TTS Model: {TTS_MODEL}")
@@ -71,12 +71,16 @@ def test_tts_instructions_verification():
         
         openai_client._client.audio.speech.create = mock_create
         
-        # Make a test TTS call with instructions
+        # Make a test TTS call with instructions using random voice selection
         test_text = "This is a test of the TTS instructions feature."
+        test_voice, test_anchor_name = get_random_anchor()
+        print(f"   Test using random voice: {test_voice} → {test_anchor_name}")
+        
         openai_client.text_to_speech(
             test_text,
             model=TTS_MODEL,
-            instruction=TTS_INSTRUCTION
+            voice=test_voice,  # Required parameter
+            instruction=TTS_INSTRUCTION  # Required parameter
         )
         
         # Analyze what was sent
@@ -199,8 +203,24 @@ def run_real_audio_generation_test() -> bool:
             print("   Using standard TTS without instruction parameters")
             print(f"   Current model: {TTS_MODEL} (instructions require gpt-4o-mini-tts)")
         
+        # Add logging for random voice selection process
+        print(f"\n🎲 RANDOM VOICE SELECTION DEBUG:")
+        from config.audio_config import VOICE_ANCHOR_MAPPING, get_random_anchor
+        
+        print(f"📊 Available voices/anchors ({len(VOICE_ANCHOR_MAPPING)} total):")
+        for voice, anchor in VOICE_ANCHOR_MAPPING.items():
+            print(f"   • {voice}: {anchor}")
+        
+        # Show multiple random selections for debugging
+        print(f"\n🎯 Testing random selection (5 samples):")
+        for i in range(5):
+            test_voice, test_anchor = get_random_anchor()
+            print(f"   Sample {i+1}: {test_voice} → {test_anchor}")
+        
         # Execute the real audio generation pipeline with CDN storage
         print(f"\n🎙️ Executing full pipeline...")
+        print(f"📝 Note: Voice and instruction parameters are now required")
+        
         podcast = generate_podcast(
             stories,
             openai_client=openai_client,
@@ -230,10 +250,30 @@ def run_real_audio_generation_test() -> bool:
             return False
         
         print(f"✅ Podcast generated successfully!")
-        print(f"🎭 Anchor: {podcast.anchor_name}")
-        print(f"📄 Script length: {len(podcast.anchor_script.split())} words")
-        print(f"🔗 CDN URL: {podcast.audio_url}")
-        print(f"📊 Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
+        
+        # Show the actual voice selection results
+        print(f"\n🎭 FINAL VOICE SELECTION RESULTS:")
+        print(f"   Selected Anchor: {podcast.anchor_name}")
+        
+        # Find which voice corresponds to this anchor
+        from config.audio_config import VOICE_ANCHOR_MAPPING
+        selected_voice = None
+        for voice, anchor in VOICE_ANCHOR_MAPPING.items():
+            if anchor == podcast.anchor_name:
+                selected_voice = voice
+                break
+        
+        if selected_voice:
+            print(f"   Selected Voice: {selected_voice}")
+            print(f"   Voice-Anchor Pair: {selected_voice} → {podcast.anchor_name}")
+            print(f"   📝 Note: Voice and instruction explicitly provided as required parameters")
+        else:
+            print(f"   ⚠️  Could not find matching voice for anchor: {podcast.anchor_name}")
+        
+        print(f"\n📊 GENERATION STATISTICS:")
+        print(f"   Script length: {len(podcast.anchor_script.split())} words")
+        print(f"   Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
+        print(f"   CDN URL: {podcast.audio_url}")
         
         # Test CDN access
         print(f"\n🌐 Testing CDN access...")
