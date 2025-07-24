@@ -54,7 +54,7 @@ def run_pipeline() -> None:  # noqa: D401
         len(unique_leads),
     )
 
-    # 3️⃣ Decision (prioritize most impactful leads based on discovered content)
+    # 3️⃣ Curation
     logger.info(
         "⚖️ STEP 3: Curation - Evaluating %d leads for impact and priority...",
         len(unique_leads),
@@ -76,7 +76,7 @@ def run_pipeline() -> None:  # noqa: D401
         len(researched_leads),
     )
 
-    # 5️⃣ Writing (create stories from researched leads)
+    # 5️⃣ Writing
     logger.info(
         "✍️ STEP 5: Writing - Generating stories from %d researched leads...",
         len(researched_leads),

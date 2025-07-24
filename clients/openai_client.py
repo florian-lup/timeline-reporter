@@ -43,6 +43,7 @@ class OpenAIClient:
         model: str,
         temperature: float | None = None,
         response_format: dict[str, Any] | None = None,
+        system_prompt: str | None = None,
     ) -> str:
         """Generate text using the chat completion model.
 
@@ -51,13 +52,19 @@ class OpenAIClient:
             model: Model to use for completion
             temperature: Sampling temperature 0-2 (optional)
             response_format: Response format specification (optional)
+            system_prompt: System prompt to set behavior (optional)
 
         Returns:
             The generated text response
         """
+        messages = []
+        if system_prompt is not None:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
         kwargs: dict[str, Any] = {
             "model": model,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": messages,
         }
 
         if temperature is not None:

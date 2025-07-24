@@ -7,7 +7,8 @@ import pytest
 
 from models import Lead
 from services import curate_leads
-from services.lead_curation import LeadCurator, LeadEvaluation
+from services.lead_curation import LeadCurator
+from models import LeadEvaluation
 
 
 class TestLeadCuration:

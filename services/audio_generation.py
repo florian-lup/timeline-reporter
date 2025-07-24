@@ -64,11 +64,10 @@ def generate_podcast(
         summaries=summaries_text,
     )
     
-    full_prompt = f"{ANCHOR_SCRIPT_SYSTEM_PROMPT}\n\n{user_prompt}"
-    
     anchor_script = openai_client.chat_completion(
-        full_prompt,
+        user_prompt,
         model=ANCHOR_SCRIPT_MODEL,
+        system_prompt=ANCHOR_SCRIPT_SYSTEM_PROMPT,
     )
     
     script_word_count = len(anchor_script.split())

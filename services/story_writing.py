@@ -24,19 +24,17 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
         first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
         logger.info("  ✍️ Writing story %d/%d - %s", idx, len(leads), first_words)
 
-        # Format the writing prompt with only report and date
+        # Format the writing prompt with report, date, and JSON format instruction
         user_prompt = WRITING_INSTRUCTIONS.format(
             lead_date=lead.date,
             lead_report=lead.report,
-        )
-
-        # Combine system prompt, user prompt, and JSON format instruction
-        full_prompt = f"{WRITING_SYSTEM_PROMPT}\n\n{user_prompt}{JSON_FORMAT_INSTRUCTION}"
+        ) + JSON_FORMAT_INSTRUCTION
 
         # Generate the story using GPT-4o with JSON response format
         response_text = openai_client.chat_completion(
-            full_prompt,
+            user_prompt,
             model=WRITING_MODEL,
+            system_prompt=WRITING_SYSTEM_PROMPT,
             response_format={"type": "json_object"},
         )
 

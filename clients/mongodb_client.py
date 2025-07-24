@@ -47,6 +47,20 @@ class MongoDBClient:
                 MONGODB_COLLECTION_NAME_AUDIO,
             )
 
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit with automatic cleanup."""
+        self.close()
+
+    def close(self):
+        """Explicitly close the MongoDB connection."""
+        if hasattr(self, '_client') and self._client is not None:
+            self._client.close()
+            logger.debug("  ✓ MongoDB connection closed")
+
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------

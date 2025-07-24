@@ -1,8 +1,6 @@
 """Service for identifying and removing duplicate leads using vector similarity."""
 
-from clients.openai_client import OpenAIClient
-from clients.pinecone_client import PineconeClient
-from clients.mongodb_client import MongoDBClient
+from clients import MongoDBClient, OpenAIClient, PineconeClient
 from config.deduplication_config import (
     INCLUDE_METADATA,
     REQUIRED_METADATA_FIELDS,
@@ -194,13 +192,11 @@ def _compare_with_database_records(
         existing_summaries=existing_summaries_text,
     )
     
-    # Combine system prompt with user prompt
-    full_prompt = f"{DEDUPLICATION_SYSTEM_PROMPT}\n\n{user_prompt}"
-
     try:
         response = openai_client.chat_completion(
-            prompt=full_prompt,
+            prompt=user_prompt,
             model=DEDUPLICATION_MODEL,
+            system_prompt=DEDUPLICATION_SYSTEM_PROMPT,
         )
         
         return response.strip().upper() == "DUPLICATE"

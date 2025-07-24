@@ -12,10 +12,10 @@ CURATION_MODEL: str = "o3-2025-04-16"
 # ---------------------------------------------------------------------------
 # Lead Selection Parameters
 # ---------------------------------------------------------------------------
-MIN_WEIGHTED_SCORE: float = 6.0  # Minimum score for lead consideration
-MAX_LEADS: int = 5  # Maximum number of leads to select
-MIN_LEADS: int = 3  # Minimum number of leads to select
-SCORE_SIMILARITY: float = 0.5  # Score threshold for pairwise comparison
+MIN_WEIGHTED_SCORE: float = 7.0  # Minimum score for lead consideration
+MAX_LEADS: int = 6  # Maximum number of leads to select
+MIN_LEADS: int = 4  # Minimum number of leads to select
+SCORE_SIMILARITY: float = 0.6  # Score threshold for pairwise comparison
 
 # ---------------------------------------------------------------------------
 # Evaluation Criteria Weights (must sum to 1.0)
@@ -45,7 +45,7 @@ PAIRWISE_SCORE_WEIGHT: float = 0.3  # Weight for pairwise comparison results
 # Multi-Criteria Evaluation Prompt
 # ---------------------------------------------------------------------------
 
-CRITERIA_EVALUATION_PROMPT_TEMPLATE = """
+CRITERIA_EVALUATION_SYSTEM_PROMPT = """
 You are a senior news editor evaluating discovered news leads for their newsworthiness.
 
 Guidelines:
@@ -54,16 +54,8 @@ Guidelines:
 • Apply the same standard across all leads so that similar qualities yield similar scores.
 • After scoring, include a one-sentence 'brief_reasoning' highlighting the key factor driving your evaluation.
 
-Input leads:
-{leads_text}
-
 Output requirement:
-Think step-by-step, then return ONLY the JSON object described in the format instructions—no additional text.
-""".strip()
-
-# JSON format instruction for criteria evaluation
-CRITERIA_JSON_FORMAT = """
-Return ONLY a JSON object with exactly the following structure and no additional keys or commentary:
+Think step-by-step, then return ONLY the JSON object with exactly the following structure and no additional keys or commentary:
 {
   "evaluations": [
     {
@@ -80,6 +72,11 @@ Return ONLY a JSON object with exactly the following structure and no additional
   ]
 }
 Do NOT wrap the JSON in Markdown fences and do NOT add explanations before or after the JSON object.
+""".strip()
+
+CRITERIA_EVALUATION_PROMPT_TEMPLATE = """
+Input leads:
+{leads_text}
 """.strip()
 
 # ---------------------------------------------------------------------------
