@@ -4,7 +4,7 @@ import json
 
 from clients import OpenAIClient
 from config.writing_config import (
-    JSON_FORMAT_INSTRUCTION,
+    STORY_WRITING_SCHEMA,
     WRITING_INSTRUCTIONS,
     WRITING_MODEL,
     WRITING_SYSTEM_PROMPT,
@@ -24,18 +24,21 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
         first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
         logger.info("  ✍️ Writing story %d/%d - %s", idx, len(leads), first_words)
 
-        # Format the writing prompt with report, date, and JSON format instruction
+        # Format the writing prompt with report and date
         user_prompt = WRITING_INSTRUCTIONS.format(
             lead_date=lead.date,
             lead_report=lead.report,
-        ) + JSON_FORMAT_INSTRUCTION
+        )
 
-        # Generate the story using GPT-4o with JSON response format
+        # Generate the story using GPT-4o with structured output
         response_text = openai_client.chat_completion(
             user_prompt,
             model=WRITING_MODEL,
             system_prompt=WRITING_SYSTEM_PROMPT,
-            response_format={"type": "json_object"},
+            response_format={
+                "type": "json_schema",
+                "json_schema": STORY_WRITING_SCHEMA
+            },
         )
 
         story = _parse_story_from_response(response_text, lead)
