@@ -24,18 +24,18 @@ def deduplicate_leads(
     *,
     openai_client: OpenAIClient,
     pinecone_client: PineconeClient,
-    mongodb_client: MongoDBClient | None = None,
+    mongodb_client: MongoDBClient,
 ) -> list[Lead]:
     """Removes near-duplicate leads based on vector similarity and database comparison.
 
-    First applies vector-based deduplication using Pinecone, then optionally
-    compares remaining leads against recent database records using GPT-4o.
+    First applies vector-based deduplication using Pinecone, then compares
+    remaining leads against recent database records using GPT.
 
     Args:
         leads: List of leads to deduplicate
         openai_client: OpenAI client for embeddings and GPT comparisons
         pinecone_client: Pinecone client for vector similarity search
-        mongodb_client: MongoDB client for database comparison (optional)
+        mongodb_client: MongoDB client for database comparison
 
     Returns:
         List of unique leads after both deduplication layers
@@ -48,7 +48,7 @@ def deduplicate_leads(
     )
 
     # Second layer: Database comparison using GPT-4o
-    if mongodb_client is not None and vector_unique_leads:
+    if vector_unique_leads:
         return _database_deduplication(
             vector_unique_leads,
             openai_client=openai_client,
@@ -208,10 +208,9 @@ def _compare_with_database_records(
         import json
         result_data = json.loads(response)
         return result_data["result"] == "DUPLICATE"
-        
+    
     except Exception as e:
-        logger.warning("  ⚠️ GPT comparison failed: %s. Treating as unique.", str(e))
-        return False
+        raise RuntimeError(f"GPT database comparison failed: {e}") from e
 
 
 def _prepare_metadata(lead: Lead) -> dict[str, str]:

@@ -22,6 +22,11 @@ class TestDeduplicationService:
         return Mock()
 
     @pytest.fixture
+    def mock_mongodb_client(self):
+        """Mock MongoDB client for testing."""
+        return Mock()
+
+    @pytest.fixture
     def sample_leads(self):
         """Sample leads for testing."""
         return [
@@ -45,17 +50,19 @@ class TestDeduplicationService:
             [0.7, 0.8, 0.9] * 512,
         ]
 
-    def test_deduplicate_leads_no_duplicates(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
+    def test_deduplicate_leads_no_duplicates(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test deduplication when no duplicates exist."""
         # Setup mocks
         mock_openai_client.embed_text.side_effect = sample_embeddings
         mock_pinecone_client.similarity_search.return_value = []  # No duplicates
+        mock_mongodb_client.get_recent_stories.return_value = []  # No recent stories
 
         # Call function
         result = deduplicate_leads(
             sample_leads,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
         )
 
         # Verify results
@@ -71,7 +78,7 @@ class TestDeduplicationService:
         # Verify upsert calls
         assert mock_pinecone_client.upsert_vector.call_count == 3
 
-    def test_deduplicate_leads_with_duplicates(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
+    def test_deduplicate_leads_with_duplicates(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test deduplication when duplicates exist."""
         # Setup mocks - second lead is a duplicate
         mock_openai_client.embed_text.side_effect = sample_embeddings
@@ -80,12 +87,14 @@ class TestDeduplicationService:
             [("existing-id", 0.95)],  # Second lead - duplicate found
             [],  # Third lead - no duplicates
         ]
+        mock_mongodb_client.get_recent_stories.return_value = []  # No recent stories
 
         # Call function
         result = deduplicate_leads(
             sample_leads,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
         )
 
         # Verify results - should skip the duplicate (second lead)
@@ -96,12 +105,13 @@ class TestDeduplicationService:
         # Verify only 2 vectors were upserted (excluding duplicate)
         assert mock_pinecone_client.upsert_vector.call_count == 2
 
-    def test_deduplicate_leads_empty_input(self, mock_openai_client, mock_pinecone_client):
+    def test_deduplicate_leads_empty_input(self, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test deduplication with empty input."""
         result = deduplicate_leads(
             [],
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
         )
 
         assert result == []
@@ -116,6 +126,7 @@ class TestDeduplicationService:
         sample_embeddings,
         mock_openai_client,
         mock_pinecone_client,
+        mock_mongodb_client,
     ):
         """Test that deduplication completion is logged."""
         # Setup mocks
@@ -126,11 +137,15 @@ class TestDeduplicationService:
             [],  # Third lead - no duplicates
         ]
 
+        # Setup mock
+        mock_mongodb_client.get_recent_stories.return_value = []  # No recent stories
+
         # Call function
         result = deduplicate_leads(
             sample_leads,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
         )
 
         # Verify that duplicates were properly filtered out
@@ -139,17 +154,19 @@ class TestDeduplicationService:
         # Verify completion logging - updated to match new emoji-based format
         mock_logger.info.assert_any_call("  🔄 Vector layer: Removed %d duplicates", 1)
 
-    def test_vector_metadata_structure(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
+    def test_vector_metadata_structure(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test that vectors are stored with correct metadata."""
         # Setup mocks
         mock_openai_client.embed_text.side_effect = sample_embeddings
         mock_pinecone_client.similarity_search.return_value = []
+        mock_mongodb_client.get_recent_stories.return_value = []  # No recent stories
 
         # Call function
         deduplicate_leads(
             sample_leads,
             openai_client=mock_openai_client,
             pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
         )
 
         # Verify metadata for each upsert call

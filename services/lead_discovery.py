@@ -72,17 +72,15 @@ def _json_to_leads(response_text: str) -> list[Lead]:
     try:
         data = json.loads(response_text)
     except json.JSONDecodeError as exc:  # pragma: no cover
-        logger.warning("JSON parse failed: %s", exc)
-        return []
+        raise ValueError(f"JSON parse failed: {exc}") from exc
 
     # Handle case where data might not be a list
     if not isinstance(data, list):
-        logger.warning("Expected JSON array, got %s", type(data))
-        return []
+        raise ValueError(f"Expected JSON array, got {type(data)}")
 
     leads: list[Lead] = [
         Lead(
-            discovered_lead=item["lead_summary"]
+            discovered_lead=item["discovered_lead"]
         ) 
         for item in data
     ]
