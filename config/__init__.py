@@ -44,6 +44,7 @@ from .deduplication_config import (
     # Deduplication Prompts
     DEDUPLICATION_SYSTEM_PROMPT,
     DEDUPLICATION_PROMPT_TEMPLATE,
+    DEDUPLICATION_SCHEMA,
     # Deduplication Model Configuration
     DEDUPLICATION_MODEL,
     LOOKBACK_HOURS,
@@ -157,6 +158,7 @@ __all__ = [
     # Deduplication Prompts
     "DEDUPLICATION_SYSTEM_PROMPT",
     "DEDUPLICATION_PROMPT_TEMPLATE",
+    "DEDUPLICATION_SCHEMA",
     # Discovery Prompts
     "DISCOVERY_SYSTEM_PROMPT",
     "DISCOVERY_POLITICS_INSTRUCTIONS",

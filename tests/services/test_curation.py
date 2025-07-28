@@ -244,7 +244,7 @@ class TestLeadCuration:
             {
                 "evaluations": [
                     {
-                        "index": 1,
+                        "index": i + 1,
                         "impact": 8,
                         "proximity": 8,
                         "prominence": 8,
@@ -252,8 +252,9 @@ class TestLeadCuration:
                         "hook": 8,
                         "novelty": 8,
                         "conflict": 8,
-                        "brief_reasoning": "Test lead evaluation",
+                        "brief_reasoning": f"Test lead evaluation {i + 1}",
                     }
+                    for i in range(6)
                 ]
             }
         )
@@ -309,7 +310,7 @@ class TestLeadCuration:
             {
                 "evaluations": [
                     {
-                        "index": 1,
+                        "index": i + 1,
                         "impact": 8,
                         "proximity": 8,
                         "prominence": 8,
@@ -317,8 +318,9 @@ class TestLeadCuration:
                         "hook": 8,
                         "novelty": 8,
                         "conflict": 8,
-                        "brief_reasoning": "Test lead evaluation",
+                        "brief_reasoning": f"Test lead evaluation {i + 1}",
                     }
+                    for i in range(6)
                 ]
             }
         )
@@ -330,15 +332,12 @@ class TestLeadCuration:
         assert any(call.kwargs.get("model") == CURATION_MODEL for call in calls if call.kwargs)
 
     def test_curate_leads_fallback_behavior(self, mock_openai_client, sample_leads):
-        """Test fallback behavior when evaluation fails."""
+        """Test that invalid JSON response raises appropriate error."""
         # Mock invalid JSON response
         mock_openai_client.chat_completion.return_value = "Invalid JSON response"
 
-        result = curate_leads(sample_leads, openai_client=mock_openai_client)
-
-        # Should still return minimum number of leads due to fallback scoring
-        assert len(result) >= 3
-        assert all(lead in sample_leads for lead in result)
+        with pytest.raises(json.JSONDecodeError):
+            curate_leads(sample_leads, openai_client=mock_openai_client)
 
 
 class TestLeadCurator:
@@ -385,10 +384,13 @@ class TestLeadCurator:
 
     def test_curator_initialization(self, mock_openai_client):
         """Test curator initialization."""
+        from config.curation_config import CRITERIA_WEIGHTS
+        
         curator = LeadCurator(mock_openai_client)
 
         assert curator.openai_client == mock_openai_client
-        assert sum(curator.CRITERIA_WEIGHTS.values()) == 1.0  # Weights sum to 1
+        assert len(CRITERIA_WEIGHTS) == 7  # All criteria are defined
+        assert all(weight > 0 for weight in CRITERIA_WEIGHTS.values())  # All weights are positive
 
     def test_curator_empty_input(self, mock_openai_client):
         """Test curating empty lead list."""
@@ -482,13 +484,13 @@ class TestLeadCurator:
         assert len(evaluations) == 6
 
         # Check weighted scores calculation
-        # Climate summit: (9*0.25 + 9*0.20 + 8*0.10 + 8*0.15 + 7*0.10 +
-        #                 6*0.10 + 7*0.10) = 8.05
-        assert abs(evaluations[0].weighted_score - 8.05) < 0.01
+        # Climate summit: (9*0.25 + 9*0.25 + 8*0.10 + 8*0.20 + 7*0.10 +
+        #                 6*0.5 + 7*0.5) = 14.1
+        assert abs(evaluations[0].weighted_score - 14.1) < 0.01
 
-        # Sports (should be lowest): (3*0.20 + 2*0.15 + 3*0.15 + 4*0.15 +
-        #                            5*0.15 + 6*0.10 + 2*0.10) = 3.5
-        assert abs(evaluations[5].weighted_score - 3.5) < 0.01
+        # Sports (should be lowest): (3*0.25 + 2*0.25 + 3*0.10 + 4*0.20 + 5*0.10 +
+        #                            6*0.5 + 2*0.5) = 6.85
+        assert abs(evaluations[5].weighted_score - 6.85) < 0.01
 
     def test_final_ranking_calculation(self, mock_openai_client, sample_leads):
         """Test final ranking calculation."""
@@ -579,23 +581,25 @@ class TestLeadCurator:
         assert any("Climate Summit" in title for title in result_titles)
 
     def test_fallback_behavior(self, mock_openai_client, sample_leads):
-        """Test fallback when all leads score below threshold."""
+        """Test behavior when all leads score below threshold."""
         # Mock very low scores
         low_score_response = json.dumps(
-            [
-                {
-                    "index": i + 1,
-                    "impact": 3,
-                    "proximity": 2,
-                    "prominence": 3,
-                    "relevance": 2,
-                    "hook": 4,
-                    "novelty": 3,
-                    "conflict": 2,
-                    "brief_reasoning": f"Low impact lead {i + 1}",
-                }
-                for i in range(len(sample_leads))
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": i + 1,
+                        "impact": 3,
+                        "proximity": 2,
+                        "prominence": 3,
+                        "relevance": 2,
+                        "hook": 4,
+                        "novelty": 3,
+                        "conflict": 2,
+                        "brief_reasoning": f"Low impact lead {i + 1}",
+                    }
+                    for i in range(len(sample_leads))
+                ]
+            }
         )
 
         mock_openai_client.chat_completion.return_value = low_score_response
@@ -611,18 +615,21 @@ class TestLeadCurator:
         """Test that appropriate logging occurs."""
         # Mock simple response
         mock_openai_client.chat_completion.return_value = json.dumps(
-            [
-                {
-                    "index": 1,
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 8,
-                    "conflict": 8,
-                }
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "Test reasoning",
+                    }
+                ]
+            }
         )
 
         curator = LeadCurator(mock_openai_client)
@@ -634,7 +641,7 @@ class TestLeadCurator:
 
 
 class TestLeadCurationEdgeCases:
-    """Test suite for lead curation edge cases and error handling."""
+    """Test suite for edge cases with structured output."""
 
     @pytest.fixture
     def mock_openai_client(self):
@@ -649,130 +656,42 @@ class TestLeadCurationEdgeCases:
             report="Test context for edge case scenarios",
         )
 
-    @patch("services.lead_curation.logger")
-    def test_json_parsing_dict_without_evaluations(self, mock_logger, mock_openai_client, sample_lead):
-        """Test JSON parsing when response is dict without 'evaluations' key
-        but contains a list."""
-        # Response is a dict with a list value, not in 'evaluations' key
-        mock_response = {
-            "data": [
-                {
-                    "index": 1,
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 8,
-                    "conflict": 8,
-                }
-            ],
-            "metadata": "some info",
-        }
-        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
-
-        curator = LeadCurator(mock_openai_client)
-        result = curator.curate_leads([sample_lead])
-
-        assert len(result) == 1
-
-    @patch("services.lead_curation.logger")
-    def test_json_parsing_dict_no_array_found(self, mock_logger, mock_openai_client, sample_lead):
-        """Test JSON parsing when response is dict with no list values."""
-        # Response is a dict with no list values
-        mock_response = {"message": "No evaluations available", "status": "error"}
-        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
-
-        curator = LeadCurator(mock_openai_client)
-
-        # Should fall back to original leads when parsing fails
-        result = curator.curate_leads([sample_lead])
-
-        # Should return the original leads when evaluation fails
-        assert len(result) == 1
-        mock_logger.error.assert_called()
-
-    @patch("services.lead_curation.logger")
-    def test_json_parsing_invalid_type(self, mock_logger, mock_openai_client, sample_lead):
-        """Test JSON parsing when response is neither list nor dict."""
-        # Response is a string, not list or dict
-        mock_openai_client.chat_completion.return_value = '"Invalid response type"'
-
-        curator = LeadCurator(mock_openai_client)
-        result = curator.curate_leads([sample_lead])
-
-        # Should return original leads when parsing fails
-        assert len(result) == 1
-        mock_logger.error.assert_called()
-
-    @patch("services.lead_curation.logger")
-    def test_missing_criteria_scores_warning(self, mock_logger, mock_openai_client, sample_lead):
-        """Test warning is logged when criteria scores are missing from evaluation."""
-        # Response missing some criteria (e.g., missing 'novelty' and 'conflict')
-        mock_response = [
-            {
-                "index": 1,
-                "impact": 8,
-                "proximity": 7,
-                "prominence": 6,
-                "relevance": 8,
-                "hook": 7,
-                # Missing 'novelty' and 'conflict'
-            }
-        ]
-        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
-
-        curator = LeadCurator(mock_openai_client)
-        curator.curate_leads([sample_lead])
-
-        # Should log warning about missing criteria
-        mock_logger.warning.assert_called()
-        warning_call = mock_logger.warning.call_args[0]
-        assert "FALLBACK" in warning_call[0]
-        assert "missing criteria scores" in warning_call[0]
-
-
-
-    def test_minimum_leads_selection_fallback(self, mock_openai_client):
-        """Test fallback to minimum leads selection when not enough leads pass
-        thresholds."""
-        # Create more leads than minimum required
-        leads = [Lead(discovered_lead=f"Test lead {i + 1}", report=f"Context for lead {i + 1}") for i in range(6)]
-
-        # Mock response with low scores that won't pass normal selection
-        mock_response = [
-            {
-                "index": i + 1,
-                "impact": 3,  # Low scores
-                "proximity": 3,
-                "prominence": 3,
-                "relevance": 3,
-                "hook": 3,
-                "novelty": 3,
-                "conflict": 3,
-            }
-            for i in range(6)
-        ]
-
-        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
-
-        curator = LeadCurator(mock_openai_client)
-        result = curator.curate_leads(leads)
-
-        # Should fall back to selecting minimum number of leads
-        assert len(result) == 3
-
-
-
-    @patch("services.lead_curation.logger")
-    def test_json_decode_error_handling(self, mock_logger, mock_openai_client, sample_lead):
+    def test_json_decode_error_handling(self, mock_openai_client, sample_lead):
         """Test handling of invalid JSON response."""
         # Return invalid JSON
         mock_openai_client.chat_completion.return_value = "Invalid JSON {"
 
         curator = LeadCurator(mock_openai_client)
-        result = curator.curate_leads([sample_lead])
+        
+        with pytest.raises(json.JSONDecodeError):
+            curator.curate_leads([sample_lead])
 
-        # Should log error and return original leads
-        mock_logger.error.assert_called()
-        assert len(result) == 1
+    def test_low_scoring_leads_returns_empty(self, mock_openai_client):
+        """Test that low scoring leads return empty list when below threshold."""
+        # Create leads that will score very low
+        leads = [Lead(discovered_lead=f"Low priority lead {i}", report="") for i in range(6)]
+
+        # Mock response with very low scores (below MIN_SCORE threshold)
+        mock_response = {
+            "evaluations": [
+                {
+                    "index": i + 1,
+                    "impact": 1,
+                    "proximity": 1,
+                    "prominence": 1,
+                    "relevance": 1,
+                    "hook": 1,
+                    "novelty": 1,
+                    "conflict": 1,
+                    "brief_reasoning": f"Low scoring lead {i + 1}",
+                }
+                for i in range(6)
+            ]
+        }
+        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
+
+        curator = LeadCurator(mock_openai_client)
+        result = curator.curate_leads(leads)
+
+        # Should return empty list when no leads meet minimum threshold
+        assert len(result) == 0

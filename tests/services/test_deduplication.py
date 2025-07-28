@@ -137,7 +137,7 @@ class TestDeduplicationService:
         assert len(result) == 2  # Should have 2 unique leads (skipping the duplicate)
 
         # Verify completion logging - updated to match new emoji-based format
-        mock_logger.info.assert_any_call("  🔄 Removed %d duplicate leads", 1)
+        mock_logger.info.assert_any_call("  🔄 Vector layer: Removed %d duplicates", 1)
 
     def test_vector_metadata_structure(self, sample_leads, sample_embeddings, mock_openai_client, mock_pinecone_client):
         """Test that vectors are stored with correct metadata."""

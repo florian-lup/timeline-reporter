@@ -9,6 +9,7 @@ from config.deduplication_config import (
     LOOKBACK_HOURS,
     DEDUPLICATION_SYSTEM_PROMPT,
     DEDUPLICATION_PROMPT_TEMPLATE,
+    DEDUPLICATION_SCHEMA,
 )
 from models.core import Lead
 from utils import logger
@@ -197,9 +198,16 @@ def _compare_with_database_records(
             prompt=user_prompt,
             model=DEDUPLICATION_MODEL,
             system_prompt=DEDUPLICATION_SYSTEM_PROMPT,
+            response_format={
+                "type": "json_schema",
+                "json_schema": DEDUPLICATION_SCHEMA
+            },
         )
         
-        return response.strip().upper() == "DUPLICATE"
+        # Parse structured response
+        import json
+        result_data = json.loads(response)
+        return result_data["result"] == "DUPLICATE"
         
     except Exception as e:
         logger.warning("  ⚠️ GPT comparison failed: %s. Treating as unique.", str(e))

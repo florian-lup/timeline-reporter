@@ -44,8 +44,28 @@ LOOKBACK_HOURS: int = 24  # Hours to look back in database for comparison
 # ---------------------------------------------------------------------------
 # GPT System and Prompt Configuration
 # ---------------------------------------------------------------------------
+
+# JSON Schema for structured output
+DEDUPLICATION_SCHEMA = {
+    "name": "deduplication_result",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "result": {
+                "type": "string",
+                "enum": ["DUPLICATE", "UNIQUE"],
+                "description": "Whether the new lead is a duplicate of existing content or unique"
+            }
+        },
+        "required": ["result"],
+        "additionalProperties": False
+    }
+}
+
 DEDUPLICATION_SYSTEM_PROMPT = """
-You are a precise content deduplication system for news leads and stories. Your primary objective is to prevent redundant coverage.
+You are an expert content analyst specializing in detecting duplicate news stories.
+
+Your task is to determine whether a new lead describes the same core story as any existing published story from the past {lookback_hours} hours.
 
 ## EVALUATION PROCESS
 
@@ -58,7 +78,7 @@ Follow these steps:
 3. Apply duplicate criteria: A lead is DUPLICATE if it shares:
    - Same primary subject/entity (person, company, organization)
    - Same type of event (announcement, incident, policy change, etc.)
-   - Same timeframe (within 48 hours of each other)
+   - Same timeframe (within 24 hours of each other)
 
 4. Ignore surface differences: Different perspectives, additional details, or varied wording do NOT make stories unique if they cover the same core event.
 
@@ -66,21 +86,9 @@ Follow these steps:
 
 DUPLICATE: The new lead reports on the same underlying story/event as an existing summary
 UNIQUE: The new lead introduces a genuinely different story not covered in existing summaries
-
-## REQUIRED OUTPUT FORMAT
-
-Respond with exactly one word:
-- DUPLICATE
-- UNIQUE
-
-Do not include explanations, reasoning, or additional text.
 """.strip()
 
 DEDUPLICATION_PROMPT_TEMPLATE = """
-You are an expert content analyst specializing in detecting duplicate news stories and leads.
-
-Your task is to determine whether a new lead describes the same core story as any existing summary from the past {lookback_hours} hours.
-
 ## INPUT DATA
 
 **NEW LEAD:**
