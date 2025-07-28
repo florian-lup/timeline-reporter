@@ -4,14 +4,14 @@ This directory contains standalone debug scripts for testing various functionali
 
 ## Files
 
-- `debug_audio_test.py` - Standalone script for real audio generation testing
+- `debug_audio.py` - Standalone script for real audio generation testing
 
 ## Usage
 
 Run debug scripts from the project root:
 
 ```bash
-python debug/debug_audio_test.py
+python debug/debug_audio.py
 ```
 
 ## Requirements
@@ -25,7 +25,7 @@ Debug scripts require the following environment variables:
 
 ## Audio Generation Debug Script
 
-The `debug_audio_test.py` script:
+The `debug_audio.py` script:
 
 1. Creates test story objects with sample news content
 2. Uses real OpenAI client for script generation and TTS

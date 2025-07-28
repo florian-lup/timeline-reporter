@@ -124,6 +124,7 @@ class LeadCurator:
 
             # Calculate weighted score
             weighted = sum(score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items())
+            weighted = round(weighted, 2)
 
             evaluations.append(
                 LeadEvaluation(

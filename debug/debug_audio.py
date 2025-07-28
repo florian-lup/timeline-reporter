@@ -12,12 +12,12 @@ Uses a single optimized instruction for professional news podcast delivery with:
 - Natural transitions between stories
 
 Usage:
-    python debug_audio_test.py
+    python debug_audio.py
 
 The script will automatically use TTS instructions when:
 - TTS_MODEL = "gpt-4o-mini-tts" in config/audio_config.py
 
-Run this independently for debugging: python debug_audio_test.py
+Run this independently for debugging: python debug_audio.py
 """
 
 import os

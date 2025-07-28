@@ -24,8 +24,8 @@ CRITERIA_WEIGHTS = {
     "prominence": 0.10,  # Does it involve well-known people
     "relevance": 0.20,  # Is this something the audience cares about
     "hook": 0.10,  # Could this lead grab reader's attention
-    "novelty": 0.5,  # Is the story unusual or unexpected
-    "conflict": 0.5,  # Is there disagreement, controversy or drama
+    "novelty": 0.05,  # Is the story unusual or unexpected
+    "conflict": 0.05,  # Is there disagreement, controversy or drama
 }
 
 # ---------------------------------------------------------------------------
