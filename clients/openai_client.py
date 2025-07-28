@@ -52,6 +52,8 @@ class OpenAIClient:
             model: Model to use for completion
             temperature: Sampling temperature 0-2 (optional)
             response_format: Response format specification (optional)
+                - For JSON mode: {"type": "json_object"}
+                - For structured output: {"type": "json_schema", "json_schema": {...}}
             system_prompt: System prompt to set behavior (optional)
 
         Returns:

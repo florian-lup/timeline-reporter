@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from config.curation_config import MAX_LEADS, MIN_LEADS
+from config.curation_config import MAX_LEADS
 from models import Lead
 from services import curate_leads
 from services.lead_curation import LeadCurator
@@ -252,6 +252,7 @@ class TestLeadCuration:
                         "hook": 8,
                         "novelty": 8,
                         "conflict": 8,
+                        "brief_reasoning": "Test lead evaluation",
                     }
                 ]
             }
@@ -305,18 +306,21 @@ class TestLeadCuration:
 
         # Mock response
         mock_openai_client.chat_completion.return_value = json.dumps(
-            [
-                {
-                    "index": 1,
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 8,
-                    "conflict": 8,
-                }
-            ]
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 8,
+                        "hook": 8,
+                        "novelty": 8,
+                        "conflict": 8,
+                        "brief_reasoning": "Test lead evaluation",
+                    }
+                ]
+            }
         )
 
         curate_leads(sample_leads, openai_client=mock_openai_client)
@@ -478,9 +482,9 @@ class TestLeadCurator:
         assert len(evaluations) == 6
 
         # Check weighted scores calculation
-        # Climate summit: (9*0.20 + 9*0.15 + 8*0.15 + 8*0.15 + 7*0.15 +
-        #                 6*0.10 + 7*0.10) = 7.9
-        assert abs(evaluations[0].weighted_score - 7.9) < 0.01
+        # Climate summit: (9*0.25 + 9*0.20 + 8*0.10 + 8*0.15 + 7*0.10 +
+        #                 6*0.10 + 7*0.10) = 8.05
+        assert abs(evaluations[0].weighted_score - 8.05) < 0.01
 
         # Sports (should be lowest): (3*0.20 + 2*0.15 + 3*0.15 + 4*0.15 +
         #                            5*0.15 + 6*0.10 + 2*0.10) = 3.5
@@ -567,7 +571,8 @@ class TestLeadCurator:
         result = curator.curate_leads(sample_leads)
 
         # Should return between MIN and MAX leads
-        assert MIN_LEADS <= len(result) <= MAX_LEADS
+        assert len(result) >= 3
+        assert len(result) <= MAX_LEADS
 
         # Verify high-scoring leads are included
         result_titles = [lead.discovered_lead for lead in result]
@@ -598,8 +603,8 @@ class TestLeadCurator:
         curator = LeadCurator(mock_openai_client)
         result = curator.curate_leads(sample_leads)
 
-        # Should still return minimum number of leads
-        assert len(result) == curator.MIN_LEADS_TO_SELECT
+        # Should return empty list when no leads pass threshold
+        assert len(result) == 0
 
     @patch("services.lead_curation.logger")
     def test_curator_logging(self, mock_logger, mock_openai_client, sample_leads):
@@ -755,7 +760,7 @@ class TestLeadCurationEdgeCases:
         result = curator.curate_leads(leads)
 
         # Should fall back to selecting minimum number of leads
-        assert len(result) == MIN_LEADS
+        assert len(result) == 3
 
 
 

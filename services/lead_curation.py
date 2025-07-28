@@ -8,12 +8,12 @@ from dataclasses import dataclass
 from clients import OpenAIClient
 from config.curation_config import (
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
+    CRITERIA_EVALUATION_SCHEMA,
     CRITERIA_EVALUATION_SYSTEM_PROMPT,
     CRITERIA_WEIGHTS,
     CURATION_MODEL,
     MAX_LEADS,
-    MIN_LEADS,
-    MIN_WEIGHTED_SCORE,
+    MIN_SCORE,
 )
 from models import Lead, LeadEvaluation
 from utils import logger
@@ -40,14 +40,14 @@ class LeadCurator:
         evaluations = self._evaluate_all_criteria(leads)
 
         # Step 2: Filter by minimum threshold
-        qualified = [e for e in evaluations if e.weighted_score >= MIN_WEIGHTED_SCORE]
-        failed_threshold = [e for e in evaluations if e.weighted_score < MIN_WEIGHTED_SCORE]
+        qualified = [e for e in evaluations if e.weighted_score >= MIN_SCORE]
+        failed_threshold = [e for e in evaluations if e.weighted_score < MIN_SCORE]
 
         logger.info(
             "  📊 Threshold analysis: %d/%d leads passed minimum score requirement (%.1f)",
             len(qualified),
             len(leads),
-            MIN_WEIGHTED_SCORE,
+            MIN_SCORE,
         )
 
         if failed_threshold:
@@ -62,7 +62,7 @@ class LeadCurator:
             # No leads passed threshold - return empty list
             logger.warning(
                 "No leads passed minimum threshold (%.2f), returning empty list",
-                MIN_WEIGHTED_SCORE,
+                MIN_SCORE,
             )
             return []
 
@@ -99,53 +99,24 @@ class LeadCurator:
         response_text = self.openai_client.chat_completion(
             user_prompt, 
             model=CURATION_MODEL, 
-            response_format={"type": "json_object"},
+            response_format={
+                "type": "json_schema",
+                "json_schema": CRITERIA_EVALUATION_SCHEMA
+            },
             system_prompt=CRITERIA_EVALUATION_SYSTEM_PROMPT
         )
 
-        # Parse response
-        try:
-            scores_data = json.loads(response_text)
-
-            # Handle both object with 'evaluations' array and direct array
-            if isinstance(scores_data, dict) and "evaluations" in scores_data:
-                scores_data = scores_data["evaluations"]
-            elif isinstance(scores_data, dict):
-                # If it's a dict but not with 'evaluations', try to extract array
-                # Look for any key that contains a list
-                for value in scores_data.values():
-                    if isinstance(value, list):
-                        scores_data = value
-                        break
-                else:
-                    raise ValueError("No array found in response")
-
-            # Ensure scores_data is a list
-            if not isinstance(scores_data, list):
-                raise ValueError(f"Expected list, got {type(scores_data)}")
-
-        except (json.JSONDecodeError, ValueError) as exc:
-            logger.error("Failed to parse JSON response: %s", exc)
-            raise ValueError(f"Failed to parse criteria evaluation response: {exc}") from exc
+        # Parse response - structured output guarantees correct format
+        scores_data = json.loads(response_text)
+        evaluations_data = scores_data["evaluations"]
 
         evaluations = []
         for i, lead in enumerate(leads):
-            # Find scores for this lead
-            lead_scores = None
-            for score_entry in scores_data:
-                if score_entry.get("index") == i + 1:
-                    lead_scores = score_entry
-                    break
-
-            if not lead_scores:
-                raise ValueError(f"No scores found for lead {i + 1}")
-
-            # Check for missing criteria first
-            missing_criteria = [k for k in CRITERIA_WEIGHTS if k not in lead_scores]
-            if missing_criteria:
-                raise ValueError(
-                    f"Lead {i + 1} missing required criteria scores: {missing_criteria}"
-                )
+            # Find scores for this lead - guaranteed to exist due to schema
+            lead_scores = next(
+                score_entry for score_entry in evaluations_data 
+                if score_entry["index"] == i + 1
+            )
 
             criteria_scores = {
                 k: float(lead_scores[k]) for k in CRITERIA_WEIGHTS
@@ -163,7 +134,7 @@ class LeadCurator:
             )
 
             first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
-            reasoning = lead_scores.get("brief_reasoning", "No reasoning provided")
+            reasoning = lead_scores["brief_reasoning"]
             reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + ("..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else "")
             logger.info(
                 "  📊 Lead %d/%d scored %.1f - %s: %s",
@@ -197,10 +168,6 @@ class LeadCurator:
         """Step 4: Select top leads by final rank."""
         # Simply take the top N leads based on final ranking
         selected = ranked_evaluations[: MAX_LEADS]
-
-        # Ensure minimum selection
-        if len(selected) < MIN_LEADS and len(ranked_evaluations) >= MIN_LEADS:
-            selected = ranked_evaluations[: MIN_LEADS]
 
         return selected
 

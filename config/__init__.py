@@ -24,12 +24,12 @@ from .cloudflare_config import (
 )
 from .curation_config import (
     CRITERIA_EVALUATION_PROMPT_TEMPLATE,
+    CRITERIA_EVALUATION_SCHEMA,
     CRITERIA_WEIGHTS,
     # Curation Configuration
     CURATION_MODEL,
     MAX_LEADS,
-    MIN_LEADS,
-    MIN_WEIGHTED_SCORE,
+    MIN_SCORE,
 )
 from .deduplication_config import (
     # Deduplication Configuration
@@ -135,9 +135,8 @@ __all__ = [
     "DISCOVERY_TIMEOUT_SECONDS",
     # Curation Configuration
     "CURATION_MODEL",
-    "MIN_WEIGHTED_SCORE",
+    "MIN_SCORE",
     "MAX_LEADS",
-    "MIN_LEADS",
     "CRITERIA_WEIGHTS",
     # Research Configuration
     "LEAD_RESEARCH_MODEL",
@@ -165,6 +164,7 @@ __all__ = [
     "DISCOVERY_ENTERTAINMENT_INSTRUCTIONS",
     # Decision/Curation Prompts
     "CRITERIA_EVALUATION_PROMPT_TEMPLATE",
+    "CRITERIA_EVALUATION_SCHEMA",
     # Research Prompts
     "RESEARCH_SYSTEM_PROMPT",
     "RESEARCH_INSTRUCTIONS",
