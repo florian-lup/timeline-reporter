@@ -20,7 +20,7 @@ from services import (
     deduplicate_leads,
     discover_leads,
     generate_podcast,
-    persist_stories,
+    persist_stories_and_podcast,
     research_lead,
     write_stories,
 )
@@ -84,20 +84,27 @@ def run_pipeline() -> None:  # noqa: D401
     stories = write_stories(researched_leads, openai_client=openai_client)
     logger.info("✅ Writing complete: Generated %d publication-ready stories", len(stories))
 
-    # 6️⃣ Storage
-    logger.info("💾 STEP 6: Storage - Saving %d stories to database...", len(stories))
-    persist_stories(stories, mongodb_client=mongodb_client)
-
-    # 7️⃣ Audio Generation
+    # 6️⃣ Audio Generation
+    podcast = None
     if stories:  # Only generate podcast if we have stories
         try:
-            podcast = generate_podcast(stories, openai_client=openai_client, mongodb_client=mongodb_client, r2_client=r2_client)
+            podcast = generate_podcast(stories, openai_client=openai_client, r2_client=r2_client)
             logger.info(
                 "🎙️ Podcast generated: %d-story briefing",
                 len(stories),
             )
         except Exception as e:
             logger.error("Failed to generate podcast: %s", str(e))
+
+    # 7️⃣ Storage
+    if stories and podcast:
+        logger.info("💾 STEP 7: Storage - Saving %d stories and podcast to database...", len(stories))
+        persist_stories_and_podcast(stories, podcast, mongodb_client=mongodb_client)
+    elif stories:
+        # Fallback: just persist stories if podcast generation failed
+        logger.info("💾 STEP 7: Storage - Saving %d stories to database...", len(stories))
+        from services.story_persistence import persist_stories
+        persist_stories(stories, mongodb_client=mongodb_client)
             # Continue pipeline even if audio generation fails
 
     logger.info(

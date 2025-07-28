@@ -30,6 +30,7 @@ from clients import MongoDBClient, OpenAIClient
 from clients.cloudflare_r2 import CloudflareR2Client
 from models import Story
 from services.audio_generation import generate_podcast
+from services.story_persistence import persist_podcast
 from utils import get_today_formatted
 
 
@@ -224,9 +225,12 @@ def run_real_audio_generation_test() -> bool:
         podcast = generate_podcast(
             stories,
             openai_client=openai_client,
-            mongodb_client=mongodb_client,
             r2_client=r2_client,
         )
+        
+        # Persist podcast metadata to database
+        print(f"\n💾 Persisting podcast to database...")
+        persist_podcast(podcast, mongodb_client=mongodb_client)
         
         # Verify podcast was created successfully
         if not podcast:

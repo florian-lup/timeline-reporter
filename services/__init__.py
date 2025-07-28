@@ -15,7 +15,7 @@ from .lead_curation import LeadCurator, curate_leads
 from .lead_deduplication import deduplicate_leads
 from .lead_discovery import discover_leads
 from .lead_research import research_lead
-from .story_persistence import persist_stories
+from .story_persistence import persist_podcast, persist_stories, persist_stories_and_podcast
 from .story_writing import write_stories
 
 __all__ = [
@@ -26,6 +26,8 @@ __all__ = [
     "curate_leads",
     "write_stories",
     "persist_stories",
+    "persist_podcast",
+    "persist_stories_and_podcast",
     "generate_podcast",
     # Advanced curation
     "LeadCurator",

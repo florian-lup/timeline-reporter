@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from clients import MongoDBClient, OpenAIClient
+from clients import OpenAIClient
 
 from clients.cloudflare_r2 import CloudflareR2Client
 from config.audio_config import (
@@ -23,25 +23,23 @@ def generate_podcast(
     stories: list[Story],
     *,
     openai_client: OpenAIClient,
-    mongodb_client: MongoDBClient,
     r2_client: CloudflareR2Client,
 ) -> Podcast:
-    """Generate a podcast from story summaries and store in Cloudflare R2 CDN.
+    """Generate a podcast from story summaries and upload to Cloudflare R2 CDN.
     
     Args:
         stories: List of Story objects to include in the podcast
         openai_client: OpenAI client for script generation and TTS
-        mongodb_client: MongoDB client for persisting podcast metadata
         r2_client: Cloudflare R2 client for CDN storage
         
     Returns:
-        Generated Podcast object with CDN URL
+        Generated Podcast object with CDN URL (ready for persistence)
     """
     if not stories:
         logger.warning("No stories provided for podcast generation")
         raise ValueError("Cannot generate podcast without stories")
     
-    logger.info("🎙️ STEP 7: Audio Generation - Creating news briefing podcast...")
+    logger.info("🎙️ STEP 6: Audio Generation - Creating news briefing podcast...")
     
     # Step 1: Select random anchor for this podcast
     tts_voice, anchor_name = get_random_anchor()
@@ -98,7 +96,7 @@ def generate_podcast(
         file_size_bytes / (1024 * 1024),
     )
     
-    # Step 5: Upload to Cloudflare R2 CDN and store metadata
+    # Step 5: Upload to Cloudflare R2 CDN
     logger.info("  ☁️ Uploading to Cloudflare R2 CDN...")
     cdn_url = r2_client.upload_audio(audio_bytes)
     
@@ -109,12 +107,6 @@ def generate_podcast(
         audio_url=cdn_url,
         audio_size_bytes=file_size_bytes,
     )
-    
-    # Step 7: Store podcast metadata in MongoDB
-    logger.info("  💾 Saving podcast metadata to database...")
-    podcast_dict = podcast.__dict__.copy()
-    inserted_id = mongodb_client.insert_podcast(podcast_dict)
-    logger.info("  ✓ Podcast saved with CDN URL (ID: %s)", inserted_id[:12] + "...")
     
     logger.info(
         "✅ Audio generation complete: %d-story podcast created by %s",
