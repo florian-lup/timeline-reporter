@@ -12,14 +12,8 @@ from config.curation_config import (
     CRITERIA_WEIGHTS,
     CURATION_MODEL,
     MAX_LEADS,
-    MIN_GROUP_SIZE_FOR_PAIRWISE,
     MIN_LEADS,
     MIN_WEIGHTED_SCORE,
-    PAIRWISE_COMPARISON_PROMPT_TEMPLATE,
-    PAIRWISE_JSON_FORMAT,
-    PAIRWISE_SCORE_WEIGHT,
-    SCORE_SIMILARITY,
-    WEIGHTED_SCORE_WEIGHT,
 )
 from models import Lead, LeadEvaluation
 from utils import logger
@@ -72,14 +66,10 @@ class LeadCurator:
             )
             return []
 
-        # Step 3: Pairwise comparisons for close scores
-        if len(qualified) > MAX_LEADS:
-            self._perform_pairwise_comparisons(qualified)
-
-        # Step 4: Final ranking combining all factors
+        # Step 3: Final ranking based on weighted scores
         final_ranking = self._compute_final_ranking(qualified)
 
-        # Step 5: Select top leads by final rank
+        # Step 4: Select top leads by final rank
         selected = self._select_top_leads(final_ranking)
 
         logger.info(
@@ -186,97 +176,15 @@ class LeadCurator:
 
         return evaluations
 
-    def _perform_pairwise_comparisons(self, evaluations: list[LeadEvaluation]) -> None:
-        """Step 3: Use pairwise comparisons for close scores."""
-        # Group leads with similar scores
-        score_groups = self._group_by_score_similarity(evaluations)
-
-        for group in score_groups:
-            if len(group) > 1:
-                self._compare_group_pairwise(group)
-
-    def _compare_group_pairwise(self, group: list[LeadEvaluation]) -> None:
-        """Compare leads within a group using pairwise comparisons."""
-        if len(group) < MIN_GROUP_SIZE_FOR_PAIRWISE:
-            return
-
-        # Build comparison pairs
-        comparisons_text = []
-        pair_map = {}  # Maps pair string to (i, j) indices
-
-        for i in range(len(group)):
-            for j in range(i + 1, len(group)):
-                pair_key = f"{i + 1}vs{j + 1}"
-                pair_map[pair_key] = (i, j)
-
-                comparisons_text.append(f"""
-Pair {pair_key}:
-Lead A ({i + 1}): {group[i].lead.discovered_lead[:200]}...
-Lead B ({j + 1}): {group[j].lead.discovered_lead[:200]}...
-""")
-
-        # Use centralized prompt template with JSON format instruction
-        prompt = PAIRWISE_COMPARISON_PROMPT_TEMPLATE.format(comparisons_text=chr(10).join(comparisons_text)) + PAIRWISE_JSON_FORMAT
-
-        response_text = self.openai_client.chat_completion(prompt, model=CURATION_MODEL, response_format={"type": "json_object"})
-
-        # Parse response
-        try:
-            data = json.loads(response_text)
-
-            # Handle both object with 'comparisons' array and direct array
-            if isinstance(data, dict) and "comparisons" in data:
-                results = data["comparisons"]
-            elif isinstance(data, dict):
-                # Look for any key that contains a list
-                for value in data.values():
-                    if isinstance(value, list):
-                        results = value
-                        break
-                else:
-                    results = []
-            else:
-                results = data if isinstance(data, list) else []
-
-        except json.JSONDecodeError as exc:
-            logger.error("Failed to parse pairwise comparison results: %s", exc)
-            raise ValueError(f"Failed to parse pairwise comparison response: {exc}") from exc
-
-        # Update pairwise wins
-        for result in results:
-            pair = result.get("pair", "")
-            if pair in pair_map:
-                i, j = pair_map[pair]
-                winner = result.get("winner")
-
-                # Determine which evaluation won
-                if winner == i + 1:
-                    group[i].pairwise_wins += 1
-                elif winner == j + 1:
-                    group[j].pairwise_wins += 1
-
-                logger.debug(
-                    "Pairwise %s: winner=%s, reason=%s",
-                    pair,
-                    winner,
-                    result.get("reason", ""),
-                )
-
     def _compute_final_ranking(self, evaluations: list[LeadEvaluation]) -> list[LeadEvaluation]:
-        """Step 4: Combine all factors for final ranking."""
-        # Normalize pairwise wins to 0-10 scale
-        max_wins = max((e.pairwise_wins for e in evaluations), default=0)
-
+        """Step 3: Rank leads based on weighted scores."""
+        # Final rank is simply the weighted score
         for eval in evaluations:
-            # Use centralized weights for final scoring
-            pairwise_score = (eval.pairwise_wins / max_wins) * 10 if max_wins > 0 else 0
-
-            eval.final_rank = (WEIGHTED_SCORE_WEIGHT * eval.weighted_score) + (PAIRWISE_SCORE_WEIGHT * pairwise_score)
-
+            eval.final_rank = eval.weighted_score
+            
             logger.debug(
-                "Lead final ranking: weighted=%.2f, pairwise=%.2f, final=%.2f",
+                "Lead final ranking: weighted=%.2f, final=%.2f",
                 eval.weighted_score,
-                pairwise_score,
                 eval.final_rank,
             )
 
@@ -286,7 +194,7 @@ Lead B ({j + 1}): {group[j].lead.discovered_lead[:200]}...
         return evaluations
 
     def _select_top_leads(self, ranked_evaluations: list[LeadEvaluation]) -> list[LeadEvaluation]:
-        """Step 5: Select top leads by final rank."""
+        """Step 4: Select top leads by final rank."""
         # Simply take the top N leads based on final ranking
         selected = ranked_evaluations[: MAX_LEADS]
 
@@ -296,45 +204,12 @@ Lead B ({j + 1}): {group[j].lead.discovered_lead[:200]}...
 
         return selected
 
-    def _group_by_score_similarity(self, evaluations: list[LeadEvaluation]) -> list[list[LeadEvaluation]]:
-        """Group evaluations with similar scores."""
-        groups = []
-        used = set()
-
-        sorted_evals = sorted(evaluations, key=lambda x: x.weighted_score, reverse=True)
-
-        for i, eval in enumerate(sorted_evals):
-            if i in used:
-                continue
-
-            group = [eval]
-            used.add(i)
-
-            # Find all evaluations within threshold
-            for j, other in enumerate(sorted_evals[i + 1 :], i + 1):
-                if j not in used:
-                    score_diff = abs(eval.weighted_score - other.weighted_score)
-                    if score_diff <= SCORE_SIMILARITY:
-                        group.append(other)
-                        used.add(j)
-
-            if len(group) > 1:
-                groups.append(group)
-                logger.debug(
-                    "Created score group with %d leads (scores: %s)",
-                    len(group),
-                    [f"{e.weighted_score:.2f}" for e in group],
-                )
-
-        return groups
-
 
 def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful leads from deduplicated list.
 
-    Uses AI evaluation combining multi-criteria scoring, pairwise
-    comparison, and topic diversity to select only the top priority stories
-    that warrant comprehensive research.
+    Uses AI evaluation with multi-criteria scoring to select only 
+    the top priority stories that warrant comprehensive research.
     """
     if not leads:
         logger.info("  ⚠️ No leads to evaluate")

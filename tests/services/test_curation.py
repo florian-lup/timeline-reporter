@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from config.curation_config import MAX_LEADS, MIN_LEADS
 from models import Lead
 from services import curate_leads
 from services.lead_curation import LeadCurator
@@ -485,87 +486,6 @@ class TestLeadCurator:
         #                            5*0.15 + 6*0.10 + 2*0.10) = 3.5
         assert abs(evaluations[5].weighted_score - 3.5) < 0.01
 
-    def test_pairwise_comparison(self, mock_openai_client, sample_leads):
-        """Test pairwise comparison functionality."""
-        # Create evaluations with similar scores
-        evaluations = [
-            LeadEvaluation(
-                lead=sample_leads[0],
-                criteria_scores={
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 8,
-                    "conflict": 8,
-                },
-                weighted_score=8.0,
-            ),
-            LeadEvaluation(
-                lead=sample_leads[1],
-                criteria_scores={
-                    "impact": 8,
-                    "proximity": 7,
-                    "prominence": 7,
-                    "relevance": 9,
-                    "hook": 8,
-                    "novelty": 7,
-                    "conflict": 8,
-                },
-                weighted_score=7.8,
-            ),
-            LeadEvaluation(
-                lead=sample_leads[2],
-                criteria_scores={
-                    "impact": 8,
-                    "proximity": 8,
-                    "prominence": 6,
-                    "relevance": 8,
-                    "hook": 8,
-                    "novelty": 9,
-                    "conflict": 7,
-                },
-                weighted_score=7.9,
-            ),
-        ]
-
-        # Mock pairwise comparison response
-        pairwise_response = json.dumps(
-            {
-                "comparisons": [
-                    {
-                        "pair": "1vs2",
-                        "winner": 1,
-                        "confidence": "high",
-                        "reason": "Climate more impactful",
-                    },
-                    {
-                        "pair": "1vs3",
-                        "winner": 1,
-                        "confidence": "medium",
-                        "reason": "Climate affects more people",
-                    },
-                    {
-                        "pair": "2vs3",
-                        "winner": 3,
-                        "confidence": "high",
-                        "reason": "Tech breakthrough more novel",
-                    },
-                ]
-            }
-        )
-
-        mock_openai_client.chat_completion.return_value = pairwise_response
-
-        curator = LeadCurator(mock_openai_client)
-        curator._compare_group_pairwise(evaluations)
-
-        # Check pairwise wins
-        assert evaluations[0].pairwise_wins == 2  # Won both comparisons
-        assert evaluations[1].pairwise_wins == 0  # Lost both
-        assert evaluations[2].pairwise_wins == 1  # Won against 2
-
     def test_final_ranking_calculation(self, mock_openai_client, sample_leads):
         """Test final ranking calculation."""
         evaluations = [
@@ -573,32 +493,29 @@ class TestLeadCurator:
                 lead=Lead(discovered_lead="Lead 1"),
                 criteria_scores={},
                 weighted_score=8.0,
-                pairwise_wins=2,
             ),
             LeadEvaluation(
                 lead=Lead(discovered_lead="Lead 2"),
                 criteria_scores={},
                 weighted_score=7.5,
-                pairwise_wins=1,
             ),
             LeadEvaluation(
                 lead=Lead(discovered_lead="Lead 3"),
                 criteria_scores={},
                 weighted_score=7.8,
-                pairwise_wins=0,
             ),
         ]
 
         curator = LeadCurator(mock_openai_client)
         ranked = curator._compute_final_ranking(evaluations)
 
-        # Lead 1 should rank first: 0.7 * 8.0 + 0.3 * 10 = 8.6
-        # Lead 2 should rank second: 0.7 * 7.5 + 0.3 * 5 = 6.75
-        # Lead 3 should rank third: 0.7 * 7.8 + 0.3 * 0 = 5.46
+        # Lead 1 should rank first: 8.0
+        # Lead 3 should rank second: 7.8  
+        # Lead 2 should rank third: 7.5
 
         assert ranked[0].lead.discovered_lead == "Lead 1"
-        assert ranked[1].lead.discovered_lead == "Lead 2"
-        assert ranked[2].lead.discovered_lead == "Lead 3"
+        assert ranked[1].lead.discovered_lead == "Lead 3"
+        assert ranked[2].lead.discovered_lead == "Lead 2"
 
     def test_top_selection(self, mock_openai_client):
         """Test top lead selection."""
@@ -617,8 +534,8 @@ class TestLeadCurator:
 
         selected = curator._select_top_leads(evaluations)
 
-        # Should select top MAX_LEADS_TO_SELECT leads
-        assert len(selected) == curator.MAX_LEADS_TO_SELECT
+        # Should select top MAX_LEADS leads
+        assert len(selected) == MAX_LEADS
 
         # Should be the highest ranked ones
         for i, eval in enumerate(selected):
@@ -627,8 +544,8 @@ class TestLeadCurator:
     def test_full_pipeline_integration(self, mock_openai_client, sample_leads):
         """Test the complete curation pipeline."""
         # Mock evaluation response
-        evaluation_response = json.dumps(
-            [
+        evaluation_response = json.dumps({
+            "evaluations": [
                 {
                     "index": i + 1,
                     "impact": 9 - i,
@@ -642,25 +559,15 @@ class TestLeadCurator:
                 }
                 for i in range(len(sample_leads))
             ]
-        )
+        })
 
-        # Mock pairwise response
-        pairwise_response = json.dumps(
-            [
-                {"pair": "1vs2", "winner": 1, "confidence": "high"},
-                {"pair": "2vs3", "winner": 2, "confidence": "medium"},
-            ]
-        )
-
-        # Create a cyclical response to handle any number of pairwise calls
-        pairwise_responses = [pairwise_response] * 10
-        mock_openai_client.chat_completion.side_effect = [evaluation_response] + pairwise_responses
+        mock_openai_client.chat_completion.return_value = evaluation_response
 
         curator = LeadCurator(mock_openai_client)
         result = curator.curate_leads(sample_leads)
 
         # Should return between MIN and MAX leads
-        assert curator.MIN_LEADS_TO_SELECT <= len(result) <= curator.MAX_LEADS_TO_SELECT
+        assert MIN_LEADS <= len(result) <= MAX_LEADS
 
         # Verify high-scoring leads are included
         result_titles = [lead.discovered_lead for lead in result]
@@ -819,39 +726,7 @@ class TestLeadCurationEdgeCases:
         assert "FALLBACK" in warning_call[0]
         assert "missing criteria scores" in warning_call[0]
 
-    def test_pairwise_comparison_enabled(self, mock_openai_client):
-        """Test pairwise comparison is triggered when group size meets minimum."""
-        # Create enough leads to trigger pairwise comparison
-        leads = [
-            Lead(discovered_lead=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
-            for i in range(6)  # More than MIN_GROUP_SIZE_FOR_PAIRWISE (usually 4-5)
-        ]
 
-        # Mock response with similar scores to trigger grouping
-        mock_response = [
-            {
-                "index": i + 1,
-                "impact": 8,  # All have similar scores
-                "proximity": 8,
-                "prominence": 8,
-                "relevance": 8,
-                "hook": 8,
-                "novelty": 8,
-                "conflict": 8,
-            }
-            for i in range(6)
-        ]
-
-        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
-
-        curator = LeadCurator(mock_openai_client)
-
-        # Mock the _compare_group_pairwise method to verify it's called
-        with patch.object(curator, "_compare_group_pairwise") as mock_pairwise:
-            curator.curate_leads(leads)
-
-            # Should call pairwise comparison for the group
-            mock_pairwise.assert_called()
 
     def test_minimum_leads_selection_fallback(self, mock_openai_client):
         """Test fallback to minimum leads selection when not enough leads pass
@@ -880,40 +755,9 @@ class TestLeadCurationEdgeCases:
         result = curator.curate_leads(leads)
 
         # Should fall back to selecting minimum number of leads
-        assert len(result) == curator.MIN_LEADS_TO_SELECT
+        assert len(result) == MIN_LEADS
 
-    def test_pairwise_comparison_skipped_small_group(self, mock_openai_client):
-        """Test pairwise comparison is skipped when group is too small."""
-        # Create few leads - less than MIN_GROUP_SIZE_FOR_PAIRWISE
-        leads = [
-            Lead(discovered_lead=f"Test lead {i + 1}", report=f"Context for lead {i + 1}")
-            for i in range(2)  # Less than minimum group size
-        ]
 
-        mock_response = [
-            {
-                "index": i + 1,
-                "impact": 8,
-                "proximity": 8,
-                "prominence": 8,
-                "relevance": 8,
-                "hook": 8,
-                "novelty": 8,
-                "conflict": 8,
-            }
-            for i in range(2)
-        ]
-
-        mock_openai_client.chat_completion.return_value = json.dumps(mock_response)
-
-        curator = LeadCurator(mock_openai_client)
-
-        # Mock the _compare_group_pairwise method to verify it's not called
-        with patch.object(curator, "_compare_group_pairwise") as mock_pairwise:
-            curator.curate_leads(leads)
-
-            # Should not call pairwise comparison for small group
-            mock_pairwise.assert_not_called()
 
     @patch("services.lead_curation.logger")
     def test_json_decode_error_handling(self, mock_logger, mock_openai_client, sample_lead):

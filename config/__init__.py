@@ -28,13 +28,8 @@ from .curation_config import (
     # Curation Configuration
     CURATION_MODEL,
     MAX_LEADS,
-    MIN_GROUP_SIZE_FOR_PAIRWISE,
     MIN_LEADS,
     MIN_WEIGHTED_SCORE,
-    PAIRWISE_COMPARISON_PROMPT_TEMPLATE,
-    PAIRWISE_SCORE_WEIGHT,
-    SCORE_SIMILARITY,
-    WEIGHTED_SCORE_WEIGHT,
 )
 from .deduplication_config import (
     # Deduplication Configuration
@@ -143,11 +138,7 @@ __all__ = [
     "MIN_WEIGHTED_SCORE",
     "MAX_LEADS",
     "MIN_LEADS",
-    "SCORE_SIMILARITY",
     "CRITERIA_WEIGHTS",
-    "MIN_GROUP_SIZE_FOR_PAIRWISE",
-    "WEIGHTED_SCORE_WEIGHT",
-    "PAIRWISE_SCORE_WEIGHT",
     # Research Configuration
     "LEAD_RESEARCH_MODEL",
     "RESEARCH_SEARCH_CONTEXT_SIZE",
@@ -174,7 +165,6 @@ __all__ = [
     "DISCOVERY_ENTERTAINMENT_INSTRUCTIONS",
     # Decision/Curation Prompts
     "CRITERIA_EVALUATION_PROMPT_TEMPLATE",
-    "PAIRWISE_COMPARISON_PROMPT_TEMPLATE",
     # Research Prompts
     "RESEARCH_SYSTEM_PROMPT",
     "RESEARCH_INSTRUCTIONS",

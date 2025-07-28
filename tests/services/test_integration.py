@@ -272,9 +272,9 @@ class TestServicesIntegration:
             entertainment_json,
         ]
 
-        # Set up curator responses - evaluation and pairwise comparison
-        evaluation_response = json.dumps(
-            [
+        # Set up curator responses - evaluation only
+        evaluation_response = json.dumps({
+            "evaluations": [
                 {
                     "index": 1,
                     "impact": 8,
@@ -320,12 +320,8 @@ class TestServicesIntegration:
                     "brief_reasoning": "High impact lead",
                 },
             ]
-        )
-        pairwise_response = json.dumps([{"pair": "1vs2", "winner": 2, "confidence": "high"}])
-        mock_clients["openai"].chat_completion.side_effect = [
-            evaluation_response,
-            pairwise_response,
-        ]
+        })
+        mock_clients["openai"].chat_completion.return_value = evaluation_response
 
         # Execute pipeline
         leads = discover_leads(mock_clients["perplexity"])

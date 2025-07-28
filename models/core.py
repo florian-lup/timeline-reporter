@@ -44,5 +44,4 @@ class LeadEvaluation:
     lead: Lead
     criteria_scores: dict[str, float]  # Individual criteria scores
     weighted_score: float  # Overall weighted score
-    pairwise_wins: int = 0  # Number of pairwise comparisons won
     final_rank: float = 0.0  # Final ranking after all evaluations

@@ -44,20 +44,20 @@ TTS_SPEED: float = 1.0  # Speed: 0.25 to 4.0
 # ---------------------------------------------------------------------------
 # Audio File Configuration
 # ---------------------------------------------------------------------------
-AUDIO_FORMAT: str = "wav"
+AUDIO_FORMAT: str = "aac"
 
 # ---------------------------------------------------------------------------
 # TTS Instructions Configuration (2025 Feature)
 # ---------------------------------------------------------------------------
 
 # TTS instruction for news podcast delivery
-TTS_INSTRUCTION = """Voice: Staccato, fast-paced, energetic, and rhythmic, with the classic charm of a seasoned auctioneer.
+TTS_INSTRUCTION = """Voice: Clear, authoritative, and composed, projecting confidence and professionalism.
 
-Tone: Exciting, high-energy, and persuasive, creating urgency and anticipation.
+Tone: Neutral and informative, maintaining a balance between formality and approachability.
 
-Delivery: Rapid-fire yet clear, with dynamic inflections to keep engagement high and momentum strong.
+Punctuation: Structured with commas and pauses for clarity, ensuring information is digestible and well-paced.
 
-Pronunciation: Crisp and precise, with emphasis on key action words like bid, buy, checkout, and sold to drive urgency.
+Delivery: Steady and measured, with slight emphasis on key figures and deadlines to highlight critical points.
 """.strip()
 
 # ---------------------------------------------------------------------------
