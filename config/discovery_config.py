@@ -28,9 +28,9 @@ LEAD_DISCOVERY_JSON_SCHEMA = {
     "items": {
         "type": "object",
         "properties": {
-            "lead_summary": {"type": "string"},
+            "discovered_lead": {"type": "string"},
         },
-        "required": ["lead_summary"],
+        "required": ["discovered_lead"],
     },
 }
 
@@ -59,7 +59,7 @@ Operational protocol:
 Expected output schema (do not include this block in your response):
 [
   {{
-    "lead_summary": "summary of the qualifying lead"
+    "discovered_lead": "summary of the qualifying lead"
   }}
 ]
 """.strip()
