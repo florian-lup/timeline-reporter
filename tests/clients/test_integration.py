@@ -181,11 +181,13 @@ class TestClientIntegration:
             # Setup Perplexity mock (lead research)
             mock_http_client = Mock()
             mock_response = Mock()
-            research_data = {
-                "context": "Enhanced context about breaking news from research",
-                "sources": ["https://source.com"],
+            content = "Enhanced context about breaking news from research"
+            citations = ["https://source.com"]
+            # Set the response to have content in message and citations in search_results
+            mock_response.json.return_value = {
+                "choices": [{"message": {"content": content}}],
+                "search_results": [{"url": citation} for citation in citations]
             }
-            mock_response.json.return_value = {"choices": [{"message": {"content": json.dumps(research_data)}}]}
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
@@ -251,8 +253,8 @@ class TestClientIntegration:
             # Verify all services were called
             # Perplexity research
             mock_http_client.post.assert_called_once()
-            # OpenAI: 1 call for query formulation + 1 call for story writing = 2 calls
-            assert mock_openai_instance.chat.completions.create.call_count == 2
+            # OpenAI: One call for story writing
+            assert mock_openai_instance.chat.completions.create.call_count == 1
             # MongoDB storage
             mock_collection.insert_one.assert_called_once()
 

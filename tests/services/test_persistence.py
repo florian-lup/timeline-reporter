@@ -4,8 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from models import Story
-from services import persist_stories
+from models import Story, Podcast
+from services import persist_stories, persist_podcast, persist_stories_and_podcast
 
 
 class TestPersistenceService:
@@ -188,3 +188,64 @@ class TestPersistenceService:
 
         assert first_call["headline"] == "Story 0"
         assert last_call["headline"] == "Story 99"
+
+    @pytest.fixture
+    def sample_podcast(self):
+        """Sample podcast for testing."""
+        return Podcast(
+            anchor_script="Welcome to the daily news update. Today's top stories are...",
+            anchor_name="News Anchor",
+            audio_url="https://cdn.example.com/podcasts/12345.mp3",
+            audio_size_bytes=1024000
+        )
+
+    @patch("services.story_persistence.logger")
+    def test_persist_podcast(self, mock_logger, mock_mongodb_client, sample_podcast):
+        """Test podcast persistence function."""
+        mock_mongodb_client.insert_podcast.return_value = "60a1b2c3d4e5f6789"
+        
+        result = persist_podcast(sample_podcast, mongodb_client=mock_mongodb_client)
+        
+        # Verify the correct ID was returned
+        assert result == "60a1b2c3d4e5f6789"
+        
+        # Verify MongoDB client was called with podcast dict
+        mock_mongodb_client.insert_podcast.assert_called_once()
+        podcast_dict = mock_mongodb_client.insert_podcast.call_args[0][0]
+        assert podcast_dict["anchor_script"] == "Welcome to the daily news update. Today's top stories are..."
+        assert podcast_dict["anchor_name"] == "News Anchor"
+        assert podcast_dict["audio_url"] == "https://cdn.example.com/podcasts/12345.mp3"
+        
+        # Verify logging
+        mock_logger.info.assert_any_call("🎙️ STEP 7: Persistence - Saving podcast metadata to database...")
+        mock_logger.info.assert_any_call("  💾 Saving podcast metadata...")
+        mock_logger.info.assert_any_call("  ✓ Podcast saved with CDN URL (ID: %s)", "60a1b2c3d4e5...")
+        mock_logger.info.assert_any_call("✅ Persistence complete: podcast metadata stored")
+
+    @patch("services.story_persistence.logger")
+    def test_persist_stories_and_podcast(self, mock_logger, mock_mongodb_client, sample_stories, sample_podcast):
+        """Test combined persistence of stories and podcast."""
+        mock_mongodb_client.insert_story.side_effect = ["id1", "id2"]
+        mock_mongodb_client.insert_podcast.return_value = "60a1b2c3d4e5f6789"
+        
+        result = persist_stories_and_podcast(
+            sample_stories, sample_podcast, mongodb_client=mock_mongodb_client
+        )
+        
+        # Verify the correct ID was returned
+        assert result == "60a1b2c3d4e5f6789"
+        
+        # Verify stories were persisted
+        assert mock_mongodb_client.insert_story.call_count == 2
+        
+        # Verify podcast was persisted
+        mock_mongodb_client.insert_podcast.assert_called_once()
+        podcast_dict = mock_mongodb_client.insert_podcast.call_args[0][0]
+        assert podcast_dict["anchor_name"] == "News Anchor"
+        
+        # Verify logging
+        mock_logger.info.assert_any_call("🎙️ STEP 7: Persistence - Saving stories and podcast metadata...")
+        mock_logger.info.assert_any_call("  📰 Persisting %d stories...", 2)
+        mock_logger.info.assert_any_call("  🎙️ Persisting podcast metadata...")
+        mock_logger.info.assert_any_call("  ✓ Podcast saved with CDN URL (ID: %s)", "60a1b2c3d4e5...")
+        mock_logger.info.assert_any_call("✅ Persistence complete: %d stories and podcast saved", 2)

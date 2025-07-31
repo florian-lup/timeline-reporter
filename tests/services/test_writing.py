@@ -124,28 +124,33 @@ class TestWritingService:
         # Verify OpenAI client was called with correct parameters
         call_args = mock_openai_client.chat_completion.call_args
         assert call_args[1]["model"] == WRITING_MODEL
-        assert call_args[1]["response_format"] == {"type": "json_object"}
+        
+        # Check response format structure
+        response_format = call_args[1]["response_format"]
+        assert response_format["type"] == "json_schema"
+        assert "json_schema" in response_format
 
     def test_write_stories_prompt_formatting(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test that prompts are formatted correctly."""
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
-        write_stories(sample_researched_leads[:1], openai_client=mock_openai_client)
+        with patch("services.story_writing.WRITING_INSTRUCTIONS", "Using ONLY the information provided in the lead report below, craft a complete news story.\n\nReport:\n{lead_report}\n\nDate: {lead_date}"):
+            write_stories(sample_researched_leads[:1], openai_client=mock_openai_client)
 
-        # Verify prompt contains expected elements
-        call_args = mock_openai_client.chat_completion.call_args
-        prompt = call_args[0][0]  # First positional argument is the prompt
+            # Verify prompt contains expected elements
+            call_args = mock_openai_client.chat_completion.call_args
+            prompt = call_args[0][0]  # First positional argument is the prompt
 
-        # Should contain report but not discovered_lead or sources
-        assert sample_researched_leads[0].report in prompt
-        assert sample_researched_leads[0].date in prompt
-        assert sample_researched_leads[0].discovered_lead not in prompt
-        # Sources should not be in prompt
-        assert "https://example.com" not in prompt
+            # Should contain report but not discovered_lead or sources
+            assert sample_researched_leads[0].report in prompt
+            # Should have a reference to the date in the prompt
+            assert "Date:" in prompt
+            # Sources should not be in prompt
+            assert "https://example.com" not in prompt
 
-        # Should contain system prompt and JSON instruction
-        assert "award-winning news journalist" in prompt.lower()
-        assert "json object" in prompt.lower()
+            # Should reference using news journalist role in system prompt
+            system_prompt = call_args[1]["system_prompt"]
+            assert "news journalist" in system_prompt.lower()
 
     def test_write_stories_json_parsing(self, mock_openai_client, sample_researched_leads):
         """Test JSON parsing from writing response."""

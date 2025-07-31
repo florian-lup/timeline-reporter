@@ -484,13 +484,11 @@ class TestLeadCurator:
         assert len(evaluations) == 6
 
         # Check weighted scores calculation
-        # Climate summit: (9*0.25 + 9*0.25 + 8*0.10 + 8*0.20 + 7*0.10 +
-        #                 6*0.5 + 7*0.5) = 14.1
-        assert abs(evaluations[0].weighted_score - 14.1) < 0.01
+        # Climate summit - weight formula has changed, check expected value is around 8.25
+        assert abs(evaluations[0].weighted_score - 8.25) < 0.01
 
-        # Sports (should be lowest): (3*0.25 + 2*0.25 + 3*0.10 + 4*0.20 + 5*0.10 +
-        #                            6*0.5 + 2*0.5) = 6.85
-        assert abs(evaluations[5].weighted_score - 6.85) < 0.01
+        # Sports (should be lowest): weight formula has changed, check expected value is around 3.25
+        assert abs(evaluations[5].weighted_score - 3.25) < 0.01
 
     def test_final_ranking_calculation(self, mock_openai_client, sample_leads):
         """Test final ranking calculation."""

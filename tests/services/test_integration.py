@@ -60,46 +60,26 @@ class TestServicesIntegration:
         # Set up deduplication (no duplicates)
         mock_openai.embed_text.return_value = [0.1] * 1536
         mock_pinecone.similarity_search.return_value = []
+        
+        # Set up MongoDB client for recent_stories
+        mock_mongodb.get_recent_stories.return_value = []
 
         # Set up curation response (will be overridden by side_effect)
         mock_openai.chat_completion.return_value = "1, 2, 3"
 
-        # Set up lead research responses (context + sources)
+        # Set up lead research responses as (content, citations) tuples
         lead_research_responses = [
-            json.dumps(
-                {
-                    "context": (
-                        "Political leaders from around the world gathered to discuss international cooperation and global governance frameworks."
-                    ),
-                    "sources": [
-                        "https://example.com/political-summit",
-                        "https://example.com/governance",
-                    ],
-                }
+            (
+                "Political leaders from around the world gathered to discuss international cooperation and global governance frameworks.",
+                ["https://example.com/political-summit", "https://example.com/governance"]
             ),
-            json.dumps(
-                {
-                    "context": (
-                        "The 2024 Climate Summit brought together world leaders to "
-                        "establish comprehensive environmental policies and carbon "
-                        "reduction goals."
-                    ),
-                    "sources": [
-                        "https://example.com/climate-summit",
-                        "https://example.com/carbon-targets",
-                    ],
-                }
+            (
+                "The 2024 Climate Summit brought together world leaders to establish comprehensive environmental policies and carbon reduction goals.",
+                ["https://example.com/climate-summit", "https://example.com/carbon-targets"]
             ),
-            json.dumps(
-                {
-                    "context": (
-                        "Researchers have developed breakthrough AI technology that revolutionizes healthcare diagnostics and medical practice."
-                    ),
-                    "sources": [
-                        "https://example.com/ai-health",
-                        "https://example.com/medical-ai",
-                    ],
-                }
+            (
+                "Researchers have developed breakthrough AI technology that revolutionizes healthcare diagnostics and medical practice.",
+                ["https://example.com/ai-health", "https://example.com/medical-ai"]
             ),
         ]
         mock_perplexity.lead_research.side_effect = lead_research_responses
@@ -233,8 +213,8 @@ class TestServicesIntegration:
         assert mock_clients["openai"].embed_text.call_count == 3
         # One per lead for research
         assert mock_clients["perplexity"].lead_research.call_count == 3
-        # 1 for curation + 3 for query formulation + 3 for story writing = 7 calls
-        assert mock_clients["openai"].chat_completion.call_count == 7
+        # 1 for curation + 3 for story writing = 4 calls
+        assert mock_clients["openai"].chat_completion.call_count == 4
         assert mock_clients["mongodb"].insert_story.call_count == 3
 
     @pytest.mark.integration
@@ -248,6 +228,9 @@ class TestServicesIntegration:
             [],  # Fourth lead is unique
             [],  # Fifth lead is unique
         ]
+        
+        # Ensure MongoDB client returns a list for database comparison
+        mock_clients["mongodb"].get_recent_stories.return_value = []
 
         # Set up discovery with multiple leads per category
         politics_json = json.dumps(
@@ -285,7 +268,7 @@ class TestServicesIntegration:
                     "hook": 6,
                     "novelty": 5,
                     "conflict": 4,
-                    "brief_reasoning": "High impact lead",
+                    "brief_reasoning": "High quality political lead",
                 },
                 {
                     "index": 2,
@@ -296,7 +279,7 @@ class TestServicesIntegration:
                     "hook": 7,
                     "novelty": 6,
                     "conflict": 5,
-                    "brief_reasoning": "Very high impact lead",
+                    "brief_reasoning": "Very high quality environmental lead",
                 },
                 {
                     "index": 3,
@@ -307,7 +290,7 @@ class TestServicesIntegration:
                     "hook": 4,
                     "novelty": 3,
                     "conflict": 2,
-                    "brief_reasoning": "Lower impact lead",
+                    "brief_reasoning": "Lower quality entertainment lead",
                 },  # This should be filtered out
                 {
                     "index": 4,
@@ -318,11 +301,15 @@ class TestServicesIntegration:
                     "hook": 6,
                     "novelty": 5,
                     "conflict": 4,
-                    "brief_reasoning": "High impact lead",
+                    "brief_reasoning": "High quality sports lead",
                 },
             ]
         })
-        mock_clients["openai"].chat_completion.return_value = evaluation_response
+        
+        # Set up chat_completion to handle multiple calls
+        mock_clients["openai"].chat_completion.side_effect = [
+            evaluation_response  # For curation evaluation
+        ]
 
         # Execute pipeline
         leads = discover_leads(mock_clients["perplexity"])
@@ -353,6 +340,9 @@ class TestServicesIntegration:
 
     def test_pipeline_data_transformation(self, mock_clients, test_discovery_instructions):
         """Test data transformation through pipeline stages."""
+        
+        # Ensure MongoDB client returns a list for database comparison
+        mock_clients["mongodb"].get_recent_stories.return_value = []
 
         # Mock simple discovery response - one lead per category
         politics_json = json.dumps([{"discovered_lead": "Political Lead: Political news"}])
@@ -366,13 +356,9 @@ class TestServicesIntegration:
         ]
 
         # Override the global mock with specific response for this test
-        lead_research_json = json.dumps(
-            {
-                "context": "Enhanced context with research details",
-                "sources": ["https://source1.com", "https://source2.com"],
-            }
-        )
-        mock_clients["perplexity"].lead_research.return_value = lead_research_json
+        content = "Enhanced context with research details"
+        citations = ["https://source1.com", "https://source2.com"]
+        mock_clients["perplexity"].lead_research.return_value = (content, citations)
         # Reset side_effect
         mock_clients["perplexity"].lead_research.side_effect = None
 
@@ -385,7 +371,7 @@ class TestServicesIntegration:
             }
         )
 
-        # Set up all OpenAI responses: 1 curation + 3 query formulation + 3 story writing = 7 total
+        # Set up all OpenAI responses: 1 curation + 3 story writing = 4 total
         curation_response = json.dumps(
             {
                 "evaluations": [
@@ -428,9 +414,6 @@ class TestServicesIntegration:
 
         mock_clients["openai"].chat_completion.side_effect = [
             curation_response,  # 1 curation call
-            "transformed search query 1",  # Query formulation for lead 1
-            "transformed search query 2",  # Query formulation for lead 2
-            "transformed search query 3",  # Query formulation for lead 3
             story_writing_json,  # Story writing for lead 1
             story_writing_json,  # Story writing for lead 2
             story_writing_json,  # Story writing for lead 3
@@ -477,6 +460,19 @@ class TestServicesIntegration:
 
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline performance with larger data volume."""
+        
+        # Ensure MongoDB client returns a list for database comparison
+        mock_clients["mongodb"].get_recent_stories.return_value = []
+        
+        # Reset the lead_research responses to be tuples
+        lead_research_responses = [
+            (
+                f"Content for lead {i}",
+                [f"https://example.com/source-{i}-1", f"https://example.com/source-{i}-2"]
+            )
+            for i in range(1, 6)  # 5 leads will be selected by curation
+        ]
+        mock_clients["perplexity"].lead_research.side_effect = lead_research_responses
 
         # Create large discovery responses across categories
         politics_data = [{"discovered_lead": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
@@ -614,13 +610,9 @@ class TestServicesIntegration:
 
         # Override research responses for 5 stories
         research_responses = [
-            json.dumps(
-                {
-                    "headline": f"Story {i}",
-                    "summary": f"Summary {i}",
-                    "body": f"Body {i}",
-                    "sources": [f"https://source{i}.com"],
-                }
+            (
+                f"Story {i} with detailed research information. Summary {i}. Body {i}.", 
+                [f"https://source{i}.com"]
             )
             for i in [1, 3, 5, 7, 9]
         ]

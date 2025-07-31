@@ -1,11 +1,13 @@
 """Test suite for MongoDB client."""
 
 from unittest.mock import Mock, patch
+from datetime import datetime, timedelta
 
 import pytest
 from bson import ObjectId
 
 from clients import MongoDBClient
+from config.deduplication_config import LOOKBACK_HOURS
 
 
 class TestMongoDBClient:
@@ -146,10 +148,13 @@ class TestMongoDBClient:
             patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
             patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "test_db"),
             patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "test_collection"),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME_AUDIO", "podcast"),
         ):
             MongoDBClient()
-
-            mock_logger.info.assert_called_once_with("  ✓ MongoDB connected: %s/%s", "test_db", "test_collection")
+            
+            # Should log both the main collection and the audio collection
+            mock_logger.info.assert_any_call("  ✓ MongoDB connected: %s/%s", "test_db", "test_collection")
+            mock_logger.info.assert_any_call("  ✓ MongoDB audio collection ready: %s/%s", "test_db", "podcast")
 
     @patch("clients.mongodb_client.logger")
     def test_logging_on_insert_story(self, mock_logger, mock_mongo_client, sample_story):
@@ -176,12 +181,16 @@ class TestMongoDBClient:
             patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"),
             patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "breaking-news"),
             patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "stories"),
+            patch("clients.mongodb_client.MONGODB_COLLECTION_NAME_AUDIO", "podcast"),
         ):
             MongoDBClient()
 
-            # Verify database and collection access
+            # Verify database access
             mock_instance.__getitem__.assert_called_with("breaking-news")
-            mock_db.__getitem__.assert_called_with("stories")
+            # Verify main collection access
+            mock_db.__getitem__.assert_any_call("stories")
+            # Verify audio collection access
+            mock_db.__getitem__.assert_any_call("podcast")
 
     def test_init_missing_database_name(self, mock_mongo_client):
         """Test initialization fails when MONGODB_DATABASE_NAME is missing."""
@@ -230,3 +239,89 @@ class TestMongoDBClient:
             pytest.raises(ValueError, match="MONGODB_COLLECTION_NAME is missing"),
         ):
             MongoDBClient()
+            
+    def test_context_manager(self, mock_mongo_client):
+        """Test context manager functionality."""
+        mock_client, mock_instance, _, _ = mock_mongo_client
+        
+        with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
+            # Use client as a context manager
+            with MongoDBClient() as client:
+                assert client._client == mock_instance
+                
+            # Verify close was called on exit
+            mock_instance.close.assert_called_once()
+            
+    def test_close_method(self, mock_mongo_client):
+        """Test explicit close method."""
+        mock_client, mock_instance, _, _ = mock_mongo_client
+        
+        with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
+            client = MongoDBClient()
+            client.close()
+            
+            # Verify close was called
+            mock_instance.close.assert_called_once()
+            
+    def test_insert_podcast(self, mock_mongo_client):
+        """Test inserting podcast data."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+        
+        # Set up audio collection
+        mock_audio_collection = Mock()
+        mock_db.__getitem__.side_effect = lambda x: mock_audio_collection if x == "audio" else mock_collection
+        
+        # Mock the insert_one result
+        mock_result = Mock()
+        mock_object_id = ObjectId()
+        mock_result.inserted_id = mock_object_id
+        mock_audio_collection.insert_one.return_value = mock_result
+        
+        podcast_data = {
+            "title": "Test Podcast",
+            "description": "Test Description",
+            "audio_url": "https://example.com/test.mp3"
+        }
+        
+        with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"), \
+             patch("clients.mongodb_client.MONGODB_COLLECTION_NAME_AUDIO", "audio"):
+            client = MongoDBClient()
+            result = client.insert_podcast(podcast_data)
+            
+            mock_audio_collection.insert_one.assert_called_once_with(podcast_data)
+            assert result == str(mock_object_id)
+            
+    def test_insert_podcast_no_audio_collection(self, mock_mongo_client):
+        """Test inserting podcast without audio collection configured."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+        
+        podcast_data = {"title": "Test Podcast"}
+        
+        with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"), \
+             patch("clients.mongodb_client.MONGODB_COLLECTION_NAME_AUDIO", None):
+            client = MongoDBClient()
+            
+            with pytest.raises(ValueError, match="Audio collection not configured"):
+                client.insert_podcast(podcast_data)
+                
+    def test_get_recent_stories(self, mock_mongo_client):
+        """Test retrieving recent stories."""
+        mock_client, mock_instance, mock_db, mock_collection = mock_mongo_client
+        
+        # Sample return value from find
+        mock_stories = [{"summary": "Story 1"}, {"summary": "Story 2"}]
+        mock_collection.find.return_value = mock_stories
+        
+        # Setup the client
+        with patch("clients.mongodb_client.MONGODB_URI", "mongodb://localhost:27017"):
+            client = MongoDBClient()
+            result = client.get_recent_stories(hours=24)
+            
+            # Verify find was called with correct query
+            mock_collection.find.assert_called_once()
+            query_arg = mock_collection.find.call_args[0][0]
+            assert "_id" in query_arg
+            assert "$gte" in query_arg["_id"]
+            
+            # Verify result
+            assert result == mock_stories

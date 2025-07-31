@@ -1,11 +1,12 @@
 """Test suite for deduplication service."""
 
 from unittest.mock import Mock, patch
-
+import json
 import pytest
 
 from models import Lead
 from services import deduplicate_leads
+from services.lead_deduplication import _compare_with_database_records
 
 
 class TestDeduplicationService:
@@ -180,3 +181,106 @@ class TestDeduplicationService:
             assert vector == sample_embeddings[i]
             assert metadata["discovered_lead"] == sample_leads[i].discovered_lead
             assert metadata["date"] == sample_leads[i].date
+
+    def test_database_deduplication_with_duplicates(self, sample_leads, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
+        """Test database deduplication when duplicates exist."""
+        # Setup mocks for vector layer - pass all leads
+        mock_openai_client.embed_text.return_value = [0.1] * 1536
+        mock_pinecone_client.similarity_search.return_value = []
+        
+        # Setup recent stories in database with similar content
+        mock_mongodb_client.get_recent_stories.return_value = [
+            {"summary": "World leaders meet at Climate Summit 2024 to discuss global climate goals."}
+        ]
+        
+        # Setup GPT response to identify first lead as duplicate
+        gpt_response = json.dumps({"result": "DUPLICATE"})
+        mock_openai_client.chat_completion.side_effect = [
+            gpt_response,  # First lead - duplicate
+            json.dumps({"result": "UNIQUE"}),  # Second lead - unique
+            json.dumps({"result": "UNIQUE"})   # Third lead - unique
+        ]
+        
+        # Call function
+        result = deduplicate_leads(
+            sample_leads,
+            openai_client=mock_openai_client,
+            pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
+        )
+        
+        # Verify results - should have filtered out the first lead
+        assert len(result) == 2
+        assert sample_leads[0] not in result
+        assert sample_leads[1] in result
+        assert sample_leads[2] in result
+        
+        # Verify chat completion calls
+        assert mock_openai_client.chat_completion.call_count == 3
+
+    def test_database_deduplication_no_recent_stories(self, sample_leads, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
+        """Test database deduplication with no recent stories."""
+        # Setup mocks
+        mock_openai_client.embed_text.return_value = [0.1] * 1536
+        mock_pinecone_client.similarity_search.return_value = []
+        mock_mongodb_client.get_recent_stories.return_value = []  # No recent stories
+        
+        # Call function
+        result = deduplicate_leads(
+            sample_leads,
+            openai_client=mock_openai_client,
+            pinecone_client=mock_pinecone_client,
+            mongodb_client=mock_mongodb_client,
+        )
+        
+        # All leads should pass through without database deduplication
+        assert len(result) == 3
+        assert result == sample_leads
+        
+        # Verify no chat completion calls
+        mock_openai_client.chat_completion.assert_not_called()
+
+    def test_compare_with_database_records(self, mock_openai_client):
+        """Test the _compare_with_database_records helper function."""
+        lead = Lead(discovered_lead="Test lead about important news")
+        recent_stories = [
+            {"summary": "Summary about test news"},
+            {"summary": "Another summary about different topic"}
+        ]
+        
+        # Mock GPT response indicating duplicate
+        mock_openai_client.chat_completion.return_value = json.dumps({"result": "DUPLICATE"})
+        
+        # Call function
+        result = _compare_with_database_records(lead, recent_stories, mock_openai_client)
+        
+        # Should be identified as duplicate
+        assert result is True
+        
+        # Verify chat completion was called
+        mock_openai_client.chat_completion.assert_called_once()
+
+    def test_compare_with_database_records_empty(self, mock_openai_client):
+        """Test _compare_with_database_records with empty recent stories."""
+        lead = Lead(discovered_lead="Test lead about important news")
+        
+        # Call function with empty stories
+        result = _compare_with_database_records(lead, [], mock_openai_client)
+        
+        # Should not be a duplicate
+        assert result is False
+        
+        # Verify no chat completion calls
+        mock_openai_client.chat_completion.assert_not_called()
+        
+    def test_compare_with_database_records_exception(self, mock_openai_client):
+        """Test error handling in _compare_with_database_records."""
+        lead = Lead(discovered_lead="Test lead about important news")
+        recent_stories = [{"summary": "Test summary"}]
+        
+        # Mock error in chat completion
+        mock_openai_client.chat_completion.side_effect = Exception("API error")
+        
+        # Verify exception is raised
+        with pytest.raises(RuntimeError, match="GPT database comparison failed: API error"):
+            _compare_with_database_records(lead, recent_stories, mock_openai_client)

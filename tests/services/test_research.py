@@ -34,25 +34,26 @@ class TestResearchService:
     @pytest.fixture
     def sample_research_response(self):
         """Sample research response from Perplexity."""
-        return json.dumps(
-            {
-                "report": "The Climate Summit 2024 brings together world leaders from "
+        content = ("The Climate Summit 2024 brings together world leaders from "
                 "over 190 countries to address the escalating climate crisis. "
                 "The summit focuses on implementing concrete measures to limit "
                 "global warming to 1.5°C, "
                 "with major discussions on renewable energy transition, carbon capture "
-                "technologies, and climate finance for developing nations.",
-                "sources": [
-                    "https://example.com/climate-news",
-                    "https://example.com/summit-report",
-                ],
-            }
-        )
+                "technologies, and climate finance for developing nations.")
+        
+        citations = [
+            "https://example.com/climate-news",
+            "https://example.com/summit-report"
+        ]
+        
+        return content, citations
 
     @pytest.fixture
     def sample_malformed_research_response(self):
         """Sample malformed research response."""
-        return '{"report": "Test", "incomplete": json'
+        content = "Test report with incomplete data"
+        citations = ["https://incomplete.example.com"]
+        return content, citations
 
     def test_research_lead_success(self, mock_perplexity_client, sample_leads, sample_research_response):
         """Test successful lead research."""
@@ -68,15 +69,12 @@ class TestResearchService:
         assert "Climate Summit 2024" in enhanced_leads[0].report
         assert "190 countries" in enhanced_leads[0].report
         
-        # Check that sources were combined - discovery sources + research sources
-        expected_sources = set([
-            "https://example.com/discovery-climate-1",
-            "https://example.com/discovery-climate-2", 
+        # Check that sources match the citations from the research response
+        expected_sources = [
             "https://example.com/climate-news",
             "https://example.com/summit-report"
-        ])
-        assert set(enhanced_leads[0].sources) == expected_sources
-        assert len(enhanced_leads[0].sources) == 4
+        ]
+        assert enhanced_leads[0].sources == expected_sources
 
         # Verify research was called for each lead
         assert mock_perplexity_client.lead_research.call_count == 2
@@ -99,39 +97,30 @@ class TestResearchService:
         assert sample_leads[1].discovered_lead in second_call_prompt
 
     def test_research_lead_json_parsing(self, mock_perplexity_client, sample_leads):
-        """Test JSON parsing from research response."""
-        response = json.dumps(
-            {
-                "report": ("Detailed context about the lead including background information"),
-                "sources": ["https://example.com/test", "https://example.com/analysis"],
-            }
-        )
-        mock_perplexity_client.lead_research.return_value = response
+        """Test parsing from research response."""
+        content = "Detailed context about the lead including background information"
+        citations = ["https://example.com/test", "https://example.com/analysis"]
+        mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
 
         assert len(enhanced_leads) == 1
-        assert enhanced_leads[0].report == ("Detailed context about the lead including background information")
-        assert enhanced_leads[0].sources == [
-            "https://example.com/test",
-            "https://example.com/analysis",
-        ]
+        assert enhanced_leads[0].report == content
+        assert enhanced_leads[0].sources == citations
         # Original discovered_lead should be preserved
         assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
 
     def test_research_lead_malformed_json(self, mock_perplexity_client, sample_leads, sample_malformed_research_response):
-        """Test handling of malformed JSON response."""
+        """Test handling of response with problematic content."""
         mock_perplexity_client.lead_research.return_value = sample_malformed_research_response
 
-        with patch("services.lead_research.logger") as mock_logger:
-            enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
+        enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
 
         assert len(enhanced_leads) == 1
-        # Should return original lead unchanged on parse error
         assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
-        assert enhanced_leads[0].report == ""  # Original empty report
-        assert enhanced_leads[0].sources == []  # Original empty sources
-        mock_logger.warning.assert_called()
+        assert enhanced_leads[0].report == "Test report with incomplete data"
+        assert enhanced_leads[0].sources == ["https://incomplete.example.com"]
+        # The original lead should be enhanced with the provided content and citations
 
     def test_research_lead_empty_input(self, mock_perplexity_client):
         """Test research with empty lead list."""
@@ -153,41 +142,35 @@ class TestResearchService:
 
         research_lead(sample_leads, perplexity_client=mock_perplexity_client)
 
-        # Verify the last call matches the final research completion log
-        # The implementation logs each lead individually, so check the last call  
-        # With source combination, this should be 3 sources (1 discovery + 2 research)
-        mock_logger.info.assert_called_with("  📊 Sources found: %d", 3)
+        # Verify the logger was called with citation count information
+        mock_logger.info.assert_any_call("  📊 Citations found: %d", 2)
+        # Verify the logger was called with report length information
+        mock_logger.info.assert_any_call("  📊 Report length: %d words", 47)
 
-    def test_research_lead_with_fenced_json(self, mock_perplexity_client, sample_leads):
-        """Test research with JSON wrapped in markdown fences.
+    def test_research_lead_with_fenced_response(self, mock_perplexity_client, sample_leads):
+        """Test research with response that might contain markdown fences.
 
-        Since the Perplexity client now uses structured output and returns clean JSON,
-        fenced JSON should be treated as malformed input and result in the original
-        lead.
+        Since the Perplexity client now returns a tuple of (content, citations),
+        we need to test handling of markdown or other formatting in the response.
         """
-        fenced_response = """```json
-        {
-            "report": "Research context",
-            "sources": ["https://example.com"]
-        }
-        ```"""
-        mock_perplexity_client.lead_research.return_value = fenced_response
+        content = "Research context with ```markdown``` in it"
+        citations = ["https://example.com"]
+        mock_perplexity_client.lead_research.return_value = content, citations
 
-        with patch("services.lead_research.logger") as mock_logger:
-            enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
+        enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
 
         assert len(enhanced_leads) == 1
-        # Should return original lead due to JSON parse failure
+        # Should enhance the lead with the provided content and citations
         assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
-        assert enhanced_leads[0].report == ""
-        assert enhanced_leads[0].sources == []
-        mock_logger.warning.assert_called()
+        assert enhanced_leads[0].report == content
+        assert enhanced_leads[0].sources == citations
 
     def test_research_preserves_date(self, mock_perplexity_client):
         """Test that research preserves the original lead date."""
         lead_with_date = Lead(discovered_lead="Test lead", date="2024-01-15")
-        response = json.dumps({"report": "Context text", "sources": ["https://example.com"]})
-        mock_perplexity_client.lead_research.return_value = response
+        content = "Context text"
+        citations = ["https://example.com"]
+        mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead([lead_with_date], perplexity_client=mock_perplexity_client)
 
@@ -200,34 +183,27 @@ class TestResearchService:
             sources=[]  # Empty sources from discovery
         )
         
-        research_response = json.dumps({
-            "report": "Research context",
-            "sources": ["https://research-source-1.com", "https://research-source-2.com"]
-        })
-        mock_perplexity_client.lead_research.return_value = research_response
+        content = "Research context"
+        citations = ["https://research-source-1.com", "https://research-source-2.com"]
+        mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead([lead_no_sources], perplexity_client=mock_perplexity_client)
 
-        # Should only have research sources
-        assert len(enhanced_leads[0].sources) == 2
-        assert set(enhanced_leads[0].sources) == {"https://research-source-1.com", "https://research-source-2.com"}
+        # Should have the research citations
+        assert enhanced_leads[0].sources == citations
 
-    def test_research_lead_null_values(self, mock_perplexity_client, sample_leads):
-        """Test research with null values in JSON."""
-        response_null_values = json.dumps(
-            {
-                "report": None,
-                "sources": None,
-            }
-        )
-        mock_perplexity_client.lead_research.return_value = response_null_values
+    def test_research_lead_empty_values(self, mock_perplexity_client, sample_leads):
+        """Test research with empty values in response."""
+        content = ""
+        citations = []
+        mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
 
         assert len(enhanced_leads) == 1
-        # Verify handling of null values (converted to safe defaults)
-        assert enhanced_leads[0].report == ""  # None converted to empty string
-        assert enhanced_leads[0].sources == []  # None converted to empty list
+        # Verify handling of empty values
+        assert enhanced_leads[0].report == ""
+        assert enhanced_leads[0].sources == []
         # Original discovered_lead preserved
         assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
 
@@ -242,7 +218,7 @@ class TestResearchService:
         assert mock_perplexity_client.lead_research.call_count == 1
 
     def test_research_lead_source_combination(self, mock_perplexity_client):
-        """Test that research combines existing sources from discovery with new research sources."""
+        """Test that research uses the citations from the research response."""
         # Lead with existing sources from discovery
         lead_with_discovery_sources = Lead(
             discovered_lead="Test lead with discovery sources",
@@ -250,49 +226,32 @@ class TestResearchService:
         )
         
         # Research response with new sources
-        research_response = json.dumps({
-            "report": "Research context",
-            "sources": ["https://research-source-1.com", "https://research-source-2.com"]
-        })
-        mock_perplexity_client.lead_research.return_value = research_response
+        content = "Research context"
+        citations = ["https://research-source-1.com", "https://research-source-2.com"]
+        mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead([lead_with_discovery_sources], perplexity_client=mock_perplexity_client)
 
-        # Should combine all sources without duplicates
-        expected_sources = [
-            "https://discovery-source-1.com",
-            "https://discovery-source-2.com", 
-            "https://research-source-1.com",
-            "https://research-source-2.com"
-        ]
-        assert len(enhanced_leads[0].sources) == 4
-        assert set(enhanced_leads[0].sources) == set(expected_sources)
+        # Should use the citations from the research response
+        assert enhanced_leads[0].sources == citations
 
-    def test_research_lead_duplicate_source_removal(self, mock_perplexity_client):
-        """Test that duplicate sources are removed when combining discovery and research sources."""
+    def test_research_lead_citations_usage(self, mock_perplexity_client):
+        """Test that citations from research response are used directly."""
         # Lead with discovery sources
         lead_with_sources = Lead(
             discovered_lead="Test lead",
-            sources=["https://duplicate-source.com", "https://discovery-only.com"]
+            sources=["https://discovery-source.com", "https://another-discovery-source.com"]
         )
         
-        # Research response with overlapping sources
-        research_response = json.dumps({
-            "report": "Research context",
-            "sources": ["https://duplicate-source.com", "https://research-only.com"]
-        })
-        mock_perplexity_client.lead_research.return_value = research_response
+        # Research response with citations
+        content = "Research context"
+        citations = ["https://research-source-1.com", "https://research-source-2.com"]
+        mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead([lead_with_sources], perplexity_client=mock_perplexity_client)
 
-        # Should have 3 unique sources (duplicate removed)
-        expected_sources = [
-            "https://duplicate-source.com",
-            "https://discovery-only.com",
-            "https://research-only.com"
-        ]
-        assert len(enhanced_leads[0].sources) == 3
-        assert set(enhanced_leads[0].sources) == set(expected_sources)
+        # Should use the citations directly from the research response
+        assert enhanced_leads[0].sources == citations
 
     def test_research_lead_client_error_propagation(self, mock_perplexity_client, sample_leads):
         """Test that client errors are properly propagated."""

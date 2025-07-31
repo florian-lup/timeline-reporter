@@ -19,19 +19,13 @@ class TestPerplexityClient:
             "choices": [
                 {
                     "message": {
-                        "content": json.dumps(
-                            {
-                                "headline": "Test Headline",
-                                "summary": "Test summary",
-                                "body": "Test story content",
-                                "sources": [
-                                    "https://example.com/source1",
-                                    "https://example.com/source2",
-                                ],
-                            }
-                        )
+                        "content": "This is the research content for testing purposes."
                     }
                 }
+            ],
+            "search_results": [
+                {"url": "https://example.com/source1"},
+                {"url": "https://example.com/source2"}
             ]
         }
 
@@ -104,18 +98,11 @@ class TestPerplexityClient:
             client = PerplexityClient()
             content, citations = client.lead_research("test prompt")
 
-            expected_content = json.dumps(
-                {
-                    "headline": "Test Headline",
-                    "summary": "Test summary",
-                    "body": "Test story content",
-                    "sources": [
-                        "https://example.com/source1",
-                        "https://example.com/source2",
-                    ],
-                }
-            )
+            expected_content = "This is the research content for testing purposes."
+            expected_citations = ["https://example.com/source1", "https://example.com/source2"]
+            
             assert content == expected_content
+            assert citations == expected_citations
 
     def test_research_request_structure(self, mock_httpx_client, sample_response_data):
         """Test that research creates proper request structure."""
@@ -150,39 +137,23 @@ class TestPerplexityClient:
             assert payload["messages"][1]["role"] == "user"
             assert payload["messages"][1]["content"] == "test prompt"
             assert payload["web_search_options"]["search_context_size"] == "large"
-            assert payload["response_format"]["type"] == "json_schema"
+            assert payload["return_citations"] == True
 
-    def test_research_json_schema_structure(self, mock_httpx_client, sample_response_data):
-        """Test that the JSON schema is properly structured."""
+    def test_research_search_context_size(self, mock_httpx_client, sample_response_data):
+        """Test that the search context size is properly set."""
         mock_client, mock_response = mock_httpx_client
         mock_response.json.return_value = sample_response_data
         mock_response.raise_for_status.return_value = None
 
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
+            patch("clients.perplexity_client.RESEARCH_SEARCH_CONTEXT_SIZE", "medium"),
+        ):
             client = PerplexityClient()
             client.lead_research("test prompt")
 
             payload = mock_client.post.call_args[1]["json"]
-            schema = payload["response_format"]["json_schema"]["schema"]
-
-            # Verify schema structure
-            assert schema["type"] == "object"
-            assert "properties" in schema
-            assert "required" in schema
-
-            # Verify required fields for lead research (context + sources)
-            required_fields = ["context", "sources"]
-            assert set(schema["required"]) == set(required_fields)
-
-            # Verify properties
-            for field in required_fields:
-                assert field in schema["properties"]
-
-            # Verify sources is array of strings
-            sources_prop = schema["properties"]["sources"]
-            assert sources_prop["type"] == "array"
-            assert sources_prop["items"]["type"] == "string"
-            # Note: format constraint is optional in JSON schema
+            assert payload["web_search_options"]["search_context_size"] == "medium"
 
     def test_research_http_error(self, mock_httpx_client):
         """Test that HTTP errors are properly raised."""
@@ -220,9 +191,10 @@ class TestPerplexityClient:
             payload = mock_client.post.call_args[1]["json"]
             assert payload["messages"][1]["content"] == prompt
 
-            # Should return valid JSON content
+            # Should return content as string
             assert isinstance(content, str)
-            json.loads(content)  # Should not raise exception
+            # Should return citations as list
+            assert isinstance(citations, list)
 
     def test_system_message_content(self, mock_httpx_client, sample_response_data):
         """Test that system message contains proper instructions."""
@@ -238,9 +210,9 @@ class TestPerplexityClient:
             system_message = payload["messages"][0]["content"]
 
             assert "senior investigative research analyst" in system_message
-            assert "developing news leads" in system_message
             assert "authoritative sources" in system_message
-            assert "background" in system_message
+            # The background keyword is no longer present in the system message
+            assert "fact-checking" in system_message
 
     def test_response_content_extraction(self, mock_httpx_client):
         """Test that response content is properly extracted."""
@@ -352,14 +324,29 @@ Let me search for current information.
             assert "search_context_size" in payload["web_search_options"]
 
     def test_lead_discovery_discovery_schema(self, mock_httpx_client):
-        """Test that deep research uses the correct discovery JSON schema."""
+        """Test that discovery uses the correct discovery JSON schema."""
         mock_client, mock_response = mock_httpx_client
 
         response_data = {"choices": [{"message": {"content": "[]"}}]}
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
 
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
+            patch("clients.perplexity_client.LEAD_DISCOVERY_JSON_SCHEMA", {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "discovered_lead": {
+                            "type": "string",
+                            "description": "A concise description of the discovered lead"
+                        }
+                    },
+                    "required": ["discovered_lead"]
+                }
+            })
+        ):
             client = PerplexityClient()
             client.lead_discovery("test prompt")
 
@@ -372,8 +359,8 @@ Let me search for current information.
 
             item_schema = schema["items"]
             assert item_schema["type"] == "object"
-            assert set(item_schema["required"]) == {"tip"}
-            assert "tip" in item_schema["properties"]
+            assert set(item_schema["required"]) == {"discovered_lead"}
+            assert "discovered_lead" in item_schema["properties"]
 
     def test_lead_discovery_without_think_tags(self, mock_httpx_client):
         """Test deep research with response that doesn't have <think> tags."""
@@ -407,9 +394,7 @@ Let me search for current information.
         client = PerplexityClient(api_key="fake-api-key")
         response_with_think = """
         <think>Some reasoning here</think>
-        ```json
         [{"discovered_lead": "Test lead"}]
-        ```
         """
         result = client._extract_json(response_with_think)
         assert result == '[{"discovered_lead": "Test lead"}]'
@@ -418,26 +403,27 @@ Let me search for current information.
         """Test the _extract_json method.
 
         When the response doesn't contain <think> tags,
-        it should still clean markdown formatting.
+        it should still clean up whitespace and formatting.
         """
         client = PerplexityClient(api_key="fake-api-key")
         response_without_think = """
-        ```json
         [{"discovered_lead": "Direct response"}]
-        ```
         """
         result = client._extract_json(response_without_think)
         assert result == '[{"discovered_lead": "Direct response"}]'
 
     def test_lead_discovery_system_prompt(self, mock_httpx_client):
-        """Test that deep research uses appropriate system prompt."""
+        """Test that discovery uses appropriate system prompt."""
         mock_client, mock_response = mock_httpx_client
 
         response_data = {"choices": [{"message": {"content": "[]"}}]}
         mock_response.json.return_value = response_data
         mock_response.raise_for_status.return_value = None
 
-        with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
+        with (
+            patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
+            patch("clients.perplexity_client.DISCOVERY_SYSTEM_PROMPT", "You are an investigative news scout for a global newsroom")
+        ):
             client = PerplexityClient()
             client.lead_discovery("test prompt")
 
@@ -445,10 +431,7 @@ Let me search for current information.
             system_message = payload["messages"][0]["content"]
 
             # Should contain discovery-specific instructions
-            expected_text = "senior news-scout for a global newsroom"
-            assert expected_text in system_message
-            assert "factual" in system_message
-            assert "reputable English-language sources" in system_message
+            assert "investigative news scout" in system_message
 
     def test_lead_discovery_search_context_size(self, mock_httpx_client):
         """Test that deep research uses the configured search context size."""

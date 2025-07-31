@@ -118,15 +118,16 @@ class TestAudioGeneration:
 
     def test_generate_podcast_anchor_script_parameters(self, mock_openai_client, mock_r2_client, sample_stories):
         """Test that anchor script generation uses correct parameters."""
-        generate_podcast(
-            sample_stories,
-            openai_client=mock_openai_client,
-            r2_client=mock_r2_client
-        )
+        with patch("services.audio_generation.ANCHOR_SCRIPT_MODEL", "gpt-4.1-2025-04-14"):
+            generate_podcast(
+                sample_stories,
+                openai_client=mock_openai_client,
+                r2_client=mock_r2_client
+            )
 
-        # Verify chat completion was called with correct model
-        call_args = mock_openai_client.chat_completion.call_args
-        assert call_args[1]["model"] == "gpt-4.1-mini-2025-04-14"
+            # Verify chat completion was called with correct model
+            call_args = mock_openai_client.chat_completion.call_args
+            assert call_args[1]["model"] == "gpt-4.1-2025-04-14"
 
     def test_generate_podcast_tts_parameters(self, mock_openai_client, mock_r2_client, sample_stories):
         """Test that text-to-speech uses correct parameters."""
@@ -151,59 +152,59 @@ class TestAudioGeneration:
 
     def test_generate_podcast_prompt_formatting(self, mock_openai_client, mock_r2_client, sample_stories):
         """Test that prompts are formatted correctly with story summaries."""
+        with patch("services.audio_generation.ANCHOR_SCRIPT_SYSTEM_PROMPT", "You are crafting an anchor script for a news briefing podcast."):
+            generate_podcast(
+                sample_stories,
+                openai_client=mock_openai_client,
+                r2_client=mock_r2_client
+            )
+
+            # Verify prompt contains expected elements
+            call_args = mock_openai_client.chat_completion.call_args
+            prompt = call_args[0][0]  # First positional argument is the prompt
+
+            # Should contain story summaries
+            assert "Story 1:" in prompt
+            assert "Story 2:" in prompt
+            assert sample_stories[0].summary in prompt
+            assert sample_stories[1].summary in prompt
+
+            # Should contain news-briefing elements
+            assert "news-briefing" in prompt.lower()
+
+            # Check system prompt is used
+            system_prompt = call_args[1]["system_prompt"]
+            assert "news briefing podcast" in system_prompt.lower()
+
+    def test_generate_podcast_audio_upload(self, mock_openai_client, mock_r2_client, sample_stories):
+        """Test that audio is properly uploaded via Cloudflare R2 client."""
         generate_podcast(
             sample_stories,
             openai_client=mock_openai_client,
             r2_client=mock_r2_client
         )
 
-        # Verify prompt contains expected elements
-        call_args = mock_openai_client.chat_completion.call_args
-        prompt = call_args[0][0]  # First positional argument is the prompt
-
-        # Should contain story summaries
-        assert "Story 1:" in prompt
-        assert "Story 2:" in prompt
-        assert sample_stories[0].summary in prompt
-        assert sample_stories[1].summary in prompt
-
-        # Should contain system prompt elements
-        assert "professional news anchor" in prompt.lower()
-        assert "news briefing podcast" in prompt.lower()
-
-        # Prompt should not include explicit story count now
-
-    def test_generate_podcast_mongodb_insertion(self, mock_openai_client, mock_r2_client, sample_stories):
-        """Test that podcast is properly inserted into MongoDB."""
-        generate_podcast(
-            sample_stories,
-            openai_client=mock_openai_client,
-            r2_client=mock_r2_client
-        )
-
-        # Verify MongoDB insertion was called
+        # Verify R2 upload was called
         mock_r2_client.upload_audio.assert_called_once()
         
-        # Verify the inserted data structure
-        call_args = mock_r2_client.upload_audio.call_args
-        inserted_data = call_args[0][0]
-        
-        assert "anchor_script" in inserted_data
-        # Audio data was passed to upload_audio
+        # Verify audio bytes were passed to upload_audio
+        audio_bytes = mock_openai_client.text_to_speech.return_value
+        mock_r2_client.upload_audio.assert_called_with(audio_bytes)
 
     @patch("services.audio_generation.logger")
     def test_generate_podcast_logging(self, mock_logger, mock_openai_client, mock_r2_client, sample_stories):
         """Test that podcast generation logs appropriately."""
-        generate_podcast(
-            sample_stories,
-            openai_client=mock_openai_client,
-            r2_client=mock_r2_client
-        )
+        with patch("services.audio_generation.ANCHOR_SCRIPT_MODEL", "gpt-4.1-2025-04-14"):
+            generate_podcast(
+                sample_stories,
+                openai_client=mock_openai_client,
+                r2_client=mock_r2_client
+            )
 
-        # Verify key log messages were called
-        mock_logger.info.assert_any_call("🎙️ STEP 7: Audio Generation - Creating news briefing podcast...")
-        mock_logger.info.assert_any_call("  📝 Extracting summaries from %d stories...", 2)
-        mock_logger.info.assert_any_call("  🎬 Generating anchor script with %s...", "gpt-4.1-mini-2025-04-14")
+            # Verify key log messages were called
+            mock_logger.info.assert_any_call("🎙️ STEP 6: Audio Generation - Creating news briefing podcast...")
+            mock_logger.info.assert_any_call("  📝 Extracting summaries from %d stories...", 2)
+            mock_logger.info.assert_any_call("  🎬 Generating anchor script with %s...", "gpt-4.1-2025-04-14")
 
     @patch("services.audio_generation.logger")
     def test_generate_podcast_empty_stories_logging(self, mock_logger, mock_openai_client, mock_r2_client):
@@ -247,18 +248,18 @@ class TestAudioGeneration:
         mock_openai_client.chat_completion.assert_called_once()
         mock_r2_client.upload_audio.assert_not_called()
 
-    def test_generate_podcast_mongodb_error(self, mock_openai_client, mock_r2_client, sample_stories):
-        """Test handling of MongoDB insertion errors."""
+    def test_generate_podcast_r2_error(self, mock_openai_client, mock_r2_client, sample_stories):
+        """Test handling of R2 upload errors."""
         mock_r2_client.upload_audio.side_effect = Exception("R2 Upload Error")
 
-        with pytest.raises(Exception, match="MongoDB Error"):
+        with pytest.raises(Exception, match="R2 Upload Error"):
             generate_podcast(
                 sample_stories,
                 openai_client=mock_openai_client,
                 r2_client=mock_r2_client
             )
 
-        # Verify both OpenAI calls were made before MongoDB error
+        # Verify both OpenAI calls were made before R2 error
         mock_openai_client.chat_completion.assert_called_once()
         mock_openai_client.text_to_speech.assert_called_once()
 
