@@ -112,7 +112,7 @@ def save_test_outputs(
     curated_leads: list[Lead],
     test_start_time: datetime,
     raw_response: str | None = None,
-    debug_info: dict[str, object] | None = None,
+    debug_info: dict[str, dict[str, object]] | None = None,
     scoring_results: list[dict[str, object]] | None = None,
 ) -> None:
     """Save comprehensive test results to debug/output/curation_output directory."""
@@ -428,7 +428,7 @@ def apply_curation_logic(raw_response: str, leads: list[Lead]) -> list[Lead]:
 
 def analyze_curation_results(
     original_leads: list[Lead], curated_leads: list[Lead]
-) -> dict[str, object]:
+) -> dict[str, dict[str, object]]:
     """Analyze the curation results and return debug information."""
     return {
         "lead_count_analysis": {
@@ -518,7 +518,7 @@ def main() -> None:
         if isinstance(analysis, dict) and "lead_count_analysis" in analysis:
             logger.info(
                 "  📊 Selection rate: %.1f%%", analysis["lead_count_analysis"]["selection_rate"]
-            )  # type: ignore[index]
+            )
 
         if curated_leads:
             logger.info("🏆 Selected leads:")
@@ -550,7 +550,7 @@ def main() -> None:
         print(f"  Selected leads: {len(curated_leads)}")
         print(f"  Filtered out: {len(original_leads) - len(curated_leads)}")
         if isinstance(analysis, dict) and "lead_count_analysis" in analysis:
-            print(f"  Selection rate: {analysis['lead_count_analysis']['selection_rate']:.1f}%")  # type: ignore[index]
+            print(f"  Selection rate: {analysis['lead_count_analysis']['selection_rate']:.1f}%")
 
         print("\n⚙️ CURATION SETTINGS:")
         print(f"  Max leads limit: {MAX_LEADS}")

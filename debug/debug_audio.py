@@ -154,8 +154,22 @@ def run_real_audio_generation_test() -> bool:
     stories = [
         Story(
             headline="Trump Orders Release of Epstein Grand Jury Transcripts",
-            summary="The United States announces plans to confront China about its continued purchases of Russian and Iranian oil, nations under heavy U.S. sanctions, during upcoming trade negotiations. Treasury Secretary Scott Bessent says the talks will expand beyond tariffs to include national security concerns, marking a strategic escalation. China, now the largest buyer of Iranian oil and a leading importer of Russian crude, responds cautiously, urging dialogue. The U.S. warns of potential secondary tariffs on China and urges European allies to align, creating new tensions in global markets and international diplomacy.",
-            body="The United States announces plans to confront China about its continued purchases of Russian and Iranian oil, nations under heavy U.S. sanctions, during upcoming trade negotiations. Treasury Secretary Scott Bessent says the talks will expand beyond tariffs to include national security concerns, marking a strategic escalation. China, now the largest buyer of Iranian oil and a leading importer of Russian crude, responds cautiously, urging dialogue. The U.S. warns of potential secondary tariffs on China and urges European allies to align, creating new tensions in global markets and international diplomacy.",
+            summary=(
+                "The United States announces plans to confront China about its continued purchases of Russian and Iranian oil, "
+                "nations under heavy U.S. sanctions, during upcoming trade negotiations. Treasury Secretary Scott Bessent says "
+                "the talks will expand beyond tariffs to include national security concerns, marking a strategic escalation. "
+                "China, now the largest buyer of Iranian oil and a leading importer of Russian crude, responds cautiously, "
+                "urging dialogue. The U.S. warns of potential secondary tariffs on China and urges European allies to align, "
+                "creating new tensions in global markets and international diplomacy."
+            ),
+            body=(
+                "The United States announces plans to confront China about its continued purchases of Russian and Iranian oil, "
+                "nations under heavy U.S. sanctions, during upcoming trade negotiations. Treasury Secretary Scott Bessent says "
+                "the talks will expand beyond tariffs to include national security concerns, marking a strategic escalation. "
+                "China, now the largest buyer of Iranian oil and a leading importer of Russian crude, responds cautiously, "
+                "urging dialogue. The U.S. warns of potential secondary tariffs on China and urges European allies to align, "
+                "creating new tensions in global markets and international diplomacy."
+            ),
             tag="politics",
             sources=[
                 "https://example.com/trump-epstein-transcripts",
@@ -164,8 +178,22 @@ def run_real_audio_generation_test() -> bool:
         ),
         Story(
             headline="Guadalupe River Flood Kills 144 in Central Texas",
-            summary="At least 135 people are confirmed dead after catastrophic flooding swept through Central Texas in July 2025, marking one of the deadliest inland flood events in U.S. history. Triggered by intense rainfall and a sudden Guadalupe River surge, the disaster decimated communities, including tragic losses at Camp Mystic. Officials face scrutiny over delayed flood alerts and preparedness. State and federal agencies, along with relief organizations, continue recovery and aid efforts. The Texas Legislature begins a special session to address systemic failures and bolster disaster response, as devastated regions focus on long-term recovery and improved early-warning systems.",
-            body="At least 135 people are confirmed dead after catastrophic flooding swept through Central Texas in July 2025, marking one of the deadliest inland flood events in U.S. history. Triggered by intense rainfall and a sudden Guadalupe River surge, the disaster decimated communities, including tragic losses at Camp Mystic. Officials face scrutiny over delayed flood alerts and preparedness. State and federal agencies, along with relief organizations, continue recovery and aid efforts. The Texas Legislature begins a special session to address systemic failures and bolster disaster response, as devastated regions focus on long-term recovery and improved early-warning systems.",
+            summary=(
+                "At least 135 people are confirmed dead after catastrophic flooding swept through Central Texas in July 2025, "
+                "marking one of the deadliest inland flood events in U.S. history. Triggered by intense rainfall and a sudden "
+                "Guadalupe River surge, the disaster decimated communities, including tragic losses at Camp Mystic. Officials face "
+                "scrutiny over delayed flood alerts and preparedness. State and federal agencies, along with relief organizations, "
+                "continue recovery and aid efforts. The Texas Legislature begins a special session to address systemic failures "
+                "and bolster disaster response, as devastated regions focus on long-term recovery and improved early-warning systems."
+            ),
+            body=(
+                "At least 135 people are confirmed dead after catastrophic flooding swept through Central Texas in July 2025, "
+                "marking one of the deadliest inland flood events in U.S. history. Triggered by intense rainfall and a sudden "
+                "Guadalupe River surge, the disaster decimated communities, including tragic losses at Camp Mystic. Officials face "
+                "scrutiny over delayed flood alerts and preparedness. State and federal agencies, along with relief organizations, "
+                "continue recovery and aid efforts. The Texas Legislature begins a special session to address systemic failures "
+                "and bolster disaster response, as devastated regions focus on long-term recovery and improved early-warning systems."
+            ),
             tag="disaster",
             sources=[
                 "https://example.com/guadalupe-river-flood",
@@ -174,8 +202,19 @@ def run_real_audio_generation_test() -> bool:
         ),
         Story(
             headline="Trump Administration Overhauls Immigration Enforcement",
-            summary="The Pentagon has begun withdrawing about 700 active-duty U.S. Marines from Los Angeles, ending a month-long deployment ordered by President Donald Trump during protests over federal immigration raids. The move follows weeks of legal and political controversy over the use of federal troops for domestic law enforcement. Local and state officials, including California’s governor, condemned the military presence as excessive and unconstitutional. While thousands of National Guard members had already been pulled out, around 2,000 remain, leaving ongoing questions about federal oversight and the future use of military force during civil unrest.",
-            body="Since returning to office in January 2025, the Trump administration has implemented sweeping changes to U.S. immigration policy. The administration declared a national emergency at the southern border, authorized military deployment for border security, and significantly expanded deportation operations across the country.",
+            summary=(
+                "The Pentagon has begun withdrawing about 700 active-duty U.S. Marines from Los Angeles, ending a month-long "
+                "deployment ordered by President Donald Trump during protests over federal immigration raids. The move follows "
+                "weeks of legal and political controversy over the use of federal troops for domestic law enforcement. Local and "
+                "state officials, including California's governor, condemned the military presence as excessive and unconstitutional. "
+                "While thousands of National Guard members had already been pulled out, around 2,000 remain, leaving ongoing "
+                "questions about federal oversight and the future use of military force during civil unrest."
+            ),
+            body=(
+                "Since returning to office in January 2025, the Trump administration has implemented sweeping changes to U.S. "
+                "immigration policy. The administration declared a national emergency at the southern border, authorized military "
+                "deployment for border security, and significantly expanded deportation operations across the country."
+            ),
             tag="immigration",
             sources=[
                 "https://example.com/trump-immigration-overhaul",
@@ -289,7 +328,7 @@ def run_real_audio_generation_test() -> bool:
 
         # Test CDN access
         print("\n🌐 Testing CDN access...")
-        response = requests.head(podcast.audio_url)
+        response = requests.head(podcast.audio_url, timeout=30)
         print(f"📡 CDN Status: {response.status_code}")
         print(f"📝 Content-Type: {response.headers.get('content-type', 'unknown')}")
         print(f"🕒 Response Time: {response.elapsed.total_seconds():.3f}s")
@@ -303,7 +342,7 @@ def run_real_audio_generation_test() -> bool:
             output_dir
             / f"podcast_script_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.txt"
         )
-        with open(script_file, "w", encoding="utf-8") as f:
+        with script_file.open("w", encoding="utf-8") as f:
             f.write(f"PODCAST SCRIPT - {get_today_formatted()}\n")
             f.write(f"ANCHOR: {podcast.anchor_name}\n")
             f.write("=" * 50 + "\n\n")
@@ -311,7 +350,7 @@ def run_real_audio_generation_test() -> bool:
 
         # Download and save the audio file from CDN
         print("📥 Downloading audio from CDN...")
-        audio_response = requests.get(podcast.audio_url)
+        audio_response = requests.get(podcast.audio_url, timeout=60)
         audio_response.raise_for_status()
 
         from config.audio_config import AUDIO_FORMAT
@@ -320,7 +359,7 @@ def run_real_audio_generation_test() -> bool:
             output_dir
             / f"podcast_audio_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.{AUDIO_FORMAT}"
         )
-        with open(audio_file, "wb") as f:
+        with audio_file.open("wb") as f:
             f.write(audio_response.content)
 
         # Save the podcast object metadata as JSON
@@ -337,7 +376,7 @@ def run_real_audio_generation_test() -> bool:
             output_dir
             / f"podcast_data_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.json"
         )
-        with open(json_file, "w", encoding="utf-8") as f:
+        with json_file.open("w", encoding="utf-8") as f:
             json.dump(podcast_data, f, indent=2, ensure_ascii=False)
 
         print(f"💾 Script saved to: {script_file}")
