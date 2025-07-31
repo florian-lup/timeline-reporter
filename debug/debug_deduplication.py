@@ -8,6 +8,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Dict, Any, List
 
 from clients import MongoDBClient, OpenAIClient, PineconeClient
 from models import Lead
@@ -44,14 +45,14 @@ def create_sample_leads() -> list[Lead]:
     return [Lead(discovered_lead=text) for text in sample_texts]
 
 
-def debug_mongodb_queries(mongodb_client: MongoDBClient) -> dict:
+def debug_mongodb_queries(mongodb_client: MongoDBClient) -> Dict[str, Any]:
     """Debug MongoDB database queries to understand why get_recent_stories returns 0."""
     from bson import ObjectId
     from datetime import datetime, timedelta
     
     logger.info("🔍 DEBUGGING MONGODB QUERIES...")
     
-    debug_info = {
+    debug_info: Dict[str, Any] = {
         "total_documents": 0,
         "recent_documents_24h": 0,
         "documents_with_summary": 0,
@@ -85,10 +86,10 @@ def debug_mongodb_queries(mongodb_client: MongoDBClient) -> dict:
             logger.info("    Document fields: %s", ", ".join(latest_doc.keys()))
             
             # Store minimal info for debugging
-                         for i, doc in enumerate(sample_docs, 1):
-                 obj_id = doc["_id"]
-                 timestamp = obj_id.generation_time
-                 has_summary = "summary" in doc and bool(doc["summary"])
+            for i, doc in enumerate(sample_docs, 1):
+                obj_id = doc["_id"]
+                timestamp = obj_id.generation_time
+                has_summary = "summary" in doc and bool(doc["summary"])
                 
                 sample_info = {
                     "index": i,
@@ -98,7 +99,8 @@ def debug_mongodb_queries(mongodb_client: MongoDBClient) -> dict:
                     "summary_length": len(doc.get("summary", "")) if has_summary else 0,
                     "fields": list(doc.keys()),
                 }
-                debug_info["sample_documents"].append(sample_info)
+                if isinstance(debug_info["sample_documents"], list):
+                    debug_info["sample_documents"].append(sample_info)
         
         # Test the 24-hour query
         cutoff_time = datetime.now() - timedelta(hours=24)
@@ -125,7 +127,8 @@ def debug_mongodb_queries(mongodb_client: MongoDBClient) -> dict:
             alt_cutoff_id = ObjectId.from_datetime(alt_cutoff)
             alt_query = {"_id": {"$gte": alt_cutoff_id}}
             alt_count = mongodb_client._collection.count_documents(alt_query)
-            debug_info["query_analysis"][f"{hours}h"] = alt_count
+            if isinstance(debug_info["query_analysis"], dict):
+                debug_info["query_analysis"][f"{hours}h"] = alt_count
             logger.info("    Documents from last %dh: %d", hours, alt_count)
         
         # Test direct date field if available
@@ -148,7 +151,7 @@ def debug_mongodb_queries(mongodb_client: MongoDBClient) -> dict:
     return debug_info
 
 
-def save_test_outputs(leads: list[Lead], unique_leads: list[Lead], test_start_time: datetime, debug_info: dict = None) -> None:
+def save_test_outputs(leads: list[Lead], unique_leads: list[Lead], test_start_time: datetime, debug_info: dict[str, object] | None = None) -> None:
     """Save test results to debug/output/deduplication_output directory."""
     output_dir = Path("debug/output/deduplication_output")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -225,7 +228,7 @@ def save_test_outputs(leads: list[Lead], unique_leads: list[Lead], test_start_ti
     logger.info("  📄 Summary: %s", summary_file.name)
 
 
-def main():
+def main() -> None:
     """Run the deduplication debug test with real API calls."""
     test_start_time = datetime.now()
     logger.info("🧪 DEDUPLICATION DEBUG TEST STARTED")

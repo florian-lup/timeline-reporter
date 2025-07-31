@@ -33,7 +33,7 @@ def get_random_anchor() -> tuple[TTSVoice, str]:
     Returns:
         Tuple of (voice, anchor_name)
     """
-    voice = random.choice(list(VOICE_ANCHOR_MAPPING.keys()))
+    voice: TTSVoice = random.choice(list(VOICE_ANCHOR_MAPPING.keys()))  # type: ignore[arg-type]
     anchor_name = VOICE_ANCHOR_MAPPING[voice]
     return voice, anchor_name
 

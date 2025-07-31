@@ -10,6 +10,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, Any
 
 from clients import OpenAIClient
 from config.curation_config import (
@@ -56,9 +57,9 @@ def save_test_outputs(
     original_leads: list[Lead], 
     curated_leads: list[Lead], 
     test_start_time: datetime,
-    raw_response: str = None,
-    debug_info: dict = None,
-    scoring_results: list[dict] = None
+    raw_response: str | None = None,
+    debug_info: dict[str, object] | None = None,
+    scoring_results: list[dict[str, object]] | None = None
 ) -> None:
     """Save comprehensive test results to debug/output/curation_output directory."""
     output_dir = Path("debug/output/curation_output")
@@ -200,7 +201,7 @@ def capture_raw_openai_response(openai_client: OpenAIClient, leads: list[Lead]) 
     return raw_response
 
 
-def parse_and_display_scores(raw_response: str, leads: list[Lead]) -> list[dict]:
+def parse_and_display_scores(raw_response: str, leads: list[Lead]) -> list[dict[str, object]]:
     """Parse the raw OpenAI response and display detailed scoring for each lead."""
     import json
     
@@ -366,7 +367,7 @@ def apply_curation_logic(raw_response: str, leads: list[Lead]) -> list[Lead]:
     return [e.lead for e in selected]
 
 
-def analyze_curation_results(original_leads: list[Lead], curated_leads: list[Lead]) -> dict:
+def analyze_curation_results(original_leads: list[Lead], curated_leads: list[Lead]) -> dict[str, object]:
     """Analyze the curation results and return debug information."""
     analysis = {
         "lead_count_analysis": {
@@ -395,7 +396,7 @@ def analyze_curation_results(original_leads: list[Lead], curated_leads: list[Lea
     return analysis
 
 
-def main():
+def main() -> None:
     """Run the curation debug test with real API calls."""
     test_start_time = datetime.now()
     logger.info("🧪 LEAD CURATION DEBUG TEST STARTED")
@@ -448,7 +449,8 @@ def main():
         logger.info("  📊 Original leads: %d", len(original_leads))
         logger.info("  📊 Curated leads: %d", len(curated_leads))
         logger.info("  📊 Leads filtered out: %d", len(original_leads) - len(curated_leads))
-        logger.info("  📊 Selection rate: %.1f%%", analysis["lead_count_analysis"]["selection_rate"])
+        if isinstance(analysis, dict) and "lead_count_analysis" in analysis:
+            logger.info("  📊 Selection rate: %.1f%%", analysis["lead_count_analysis"]["selection_rate"])  # type: ignore[index]
         
         if curated_leads:
             logger.info("🏆 Selected leads:")
@@ -477,7 +479,8 @@ def main():
         print(f"  Input leads: {len(original_leads)}")
         print(f"  Selected leads: {len(curated_leads)}")
         print(f"  Filtered out: {len(original_leads) - len(curated_leads)}")
-        print(f"  Selection rate: {analysis['lead_count_analysis']['selection_rate']:.1f}%")
+        if isinstance(analysis, dict) and "lead_count_analysis" in analysis:
+            print(f"  Selection rate: {analysis['lead_count_analysis']['selection_rate']:.1f}%")  # type: ignore[index]
         
         print(f"\n⚙️ CURATION SETTINGS:")
         print(f"  Max leads limit: {MAX_LEADS}")
@@ -500,7 +503,7 @@ def main():
         print(f"\n📁 All debug files saved in: debug/output/curation_output/")
         print(f"💡 Files include: original leads, curated leads, raw AI response, and detailed analysis")
         
-        return True
+        # return True  # Removed - function should not return value
         
     except Exception as e:
         logger.error("❌ TEST FAILED: %s", str(e))

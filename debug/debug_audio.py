@@ -24,7 +24,8 @@ import os
 import json
 import requests
 from pathlib import Path
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import Mock, patch
 
 from clients import MongoDBClient, OpenAIClient
 from clients.cloudflare_r2 import CloudflareR2Client
@@ -34,7 +35,7 @@ from services.story_persistence import persist_podcast
 from utils import get_today_formatted
 
 
-def test_tts_instructions_verification():
+def test_tts_instructions_verification() -> bool:
     """Test and verify that TTS instructions are properly sent to OpenAI API."""
     print("\n" + "="*60)
     print("🔍 TTS INSTRUCTIONS VERIFICATION TEST")
@@ -63,14 +64,14 @@ def test_tts_instructions_verification():
         captured_params = {}
         original_create = openai_client._client.audio.speech.create
         
-        def mock_create(**kwargs):
+        def mock_create(**kwargs: Any) -> Any:
             captured_params.update(kwargs)
             # Return a mock response
             class MockResponse:
                 content = b"mock_audio_data"
             return MockResponse()
         
-        openai_client._client.audio.speech.create = mock_create
+        openai_client._client.audio.speech.create = mock_create  # type: ignore[method-assign]
         
         # Make a test TTS call with instructions using random voice selection
         test_text = "This is a test of the TTS instructions feature."
@@ -94,8 +95,9 @@ def test_tts_instructions_verification():
         
         if 'instructions' in captured_params:
             instructions_text = captured_params['instructions']
-            print(f"   Instructions Length: {len(instructions_text)} characters")
-            print(f"   Instructions Preview: {instructions_text[:100]}...")
+            if isinstance(instructions_text, str):
+                print(f"   Instructions Length: {len(instructions_text)} characters")
+                print(f"   Instructions Preview: {instructions_text[:100]}...")
             
             # Verify it matches our config
             if instructions_text == TTS_INSTRUCTION:
@@ -104,7 +106,7 @@ def test_tts_instructions_verification():
                 print(f"   ⚠️  Instructions don't match config")
         
         # Restore original method
-        openai_client._client.audio.speech.create = original_create
+        openai_client._client.audio.speech.create = original_create  # type: ignore[method-assign]
         
         return 'instructions' in captured_params
         
@@ -376,7 +378,7 @@ if __name__ == "__main__":
         exit(1)
 
 
-def demonstrate_tts_instruction():
+def demonstrate_tts_instruction() -> None:
     """Demonstrate the TTS instruction for news podcast delivery."""
     from config.audio_config import (
         TTS_INSTRUCTION,

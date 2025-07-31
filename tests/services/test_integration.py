@@ -197,6 +197,7 @@ class TestServicesIntegration:
             leads,
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
+            mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
         researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
@@ -329,6 +330,7 @@ class TestServicesIntegration:
             leads,
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
+            mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
 
@@ -440,6 +442,7 @@ class TestServicesIntegration:
             leads,
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
+            mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
         researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
@@ -629,6 +632,7 @@ class TestServicesIntegration:
             leads,
             openai_client=mock_clients["openai"],
             pinecone_client=mock_clients["pinecone"],
+            mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
         stories = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])

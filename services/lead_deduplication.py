@@ -167,7 +167,7 @@ def _database_deduplication(
 
 def _compare_with_database_records(
     lead: Lead, 
-    recent_stories: list[dict], 
+    recent_stories: list[dict[str, object]], 
     openai_client: OpenAIClient
 ) -> bool:
     """Use GPT-4o to compare a lead against recent database records.
@@ -206,7 +206,7 @@ def _compare_with_database_records(
         
         # Parse structured response
         import json
-        result_data = json.loads(response)
+        result_data: dict[str, object] = json.loads(response)
         return result_data["result"] == "DUPLICATE"
     
     except Exception as e:

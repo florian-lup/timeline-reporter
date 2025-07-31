@@ -126,9 +126,9 @@ ignore = [
     
     # Documentation (can be strict, adjust as needed)
     "D100",    # Missing docstring in public module
-    "D101",    # Missing docstring in public class
+    # "D101",    # Missing docstring in public class
     "D102",    # Missing docstring in public method
-    "D103",    # Missing docstring in public function
+    # "D103",    # Missing docstring in public function
     "D104",    # Missing docstring in public package
     "D105",    # Missing docstring in magic method
     
@@ -251,6 +251,9 @@ module = [
     "pinecone.*",
     "openai.*",
     "responses.*",
+    "boto3.*",
+    "botocore.*",
+    "requests.*",
 ]
 ignore_missing_imports = true
 

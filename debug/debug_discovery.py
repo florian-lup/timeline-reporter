@@ -10,6 +10,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, Any
 
 from clients import PerplexityClient
 from config.discovery_config import (
@@ -20,7 +21,7 @@ from services.lead_discovery import _json_to_leads
 from utils import logger
 
 
-def main():
+def main() -> None:
     """Run the debug test for lead discovery."""
     logger.info("🔍 Starting debug test for lead discovery...")
     
@@ -41,7 +42,7 @@ def main():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Debug data collection
-    debug_data = {
+    debug_data: Dict[str, Any] = {
         "timestamp": timestamp,
         "categories": {},
         "total_leads": 0,
@@ -67,7 +68,7 @@ def main():
             
             # ALSO test unstructured output for comparison
             unstructured_response = _debug_unstructured_discovery(perplexity_client, instructions)
-            unstructured_content = unstructured_response["choices"][0]["message"]["content"]
+            unstructured_content = str(unstructured_response["choices"][0]["message"]["content"])
 
             logger.info(
                 "  ✓ %s: %d leads found",
@@ -261,10 +262,10 @@ def _debug_lead_discovery_with_thinking(perplexity_client: PerplexityClient, pro
         data = response.json()
 
     # Return the raw content with <think> tags intact
-    return data["choices"][0]["message"]["content"]
+    return str(data["choices"][0]["message"]["content"])
 
 
-def _debug_unstructured_discovery(perplexity_client: PerplexityClient, prompt: str) -> dict:
+def _debug_unstructured_discovery(perplexity_client: PerplexityClient, prompt: str) -> Dict[str, Any]:
     """Debug version that returns natural unstructured response from Perplexity."""
     import httpx
     from config.discovery_config import (
@@ -307,7 +308,7 @@ def _debug_unstructured_discovery(perplexity_client: PerplexityClient, prompt: s
         data = response.json()
 
     # Return the full response data (not just content)
-    return data
+    return data  # type: ignore[no-any-return]
 
 
 def _extract_thinking_content(raw_content: str) -> str:

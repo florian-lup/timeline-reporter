@@ -113,18 +113,12 @@ class OpenAIClient:
         Returns:
             Audio data as bytes
         """
-        # Prepare request parameters
-        request_params = {
-            "model": model,
-            "voice": voice,
-            "input": text,
-            "speed": speed,
-            "response_format": response_format,
-        }
-        
-        # Add instruction parameter for gpt-4o-mini-tts model
-        if instruction and "gpt-4o-mini-tts" in model:
-            request_params["instructions"] = instruction
-        
-        response = self._client.audio.speech.create(**request_params)
+        response = self._client.audio.speech.create(
+            model=model,
+            voice=voice,  # type: ignore[arg-type]
+            input=text,
+            speed=speed,
+            response_format=response_format,  # type: ignore[arg-type]
+            instructions=instruction  # type: ignore[call-arg]
+        )
         return response.content
