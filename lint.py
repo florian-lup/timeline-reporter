@@ -63,6 +63,7 @@ def run_mypy() -> int:
 
 
 def main() -> int:
+    """Process command line arguments and run requested linting commands."""
     if len(sys.argv) < MIN_ARGS_REQUIRED:
         print(__doc__)
         return 1

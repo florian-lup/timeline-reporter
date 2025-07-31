@@ -6,10 +6,9 @@ from unittest.mock import Mock, patch
 import pytest
 
 from config.curation_config import MAX_LEADS
-from models import Lead
+from models import Lead, LeadEvaluation
 from services import curate_leads
 from services.lead_curation import LeadCurator
-from models import LeadEvaluation
 
 
 class TestLeadCuration:
@@ -111,7 +110,9 @@ class TestLeadCuration:
                 ),
             ),
             Lead(
-                discovered_lead=("Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."),
+                discovered_lead=(
+                    "Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."
+                ),
                 report=(
                     "Local sports championship victory: The city's professional "
                     "baseball team won their first championship in 50 years, "
@@ -295,7 +296,9 @@ class TestLeadCuration:
         result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
         # Check logging calls - updated to match new emoji-based format
-        mock_logger.info.assert_any_call("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6)
+        mock_logger.info.assert_any_call(
+            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6
+        )
         mock_logger.info.assert_any_call(
             "  ✓ Priority selection complete: %d high-impact leads selected",
             len(result),
@@ -378,14 +381,17 @@ class TestLeadCurator:
                 "opportunities.",
             ),
             Lead(
-                discovered_lead="Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations.",
+                discovered_lead=(
+                    "Local sports team wins championship after 50 years, bringing joy to "
+                    "fans and boosting local economy through celebrations."
+                ),
             ),
         ]
 
     def test_curator_initialization(self, mock_openai_client):
         """Test curator initialization."""
         from config.curation_config import CRITERIA_WEIGHTS
-        
+
         curator = LeadCurator(mock_openai_client)
 
         assert curator.openai_client == mock_openai_client
@@ -514,7 +520,7 @@ class TestLeadCurator:
         ranked = curator._compute_final_ranking(evaluations)
 
         # Lead 1 should rank first: 8.0
-        # Lead 3 should rank second: 7.8  
+        # Lead 3 should rank second: 7.8
         # Lead 2 should rank third: 7.5
 
         assert ranked[0].lead.discovered_lead == "Lead 1"
@@ -548,22 +554,24 @@ class TestLeadCurator:
     def test_full_pipeline_integration(self, mock_openai_client, sample_leads):
         """Test the complete curation pipeline."""
         # Mock evaluation response
-        evaluation_response = json.dumps({
-            "evaluations": [
-                {
-                    "index": i + 1,
-                    "impact": 9 - i,
-                    "proximity": 8,
-                    "prominence": 7,
-                    "relevance": 8,
-                    "hook": 7,
-                    "novelty": 6,
-                    "conflict": 5,
-                    "brief_reasoning": f"Lead {i + 1}",
-                }
-                for i in range(len(sample_leads))
-            ]
-        })
+        evaluation_response = json.dumps(
+            {
+                "evaluations": [
+                    {
+                        "index": i + 1,
+                        "impact": 9 - i,
+                        "proximity": 8,
+                        "prominence": 7,
+                        "relevance": 8,
+                        "hook": 7,
+                        "novelty": 6,
+                        "conflict": 5,
+                        "brief_reasoning": f"Lead {i + 1}",
+                    }
+                    for i in range(len(sample_leads))
+                ]
+            }
+        )
 
         mock_openai_client.chat_completion.return_value = evaluation_response
 
@@ -634,8 +642,12 @@ class TestLeadCurator:
         curator.curate_leads(sample_leads[:1])
 
         # Verify logging calls - updated to match new emoji-based format
-        mock_logger.info.assert_any_call("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1)
-        mock_logger.info.assert_any_call("  ✓ Priority selection complete: %d high-impact leads selected", 1)
+        mock_logger.info.assert_any_call(
+            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1
+        )
+        mock_logger.info.assert_any_call(
+            "  ✓ Priority selection complete: %d high-impact leads selected", 1
+        )
 
 
 class TestLeadCurationEdgeCases:
@@ -660,7 +672,7 @@ class TestLeadCurationEdgeCases:
         mock_openai_client.chat_completion.return_value = "Invalid JSON {"
 
         curator = LeadCurator(mock_openai_client)
-        
+
         with pytest.raises(json.JSONDecodeError):
             curator.curate_leads([sample_lead])
 

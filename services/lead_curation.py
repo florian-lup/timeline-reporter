@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 
 from clients import OpenAIClient
 from config.curation_config import (
@@ -97,13 +96,10 @@ class LeadCurator:
         user_prompt = CRITERIA_EVALUATION_PROMPT_TEMPLATE.format(leads_text=leads_text)
 
         response_text = self.openai_client.chat_completion(
-            user_prompt, 
-            model=CURATION_MODEL, 
-            response_format={
-                "type": "json_schema",
-                "json_schema": CRITERIA_EVALUATION_SCHEMA
-            },
-            system_prompt=CRITERIA_EVALUATION_SYSTEM_PROMPT
+            user_prompt,
+            model=CURATION_MODEL,
+            response_format={"type": "json_schema", "json_schema": CRITERIA_EVALUATION_SCHEMA},
+            system_prompt=CRITERIA_EVALUATION_SYSTEM_PROMPT,
         )
 
         # Parse response - structured output guarantees correct format
@@ -114,16 +110,15 @@ class LeadCurator:
         for i, lead in enumerate(leads):
             # Find scores for this lead - guaranteed to exist due to schema
             lead_scores = next(
-                score_entry for score_entry in evaluations_data 
-                if score_entry["index"] == i + 1
+                score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1
             )
 
-            criteria_scores = {
-                k: float(lead_scores[k]) for k in CRITERIA_WEIGHTS
-            }
+            criteria_scores = {k: float(lead_scores[k]) for k in CRITERIA_WEIGHTS}
 
             # Calculate weighted score
-            weighted = sum(score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items())
+            weighted = sum(
+                score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items()
+            )
             weighted = round(weighted, 2)
 
             evaluations.append(
@@ -136,7 +131,9 @@ class LeadCurator:
 
             first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
             reasoning = lead_scores["brief_reasoning"]
-            reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + ("..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else "")
+            reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + (
+                "..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else ""
+            )
             logger.info(
                 "  📊 Lead %d/%d scored %.1f - %s: %s",
                 i + 1,
@@ -153,7 +150,7 @@ class LeadCurator:
         # Final rank is simply the weighted score
         for eval in evaluations:
             eval.final_rank = eval.weighted_score
-            
+
             logger.debug(
                 "Lead final ranking: weighted=%.2f, final=%.2f",
                 eval.weighted_score,
@@ -168,15 +165,13 @@ class LeadCurator:
     def _select_top_leads(self, ranked_evaluations: list[LeadEvaluation]) -> list[LeadEvaluation]:
         """Step 4: Select top leads by final rank."""
         # Simply take the top N leads based on final ranking
-        selected = ranked_evaluations[: MAX_LEADS]
-
-        return selected
+        return ranked_evaluations[:MAX_LEADS]
 
 
 def curate_leads(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Lead]:
     """Selects the most impactful leads from deduplicated list.
 
-    Uses AI evaluation with multi-criteria scoring to select only 
+    Uses AI evaluation with multi-criteria scoring to select only
     the top priority stories that warrant comprehensive research.
     """
     if not leads:

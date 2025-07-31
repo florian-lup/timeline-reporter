@@ -13,7 +13,7 @@ WRITING_MODEL: str = "gpt-4.1-2025-04-14"
 # Writing System Prompt
 # ---------------------------------------------------------------------------
 WRITING_SYSTEM_PROMPT = """
-You are an award-winning news journalist writing for a global general-interest audience. Your reporting adheres to the core principles of journalism—accuracy, clarity, balance, and integrity. 
+You are an award-winning news journalist writing for a global general-interest audience. Your reporting adheres to the core principles of journalism—accuracy, clarity, balance, and integrity.
 
 Write in Associated Press (AP) style: short, active sentences, objective tone, and no first-person narration. Assume the reader is intelligent but busy; prioritize the most newsworthy facts first, then provide context and analysis. When facts are uncertain, clearly attribute or qualify them. Avoid sensationalism, speculation, or editorializing.
 
@@ -51,22 +51,22 @@ STORY_WRITING_SCHEMA = {
         "properties": {
             "headline": {
                 "type": "string",
-                "description": "News headline, ≤ 15 words, Title Case, no period"
+                "description": "News headline, ≤ 15 words, Title Case, no period",
             },
             "summary": {
-                "type": "string", 
-                "description": "80-120 words, present tense, standalone overview"
+                "type": "string",
+                "description": "80-120 words, present tense, standalone overview",
             },
             "body": {
                 "type": "string",
-                "description": "1200-2000 words, AP style news article body"
+                "description": "1200-2000 words, AP style news article body",
             },
             "tag": {
                 "type": "string",
-                "description": "Single lowercase category (e.g., politics, technology, business, health)"
-            }
+                "description": "Single lowercase category (e.g., politics, technology, business, health)",
+            },
         },
         "required": ["headline", "summary", "body", "tag"],
-        "additionalProperties": False
-    }
+        "additionalProperties": False,
+    },
 }

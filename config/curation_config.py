@@ -72,55 +72,32 @@ CRITERIA_EVALUATION_SCHEMA = {
                 "items": {
                     "type": "object",
                     "properties": {
-                        "index": {
-                            "type": "integer",
-                            "minimum": 1
-                        },
-                        "impact": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "proximity": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "prominence": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "relevance": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "hook": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "novelty": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "conflict": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 10
-                        },
-                        "brief_reasoning": {
-                            "type": "string"
-                        }
+                        "index": {"type": "integer", "minimum": 1},
+                        "impact": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "proximity": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "prominence": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "relevance": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "hook": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "novelty": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "conflict": {"type": "integer", "minimum": 1, "maximum": 10},
+                        "brief_reasoning": {"type": "string"},
                     },
-                    "required": ["index", "impact", "proximity", "prominence", "relevance", "hook", "novelty", "conflict", "brief_reasoning"],
-                    "additionalProperties": False
-                }
+                    "required": [
+                        "index",
+                        "impact",
+                        "proximity",
+                        "prominence",
+                        "relevance",
+                        "hook",
+                        "novelty",
+                        "conflict",
+                        "brief_reasoning",
+                    ],
+                    "additionalProperties": False,
+                },
             }
         },
         "required": ["evaluations"],
-        "additionalProperties": False
-    }
+        "additionalProperties": False,
+    },
 }

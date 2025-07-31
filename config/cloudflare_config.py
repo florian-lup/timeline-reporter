@@ -4,14 +4,6 @@ This module contains all settings and configuration data
 related to Cloudflare R2 object storage and CDN.
 """
 
-from .settings import (
-    CLOUDFLARE_ACCOUNT_ID,
-    CLOUDFLARE_R2_ACCESS_KEY,
-    CLOUDFLARE_R2_BUCKET,
-    CLOUDFLARE_R2_CUSTOM_DOMAIN,
-    CLOUDFLARE_R2_SECRET_KEY,
-)
-
 # ---------------------------------------------------------------------------
 # CDN Configuration
 # ---------------------------------------------------------------------------
@@ -32,7 +24,7 @@ AUDIO_FILE_METADATA = {
 # ---------------------------------------------------------------------------
 AUDIO_CONTENT_TYPE_MAP = {
     "mp3": "audio/mpeg",
-    "aac": "audio/aac", 
+    "aac": "audio/aac",
     "wav": "audio/wav",
     "ogg": "audio/ogg",
     "flac": "audio/flac",
@@ -48,4 +40,4 @@ DEFAULT_AUDIO_CONTENT_TYPE: str = "audio/mpeg"
 R2_ENDPOINT_URL_TEMPLATE: str = "https://{account_id}.r2.cloudflarestorage.com"
 R2_CDN_URL_TEMPLATE: str = "https://{bucket_name}.{account_id}.r2.dev"
 R2_SIGNATURE_VERSION: str = "s3v4"
-R2_REGION: str = "auto" 
+R2_REGION: str = "auto"

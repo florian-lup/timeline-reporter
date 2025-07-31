@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import httpx
 
 from config import (
@@ -11,17 +9,17 @@ from config import (
 )
 from config.discovery_config import (
     DISCOVERY_SYSTEM_PROMPT,
-    LEAD_DISCOVERY_MODEL,
-    LEAD_DISCOVERY_JSON_SCHEMA,
-    SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
-    SEARCH_AFTER_DATE_FILTER as DISCOVERY_SEARCH_AFTER_DATE_FILTER,
     DISCOVERY_TIMEOUT_SECONDS,
+    LEAD_DISCOVERY_JSON_SCHEMA,
+    LEAD_DISCOVERY_MODEL,
+    SEARCH_AFTER_DATE_FILTER as DISCOVERY_SEARCH_AFTER_DATE_FILTER,
+    SEARCH_CONTEXT_SIZE as DISCOVERY_SEARCH_CONTEXT_SIZE,
 )
 from config.research_config import (
     LEAD_RESEARCH_MODEL,
     RESEARCH_SYSTEM_PROMPT,
-    SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
     RESEARCH_TIMEOUT_SECONDS,
+    SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
 )
 
 _PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions"
@@ -99,15 +97,15 @@ class PerplexityClient:
 
         # Extract content and citations from the response
         raw_content: str = data["choices"][0]["message"]["content"]
-        
+
         # For reasoning models, remove <think> sections to get clean content
         clean_content = self._extract_text(raw_content)
-        
+
         # Citations are in the search_results field, extract URLs from the search results
         citations: list[str] = []
         if "search_results" in data and data["search_results"]:
             citations = [result["url"] for result in data["search_results"] if result.get("url")]
-        
+
         return clean_content, citations
 
     def lead_discovery(self, prompt: str) -> str:
@@ -167,9 +165,9 @@ class PerplexityClient:
     def _remove_think_tags(self, content: str) -> str:
         """Remove <think>...</think> reasoning sections from response content."""
         import re
-        
+
         # Remove <think>...</think> sections and clean up whitespace
-        cleaned = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+        cleaned = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
         return cleaned.strip()
 
     def _extract_json(self, raw_content: str) -> str:
@@ -181,7 +179,11 @@ class PerplexityClient:
         import re
 
         # Split by </think> to get the JSON part, fallback to entire content if no </think> tag
-        json_part = raw_content.split("</think>", 1)[1].strip() if "</think>" in raw_content else raw_content.strip()
+        json_part = (
+            raw_content.split("</think>", 1)[1].strip()
+            if "</think>" in raw_content
+            else raw_content.strip()
+        )
 
         # Clean up any remaining markdown or XML-like tags
         json_part = re.sub(r"```(?:json)?\n?", "", json_part)
@@ -189,7 +191,7 @@ class PerplexityClient:
 
     def _extract_text(self, raw_content: str) -> str:
         """Extract clean content from reasoning model responses.
-        
+
         Reasoning models like sonar-reasoning-pro include <think> sections
         that should be removed for cleaner output.
         """

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+
 import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
@@ -38,7 +39,7 @@ class CloudflareR2Client:
         bucket_name: str | None = None,
     ):
         """Initialize R2 client using S3-compatible API.
-        
+
         Args:
             account_id: Cloudflare account ID (defaults to config)
             access_key: R2 access key (defaults to config)
@@ -50,7 +51,7 @@ class CloudflareR2Client:
         self.access_key = access_key or CLOUDFLARE_R2_ACCESS_KEY
         self.secret_key = secret_key or CLOUDFLARE_R2_SECRET_KEY
         self.bucket_name = bucket_name or CLOUDFLARE_R2_BUCKET
-        
+
         if not all([self.account_id, self.access_key, self.secret_key]):
             raise ValueError(
                 "Missing Cloudflare R2 credentials. Set environment variables:\n"
@@ -58,27 +59,26 @@ class CloudflareR2Client:
                 "- CLOUDFLARE_R2_ACCESS_KEY\n"
                 "- CLOUDFLARE_R2_SECRET_KEY"
             )
-        
+
         # Initialize S3-compatible client for R2
         endpoint_url = R2_ENDPOINT_URL_TEMPLATE.format(account_id=self.account_id)
         self.s3_client = boto3.client(
-            's3',
+            "s3",
             endpoint_url=endpoint_url,
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
             config=Config(signature_version=R2_SIGNATURE_VERSION),
-            region_name=R2_REGION
+            region_name=R2_REGION,
         )
-        
+
         # CDN domain for public access - use custom domain if available
         if CLOUDFLARE_R2_CUSTOM_DOMAIN:
             self.cdn_domain = f"https://{CLOUDFLARE_R2_CUSTOM_DOMAIN}"
         else:
             self.cdn_domain = R2_CDN_URL_TEMPLATE.format(
-                bucket_name=self.bucket_name,
-                account_id=self.account_id
+                bucket_name=self.bucket_name, account_id=self.account_id
             )
-        
+
         logger.info("✓ Cloudflare R2 client initialized: %s", self.bucket_name)
 
     def _get_content_type(self, audio_format: str) -> str:
@@ -87,30 +87,27 @@ class CloudflareR2Client:
 
     def upload_audio(self, audio_bytes: bytes, podcast_id: str | None = None) -> str:
         """Upload audio file to R2 and return CDN URL.
-        
+
         Args:
             audio_bytes: Raw audio file data
             podcast_id: Unique identifier for the podcast (auto-generated if None)
-            
+
         Returns:
             CDN URL for the uploaded audio file
         """
         if podcast_id is None:
             podcast_id = str(uuid.uuid4())
-        
+
         # Use the configured audio format for file extension and content type
         file_extension = AUDIO_FORMAT
         content_type = self._get_content_type(AUDIO_FORMAT)
-        
+
         key = f"{STORAGE_PATH_PREFIX}/{podcast_id}.{file_extension}"
-        
+
         # Prepare metadata combining config defaults with specific values
         metadata = AUDIO_FILE_METADATA.copy()
-        metadata.update({
-            'format': AUDIO_FORMAT,
-            'podcast-id': podcast_id
-        })
-        
+        metadata.update({"format": AUDIO_FORMAT, "podcast-id": podcast_id})
+
         try:
             self.s3_client.put_object(
                 Bucket=self.bucket_name,
@@ -118,17 +115,21 @@ class CloudflareR2Client:
                 Body=audio_bytes,
                 ContentType=content_type,
                 CacheControl=CDN_CACHE_CONTROL,
-                Metadata=metadata
+                Metadata=metadata,
             )
-            
+
             cdn_url = f"{self.cdn_domain}/{key}"
             file_size_mb = len(audio_bytes) / (1024 * 1024)
-            
-            logger.info("  ✓ Audio uploaded to R2 CDN: %.1f MB (%s format)", file_size_mb, AUDIO_FORMAT.upper())
+
+            logger.info(
+                "  ✓ Audio uploaded to R2 CDN: %.1f MB (%s format)",
+                file_size_mb,
+                AUDIO_FORMAT.upper(),
+            )
             logger.info("  🔗 CDN URL: %s", cdn_url)
-            
+
             return cdn_url
-            
+
         except ClientError as e:
             logger.error("Failed to upload audio to R2: %s", e)
-            raise RuntimeError(f"R2 upload failed: {e}") from e 
+            raise RuntimeError(f"R2 upload failed: {e}") from e

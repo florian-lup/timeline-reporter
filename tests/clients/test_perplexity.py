@@ -1,6 +1,5 @@
 """Test suite for Perplexity client."""
 
-import json
 from unittest.mock import Mock, patch
 
 import httpx
@@ -17,16 +16,12 @@ class TestPerplexityClient:
         """Sample API response data."""
         return {
             "choices": [
-                {
-                    "message": {
-                        "content": "This is the research content for testing purposes."
-                    }
-                }
+                {"message": {"content": "This is the research content for testing purposes."}}
             ],
             "search_results": [
                 {"url": "https://example.com/source1"},
-                {"url": "https://example.com/source2"}
-            ]
+                {"url": "https://example.com/source2"},
+            ],
         }
 
     @pytest.fixture
@@ -100,7 +95,7 @@ class TestPerplexityClient:
 
             expected_content = "This is the research content for testing purposes."
             expected_citations = ["https://example.com/source1", "https://example.com/source2"]
-            
+
             assert content == expected_content
             assert citations == expected_citations
 
@@ -137,7 +132,7 @@ class TestPerplexityClient:
             assert payload["messages"][1]["role"] == "user"
             assert payload["messages"][1]["content"] == "test prompt"
             assert payload["web_search_options"]["search_context_size"] == "large"
-            assert payload["return_citations"] == True
+            assert payload["return_citations"]
 
     def test_research_search_context_size(self, mock_httpx_client, sample_response_data):
         """Test that the search context size is properly set."""
@@ -158,7 +153,9 @@ class TestPerplexityClient:
     def test_research_http_error(self, mock_httpx_client):
         """Test that HTTP errors are properly raised."""
         mock_client, mock_response = mock_httpx_client
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError("404 Not Found", request=Mock(), response=Mock())
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "404 Not Found", request=Mock(), response=Mock()
+        )
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()
@@ -333,19 +330,22 @@ Let me search for current information.
 
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
-            patch("clients.perplexity_client.LEAD_DISCOVERY_JSON_SCHEMA", {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "discovered_lead": {
-                            "type": "string",
-                            "description": "A concise description of the discovered lead"
-                        }
+            patch(
+                "clients.perplexity_client.LEAD_DISCOVERY_JSON_SCHEMA",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "discovered_lead": {
+                                "type": "string",
+                                "description": "A concise description of the discovered lead",
+                            }
+                        },
+                        "required": ["discovered_lead"],
                     },
-                    "required": ["discovered_lead"]
-                }
-            })
+                },
+            ),
         ):
             client = PerplexityClient()
             client.lead_discovery("test prompt")
@@ -422,7 +422,10 @@ Let me search for current information.
 
         with (
             patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"),
-            patch("clients.perplexity_client.DISCOVERY_SYSTEM_PROMPT", "You are an investigative news scout for a global newsroom")
+            patch(
+                "clients.perplexity_client.DISCOVERY_SYSTEM_PROMPT",
+                "You are an investigative news scout for a global newsroom",
+            ),
         ):
             client = PerplexityClient()
             client.lead_discovery("test prompt")

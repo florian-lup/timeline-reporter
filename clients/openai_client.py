@@ -11,7 +11,7 @@ from config import (
     EMBEDDING_MODEL,
     OPENAI_API_KEY,
 )
-from config.audio_config import TTS_MODEL, TTS_SPEED, TTSVoice, AUDIO_FORMAT, get_random_anchor
+from config.audio_config import AUDIO_FORMAT, TTS_MODEL, TTS_SPEED, TTSVoice
 
 
 class OpenAIClient:
@@ -119,6 +119,6 @@ class OpenAIClient:
             input=text,
             speed=speed,
             response_format=response_format,  # type: ignore[arg-type]
-            instructions=instruction  # type: ignore[call-arg]
+            instructions=instruction,  # type: ignore[call-arg]
         )
         return response.content

@@ -4,7 +4,7 @@ This module contains all settings, prompts, and configuration data
 related to lead discovery across different news categories.
 """
 
-from utils import get_today_formatted, get_today_api_format
+from utils import get_today_api_format, get_today_formatted
 
 # ---------------------------------------------------------------------------
 # Discovery Model Configuration

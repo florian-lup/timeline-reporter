@@ -2,14 +2,14 @@
 
 from clients import MongoDBClient, OpenAIClient, PineconeClient
 from config.deduplication_config import (
-    INCLUDE_METADATA,
-    REQUIRED_METADATA_FIELDS,
-    VECTOR_ID_PREFIX,
     DEDUPLICATION_MODEL,
-    LOOKBACK_HOURS,
-    DEDUPLICATION_SYSTEM_PROMPT,
     DEDUPLICATION_PROMPT_TEMPLATE,
     DEDUPLICATION_SCHEMA,
+    DEDUPLICATION_SYSTEM_PROMPT,
+    INCLUDE_METADATA,
+    LOOKBACK_HOURS,
+    REQUIRED_METADATA_FIELDS,
+    VECTOR_ID_PREFIX,
 )
 from models.core import Lead
 from utils import logger
@@ -54,7 +54,7 @@ def deduplicate_leads(
             openai_client=openai_client,
             mongodb_client=mongodb_client,
         )
-    
+
     return vector_unique_leads
 
 
@@ -110,7 +110,7 @@ def _vector_deduplication(
         logger.info("  🔄 Vector layer: Removed %d duplicates", duplicates_found)
     else:
         logger.info("  ✓ Vector layer: No duplicates found")
-    
+
     return unique_leads
 
 
@@ -122,24 +122,20 @@ def _database_deduplication(
 ) -> list[Lead]:
     """Second deduplication layer using GPT-4o comparison against database records."""
     logger.info("  🤖 Running GPT-4o database comparison...")
-    
+
     # Get recent stories from database
     recent_stories = mongodb_client.get_recent_stories(hours=LOOKBACK_HOURS)
-    
+
     if not recent_stories:
         logger.info("  ✓ Database layer: No recent stories to compare against")
         return leads
-    
+
     unique_leads: list[Lead] = []
     database_duplicates = 0
-    
+
     for idx, lead in enumerate(leads):
-        is_duplicate = _compare_with_database_records(
-            lead, 
-            recent_stories, 
-            openai_client
-        )
-        
+        is_duplicate = _compare_with_database_records(lead, recent_stories, openai_client)
+
         if is_duplicate:
             database_duplicates += 1
             first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
@@ -151,12 +147,12 @@ def _database_deduplication(
             )
         else:
             unique_leads.append(lead)
-    
+
     if database_duplicates > 0:
         logger.info("  🔄 Database layer: Removed %d duplicates", database_duplicates)
     else:
         logger.info("  ✓ Database layer: No duplicates found")
-    
+
     return unique_leads
 
 
@@ -166,49 +162,47 @@ def _database_deduplication(
 
 
 def _compare_with_database_records(
-    lead: Lead, 
-    recent_stories: list[dict[str, object]], 
-    openai_client: OpenAIClient
+    lead: Lead, recent_stories: list[dict[str, object]], openai_client: OpenAIClient
 ) -> bool:
     """Use GPT-4o to compare a lead against recent database records.
-    
+
     Returns True if the lead is similar to any existing record.
     """
     if not recent_stories:
         return False
-        
+
     # Prepare summaries for comparison
     story_summaries = []
     for story in recent_stories:
-        summary = story.get('summary', '')
+        summary = story.get("summary", "")
         if summary:  # Only include non-empty summaries
             story_summaries.append(summary)
-    
+
     # Create comparison prompt using centralized template
-    existing_summaries_text = chr(10).join([f"{i+1}. {summary}" for i, summary in enumerate(story_summaries)])
-    
+    existing_summaries_text = chr(10).join(
+        [f"{i + 1}. {summary}" for i, summary in enumerate(story_summaries)]
+    )
+
     user_prompt = DEDUPLICATION_PROMPT_TEMPLATE.format(
         lead_text=lead.discovered_lead,
         lookback_hours=LOOKBACK_HOURS,
         existing_summaries=existing_summaries_text,
     )
-    
+
     try:
         response = openai_client.chat_completion(
             prompt=user_prompt,
             model=DEDUPLICATION_MODEL,
             system_prompt=DEDUPLICATION_SYSTEM_PROMPT,
-            response_format={
-                "type": "json_schema",
-                "json_schema": DEDUPLICATION_SCHEMA
-            },
+            response_format={"type": "json_schema", "json_schema": DEDUPLICATION_SCHEMA},
         )
-        
+
         # Parse structured response
         import json
+
         result_data: dict[str, object] = json.loads(response)
         return result_data["result"] == "DUPLICATE"
-    
+
     except Exception as e:
         raise RuntimeError(f"GPT database comparison failed: {e}") from e
 

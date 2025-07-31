@@ -54,12 +54,12 @@ DEDUPLICATION_SCHEMA = {
             "result": {
                 "type": "string",
                 "enum": ["DUPLICATE", "UNIQUE"],
-                "description": "Whether the new lead is a duplicate of existing content or unique"
+                "description": "Whether the new lead is a duplicate of existing content or unique",
             }
         },
         "required": ["result"],
-        "additionalProperties": False
-    }
+        "additionalProperties": False,
+    },
 }
 
 DEDUPLICATION_SYSTEM_PROMPT = """

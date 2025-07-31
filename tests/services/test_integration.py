@@ -42,12 +42,26 @@ class TestServicesIntegration:
         mock_mongodb = Mock()
 
         # Set up discovery responses for three categories
-        politics_response = json.dumps([{"discovered_lead": "Political Summit 2024: World leaders discuss global governance and international cooperation."}])
+        politics_response = json.dumps(
+            [
+                {
+                    "discovered_lead": "Political Summit 2024: World leaders discuss global governance and international cooperation."
+                }
+            ]
+        )
         environment_response = json.dumps(
-            [{"discovered_lead": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
+            [
+                {
+                    "discovered_lead": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."
+                }
+            ]
         )
         entertainment_response = json.dumps(
-            [{"discovered_lead": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
+            [
+                {
+                    "discovered_lead": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."
+                }
+            ]
         )
 
         # Set lead_discovery to return different responses for each call
@@ -60,7 +74,7 @@ class TestServicesIntegration:
         # Set up deduplication (no duplicates)
         mock_openai.embed_text.return_value = [0.1] * 1536
         mock_pinecone.similarity_search.return_value = []
-        
+
         # Set up MongoDB client for recent_stories
         mock_mongodb.get_recent_stories.return_value = []
 
@@ -71,15 +85,18 @@ class TestServicesIntegration:
         lead_research_responses = [
             (
                 "Political leaders from around the world gathered to discuss international cooperation and global governance frameworks.",
-                ["https://example.com/political-summit", "https://example.com/governance"]
+                ["https://example.com/political-summit", "https://example.com/governance"],
             ),
             (
-                "The 2024 Climate Summit brought together world leaders to establish comprehensive environmental policies and carbon reduction goals.",
-                ["https://example.com/climate-summit", "https://example.com/carbon-targets"]
+                (
+                    "The 2024 Climate Summit brought together world leaders to establish "
+                    "comprehensive environmental policies and carbon reduction goals."
+                ),
+                ["https://example.com/climate-summit", "https://example.com/carbon-targets"],
             ),
             (
                 "Researchers have developed breakthrough AI technology that revolutionizes healthcare diagnostics and medical practice.",
-                ["https://example.com/ai-health", "https://example.com/medical-ai"]
+                ["https://example.com/ai-health", "https://example.com/medical-ai"],
             ),
         ]
         mock_perplexity.lead_research.side_effect = lead_research_responses
@@ -89,22 +106,34 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "headline": "World Leaders Unite at Political Summit",
-                    "summary": ("Political leaders agree on new international cooperation framework."),
-                    "body": ("In a historic gathering, world leaders came together to discuss global governance."),
+                    "summary": (
+                        "Political leaders agree on new international cooperation framework."
+                    ),
+                    "body": (
+                        "In a historic gathering, world leaders came together to discuss global governance."
+                    ),
                 }
             ),
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": ("World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals."),
-                    "body": ("In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments."),
+                    "summary": (
+                        "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals."
+                    ),
+                    "body": (
+                        "In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments."
+                    ),
                 }
             ),
             json.dumps(
                 {
                     "headline": "AI Revolution in Healthcare Diagnostics",
-                    "summary": ("Breakthrough AI system shows promise in medical diagnosis and drug discovery."),
-                    "body": ("Researchers have developed an AI system that revolutionizes healthcare diagnostics."),
+                    "summary": (
+                        "Breakthrough AI system shows promise in medical diagnosis and drug discovery."
+                    ),
+                    "body": (
+                        "Researchers have developed an AI system that revolutionizes healthcare diagnostics."
+                    ),
                 }
             ),
         ]
@@ -180,7 +209,9 @@ class TestServicesIntegration:
             mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
+        researched_leads = research_lead(
+            prioritized_leads, perplexity_client=mock_clients["perplexity"]
+        )
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
@@ -228,15 +259,15 @@ class TestServicesIntegration:
             [],  # Fourth lead is unique
             [],  # Fifth lead is unique
         ]
-        
+
         # Ensure MongoDB client returns a list for database comparison
         mock_clients["mongodb"].get_recent_stories.return_value = []
 
         # Set up discovery with multiple leads per category
         politics_json = json.dumps(
             [
-                            {"discovered_lead": "Lead 1: First political lead description"},
-            {"discovered_lead": "Lead 2: Second political lead description"},
+                {"discovered_lead": "Lead 1: First political lead description"},
+                {"discovered_lead": "Lead 2: Second political lead description"},
             ]
         )
         environment_json = json.dumps(
@@ -246,8 +277,8 @@ class TestServicesIntegration:
         )
         entertainment_json = json.dumps(
             [
-                            {"discovered_lead": "Lead 4: Entertainment lead description"},
-            {"discovered_lead": "Lead 5: Sports lead description"},
+                {"discovered_lead": "Lead 4: Entertainment lead description"},
+                {"discovered_lead": "Lead 5: Sports lead description"},
             ]
         )
         mock_clients["perplexity"].lead_discovery.side_effect = [
@@ -257,55 +288,57 @@ class TestServicesIntegration:
         ]
 
         # Set up curator responses - evaluation only
-        evaluation_response = json.dumps({
-            "evaluations": [
-                {
-                    "index": 1,
-                    "impact": 8,
-                    "proximity": 7,
-                    "prominence": 7,
-                    "relevance": 8,
-                    "hook": 6,
-                    "novelty": 5,
-                    "conflict": 4,
-                    "brief_reasoning": "High quality political lead",
-                },
-                {
-                    "index": 2,
-                    "impact": 9,
-                    "proximity": 8,
-                    "prominence": 8,
-                    "relevance": 9,
-                    "hook": 7,
-                    "novelty": 6,
-                    "conflict": 5,
-                    "brief_reasoning": "Very high quality environmental lead",
-                },
-                {
-                    "index": 3,
-                    "impact": 5,
-                    "proximity": 6,
-                    "prominence": 5,
-                    "relevance": 5,
-                    "hook": 4,
-                    "novelty": 3,
-                    "conflict": 2,
-                    "brief_reasoning": "Lower quality entertainment lead",
-                },  # This should be filtered out
-                {
-                    "index": 4,
-                    "impact": 8,
-                    "proximity": 7,
-                    "prominence": 7,
-                    "relevance": 8,
-                    "hook": 6,
-                    "novelty": 5,
-                    "conflict": 4,
-                    "brief_reasoning": "High quality sports lead",
-                },
-            ]
-        })
-        
+        evaluation_response = json.dumps(
+            {
+                "evaluations": [
+                    {
+                        "index": 1,
+                        "impact": 8,
+                        "proximity": 7,
+                        "prominence": 7,
+                        "relevance": 8,
+                        "hook": 6,
+                        "novelty": 5,
+                        "conflict": 4,
+                        "brief_reasoning": "High quality political lead",
+                    },
+                    {
+                        "index": 2,
+                        "impact": 9,
+                        "proximity": 8,
+                        "prominence": 8,
+                        "relevance": 9,
+                        "hook": 7,
+                        "novelty": 6,
+                        "conflict": 5,
+                        "brief_reasoning": "Very high quality environmental lead",
+                    },
+                    {
+                        "index": 3,
+                        "impact": 5,
+                        "proximity": 6,
+                        "prominence": 5,
+                        "relevance": 5,
+                        "hook": 4,
+                        "novelty": 3,
+                        "conflict": 2,
+                        "brief_reasoning": "Lower quality entertainment lead",
+                    },  # This should be filtered out
+                    {
+                        "index": 4,
+                        "impact": 8,
+                        "proximity": 7,
+                        "prominence": 7,
+                        "relevance": 8,
+                        "hook": 6,
+                        "novelty": 5,
+                        "conflict": 4,
+                        "brief_reasoning": "High quality sports lead",
+                    },
+                ]
+            }
+        )
+
         # Set up chat_completion to handle multiple calls
         mock_clients["openai"].chat_completion.side_effect = [
             evaluation_response  # For curation evaluation
@@ -340,7 +373,7 @@ class TestServicesIntegration:
 
     def test_pipeline_data_transformation(self, mock_clients, test_discovery_instructions):
         """Test data transformation through pipeline stages."""
-        
+
         # Ensure MongoDB client returns a list for database comparison
         mock_clients["mongodb"].get_recent_stories.return_value = []
 
@@ -428,7 +461,9 @@ class TestServicesIntegration:
             mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
+        researched_leads = research_lead(
+            prioritized_leads, perplexity_client=mock_clients["perplexity"]
+        )
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
 
         # Store final stories
@@ -442,7 +477,9 @@ class TestServicesIntegration:
 
         # Lead -> Lead (curation preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].discovered_lead in [lead.discovered_lead for lead in unique_leads]
+        assert prioritized_leads[0].discovered_lead in [
+            lead.discovered_lead for lead in unique_leads
+        ]
 
         # Lead -> Enhanced Lead (research adds report and sources)
         assert len(researched_leads) == 3
@@ -460,24 +497,30 @@ class TestServicesIntegration:
 
     def test_large_scale_pipeline(self, mock_clients, test_discovery_instructions):
         """Test pipeline performance with larger data volume."""
-        
+
         # Ensure MongoDB client returns a list for database comparison
         mock_clients["mongodb"].get_recent_stories.return_value = []
-        
+
         # Reset the lead_research responses to be tuples
         lead_research_responses = [
             (
                 f"Content for lead {i}",
-                [f"https://example.com/source-{i}-1", f"https://example.com/source-{i}-2"]
+                [f"https://example.com/source-{i}-1", f"https://example.com/source-{i}-2"],
             )
             for i in range(1, 6)  # 5 leads will be selected by curation
         ]
         mock_clients["perplexity"].lead_research.side_effect = lead_research_responses
 
         # Create large discovery responses across categories
-        politics_data = [{"discovered_lead": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
-        environment_data = [{"discovered_lead": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
-        entertainment_data = [{"discovered_lead": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
+        politics_data = [
+            {"discovered_lead": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)
+        ]
+        environment_data = [
+            {"discovered_lead": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)
+        ]
+        entertainment_data = [
+            {"discovered_lead": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)
+        ]
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             json.dumps(politics_data),
@@ -604,15 +647,15 @@ class TestServicesIntegration:
         )
 
         # Set up all responses for this test: 1 curation only
-        mock_clients["openai"].chat_completion.side_effect = (
-            [large_scale_curation_response]  # 1 curation call
-        )
+        mock_clients["openai"].chat_completion.side_effect = [
+            large_scale_curation_response
+        ]  # 1 curation call
 
         # Override research responses for 5 stories
         research_responses = [
             (
-                f"Story {i} with detailed research information. Summary {i}. Body {i}.", 
-                [f"https://source{i}.com"]
+                f"Story {i} with detailed research information. Summary {i}. Body {i}.",
+                [f"https://source{i}.com"],
             )
             for i in [1, 3, 5, 7, 9]
         ]

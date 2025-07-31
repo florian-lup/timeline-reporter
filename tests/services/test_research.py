@@ -1,6 +1,5 @@
 """Test suite for research service."""
 
-import json
 from unittest.mock import Mock, patch
 
 import pytest
@@ -23,29 +22,31 @@ class TestResearchService:
         return [
             Lead(
                 discovered_lead="Climate Summit 2024: World leaders meet to discuss climate change solutions and carbon reduction targets.",
-                sources=["https://example.com/discovery-climate-1", "https://example.com/discovery-climate-2"]
+                sources=[
+                    "https://example.com/discovery-climate-1",
+                    "https://example.com/discovery-climate-2",
+                ],
             ),
             Lead(
                 discovered_lead="Tech Innovation Expo: Major technology companies showcase AI and renewable energy innovations.",
-                sources=["https://example.com/discovery-tech-1"]
+                sources=["https://example.com/discovery-tech-1"],
             ),
         ]
 
     @pytest.fixture
     def sample_research_response(self):
         """Sample research response from Perplexity."""
-        content = ("The Climate Summit 2024 brings together world leaders from "
-                "over 190 countries to address the escalating climate crisis. "
-                "The summit focuses on implementing concrete measures to limit "
-                "global warming to 1.5°C, "
-                "with major discussions on renewable energy transition, carbon capture "
-                "technologies, and climate finance for developing nations.")
-        
-        citations = [
-            "https://example.com/climate-news",
-            "https://example.com/summit-report"
-        ]
-        
+        content = (
+            "The Climate Summit 2024 brings together world leaders from "
+            "over 190 countries to address the escalating climate crisis. "
+            "The summit focuses on implementing concrete measures to limit "
+            "global warming to 1.5°C, "
+            "with major discussions on renewable energy transition, carbon capture "
+            "technologies, and climate finance for developing nations."
+        )
+
+        citations = ["https://example.com/climate-news", "https://example.com/summit-report"]
+
         return content, citations
 
     @pytest.fixture
@@ -55,7 +56,9 @@ class TestResearchService:
         citations = ["https://incomplete.example.com"]
         return content, citations
 
-    def test_research_lead_success(self, mock_perplexity_client, sample_leads, sample_research_response):
+    def test_research_lead_success(
+        self, mock_perplexity_client, sample_leads, sample_research_response
+    ):
         """Test successful lead research."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
@@ -68,18 +71,17 @@ class TestResearchService:
         # Check that report was added
         assert "Climate Summit 2024" in enhanced_leads[0].report
         assert "190 countries" in enhanced_leads[0].report
-        
+
         # Check that sources match the citations from the research response
-        expected_sources = [
-            "https://example.com/climate-news",
-            "https://example.com/summit-report"
-        ]
+        expected_sources = ["https://example.com/climate-news", "https://example.com/summit-report"]
         assert enhanced_leads[0].sources == expected_sources
 
         # Verify research was called for each lead
         assert mock_perplexity_client.lead_research.call_count == 2
 
-    def test_research_lead_prompt_formatting(self, mock_perplexity_client, sample_leads, sample_research_response):
+    def test_research_lead_prompt_formatting(
+        self, mock_perplexity_client, sample_leads, sample_research_response
+    ):
         """Test that research prompts are formatted correctly with lead discovered_leads directly."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
@@ -91,7 +93,7 @@ class TestResearchService:
         # Check that both calls contain the original lead discovered_leads
         first_call_prompt = call_args_list[0][0][0]
         second_call_prompt = call_args_list[1][0][0]
-        
+
         # Should contain lead discovered_leads directly since we're not using query formulation
         assert sample_leads[0].discovered_lead in first_call_prompt
         assert sample_leads[1].discovered_lead in second_call_prompt
@@ -110,7 +112,9 @@ class TestResearchService:
         # Original discovered_lead should be preserved
         assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
 
-    def test_research_lead_malformed_json(self, mock_perplexity_client, sample_leads, sample_malformed_research_response):
+    def test_research_lead_malformed_json(
+        self, mock_perplexity_client, sample_leads, sample_malformed_research_response
+    ):
         """Test handling of response with problematic content."""
         mock_perplexity_client.lead_research.return_value = sample_malformed_research_response
 
@@ -180,9 +184,9 @@ class TestResearchService:
         """Test research with lead that has empty sources from discovery."""
         lead_no_sources = Lead(
             discovered_lead="Lead with no discovery sources",
-            sources=[]  # Empty sources from discovery
+            sources=[],  # Empty sources from discovery
         )
-        
+
         content = "Research context"
         citations = ["https://research-source-1.com", "https://research-source-2.com"]
         mock_perplexity_client.lead_research.return_value = content, citations
@@ -195,7 +199,7 @@ class TestResearchService:
     def test_research_lead_empty_values(self, mock_perplexity_client, sample_leads):
         """Test research with empty values in response."""
         content = ""
-        citations = []
+        citations: list[str] = []
         mock_perplexity_client.lead_research.return_value = content, citations
 
         enhanced_leads = research_lead(sample_leads[:1], perplexity_client=mock_perplexity_client)
@@ -222,15 +226,17 @@ class TestResearchService:
         # Lead with existing sources from discovery
         lead_with_discovery_sources = Lead(
             discovered_lead="Test lead with discovery sources",
-            sources=["https://discovery-source-1.com", "https://discovery-source-2.com"]
+            sources=["https://discovery-source-1.com", "https://discovery-source-2.com"],
         )
-        
+
         # Research response with new sources
         content = "Research context"
         citations = ["https://research-source-1.com", "https://research-source-2.com"]
         mock_perplexity_client.lead_research.return_value = content, citations
 
-        enhanced_leads = research_lead([lead_with_discovery_sources], perplexity_client=mock_perplexity_client)
+        enhanced_leads = research_lead(
+            [lead_with_discovery_sources], perplexity_client=mock_perplexity_client
+        )
 
         # Should use the citations from the research response
         assert enhanced_leads[0].sources == citations
@@ -240,15 +246,17 @@ class TestResearchService:
         # Lead with discovery sources
         lead_with_sources = Lead(
             discovered_lead="Test lead",
-            sources=["https://discovery-source.com", "https://another-discovery-source.com"]
+            sources=["https://discovery-source.com", "https://another-discovery-source.com"],
         )
-        
+
         # Research response with citations
         content = "Research context"
         citations = ["https://research-source-1.com", "https://research-source-2.com"]
         mock_perplexity_client.lead_research.return_value = content, citations
 
-        enhanced_leads = research_lead([lead_with_sources], perplexity_client=mock_perplexity_client)
+        enhanced_leads = research_lead(
+            [lead_with_sources], perplexity_client=mock_perplexity_client
+        )
 
         # Should use the citations directly from the research response
         assert enhanced_leads[0].sources == citations

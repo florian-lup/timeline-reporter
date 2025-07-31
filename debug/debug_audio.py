@@ -20,12 +20,13 @@ The script will automatically use TTS instructions when:
 Run this independently for debugging: python debug_audio.py
 """
 
-import os
 import json
-import requests
+import os
+import sys
 from pathlib import Path
 from typing import Any
-from unittest.mock import Mock, patch
+
+import requests
 
 from clients import MongoDBClient, OpenAIClient
 from clients.cloudflare_r2 import CloudflareR2Client
@@ -37,79 +38,83 @@ from utils import get_today_formatted
 
 def test_tts_instructions_verification() -> bool:
     """Test and verify that TTS instructions are properly sent to OpenAI API."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🔍 TTS INSTRUCTIONS VERIFICATION TEST")
-    print("="*60)
-    
-    from config.audio_config import TTS_MODEL, TTS_INSTRUCTION, AUDIO_FORMAT, get_random_anchor
-    
-    print(f"📋 Current Configuration:")
+    print("=" * 60)
+
+    from config.audio_config import AUDIO_FORMAT, TTS_INSTRUCTION, TTS_MODEL, get_random_anchor
+
+    print("📋 Current Configuration:")
     print(f"   TTS Model: {TTS_MODEL}")
     print(f"   Audio Format: {AUDIO_FORMAT}")
     print(f"   Instructions Available: {'✅ Yes' if TTS_INSTRUCTION else '❌ No'}")
-    
+
     if "gpt-4o-mini-tts" not in TTS_MODEL:
         print(f"\n⚠️  WARNING: Current model '{TTS_MODEL}' doesn't support instructions")
-        print(f"   Instructions will be ignored by OpenAI API")
-        print(f"   Change TTS_MODEL to 'gpt-4o-mini-tts' in config/audio_config.py")
+        print("   Instructions will be ignored by OpenAI API")
+        print("   Change TTS_MODEL to 'gpt-4o-mini-tts' in config/audio_config.py")
         return False
-    
+
     # Test with a mock to capture what's sent to OpenAI
-    print(f"\n🧪 Testing TTS call with instructions...")
-    
+    print("\n🧪 Testing TTS call with instructions...")
+
     try:
         openai_client = OpenAIClient()
-        
+
         # Monkey-patch the OpenAI client to capture request parameters
         captured_params = {}
         original_create = openai_client._client.audio.speech.create
-        
+
         def mock_create(**kwargs: Any) -> Any:
             captured_params.update(kwargs)
+
             # Return a mock response
             class MockResponse:
                 content = b"mock_audio_data"
+
             return MockResponse()
-        
+
         openai_client._client.audio.speech.create = mock_create  # type: ignore[method-assign]
-        
+
         # Make a test TTS call with instructions using random voice selection
         test_text = "This is a test of the TTS instructions feature."
         test_voice, test_anchor_name = get_random_anchor()
         print(f"   Test using random voice: {test_voice} → {test_anchor_name}")
-        
+
         openai_client.text_to_speech(
             test_text,
             model=TTS_MODEL,
             voice=test_voice,  # Required parameter
-            instruction=TTS_INSTRUCTION  # Required parameter
+            instruction=TTS_INSTRUCTION,  # Required parameter
         )
-        
+
         # Analyze what was sent
-        print(f"\n📤 Request Parameters Sent to OpenAI:")
+        print("\n📤 Request Parameters Sent to OpenAI:")
         print(f"   Model: {captured_params.get('model', 'NOT FOUND')}")
         print(f"   Voice: {captured_params.get('voice', 'NOT FOUND')}")
         print(f"   Speed: {captured_params.get('speed', 'NOT FOUND')}")
         print(f"   Response Format: {captured_params.get('response_format', 'NOT FOUND')}")
-        print(f"   Instructions: {'✅ INCLUDED' if 'instructions' in captured_params else '❌ MISSING'}")
-        
-        if 'instructions' in captured_params:
-            instructions_text = captured_params['instructions']
+        print(
+            f"   Instructions: {'✅ INCLUDED' if 'instructions' in captured_params else '❌ MISSING'}"
+        )
+
+        if "instructions" in captured_params:
+            instructions_text = captured_params["instructions"]
             if isinstance(instructions_text, str):
                 print(f"   Instructions Length: {len(instructions_text)} characters")
                 print(f"   Instructions Preview: {instructions_text[:100]}...")
-            
+
             # Verify it matches our config
             if instructions_text == TTS_INSTRUCTION:
-                print(f"   ✅ Instructions match config perfectly")
+                print("   ✅ Instructions match config perfectly")
             else:
-                print(f"   ⚠️  Instructions don't match config")
-        
+                print("   ⚠️  Instructions don't match config")
+
         # Restore original method
         openai_client._client.audio.speech.create = original_create  # type: ignore[method-assign]
-        
-        return 'instructions' in captured_params
-        
+
+        return "instructions" in captured_params
+
     except Exception as e:
         print(f"❌ Error during TTS instructions test: {e}")
         return False
@@ -117,7 +122,7 @@ def test_tts_instructions_verification() -> bool:
 
 def run_real_audio_generation_test() -> bool:
     """Debug real audio generation with Cloudflare R2 CDN storage.
-    
+
     This will:
     1. Create Story objects from provided summaries
     2. Use real OpenAI client for script generation and TTS
@@ -126,26 +131,25 @@ def run_real_audio_generation_test() -> bool:
     5. Download audio from CDN and save locally for verification
     6. Verify TTS instructions are properly sent
     """
-    
     # First, test TTS instructions verification
     instructions_working = test_tts_instructions_verification()
-    
+
     # Check for required environment variables
     required_env_vars = [
         "OPENAI_API_KEY",
-        "MONGODB_URI", 
+        "MONGODB_URI",
         "MONGODB_DATABASE_NAME",
         "MONGODB_COLLECTION_NAME_AUDIO",
         "CLOUDFLARE_ACCOUNT_ID",
         "CLOUDFLARE_R2_ACCESS_KEY",
-        "CLOUDFLARE_R2_SECRET_KEY"
+        "CLOUDFLARE_R2_SECRET_KEY",
     ]
-    
+
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
         print(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
         return False
-    
+
     # Create Story objects from the provided summaries
     stories = [
         Story(
@@ -155,7 +159,7 @@ def run_real_audio_generation_test() -> bool:
             tag="politics",
             sources=[
                 "https://example.com/trump-epstein-transcripts",
-                "https://example.com/doj-grand-jury-release"
+                "https://example.com/doj-grand-jury-release",
             ],
         ),
         Story(
@@ -165,7 +169,7 @@ def run_real_audio_generation_test() -> bool:
             tag="disaster",
             sources=[
                 "https://example.com/guadalupe-river-flood",
-                "https://example.com/texas-flood-casualties"
+                "https://example.com/texas-flood-casualties",
             ],
         ),
         Story(
@@ -175,25 +179,26 @@ def run_real_audio_generation_test() -> bool:
             tag="immigration",
             sources=[
                 "https://example.com/trump-immigration-overhaul",
-                "https://example.com/border-emergency-2025"
+                "https://example.com/border-emergency-2025",
             ],
         ),
     ]
-    
+
     try:
         # Initialize real clients
         openai_client = OpenAIClient()
         mongodb_client = MongoDBClient()
         r2_client = CloudflareR2Client()
-        
+
         # Generate the podcast using real services
         print(f"\n🎙️ Starting real audio generation test with {len(stories)} stories...")
         print("📝 Story summaries:")
         for i, story in enumerate(stories, 1):
             print(f"  {i}. {story.headline}")
-        
+
         # Check if TTS instructions are enabled for enhanced testing
         from config.audio_config import TTS_MODEL
+
         if "gpt-4o-mini-tts" in TTS_MODEL:
             print("🎯 TTS Instructions feature: ENABLED (2025 Feature)")
             print("   This will provide enhanced voice control with professional news delivery")
@@ -205,111 +210,119 @@ def run_real_audio_generation_test() -> bool:
             print("📢 TTS Instructions feature: DISABLED")
             print("   Using standard TTS without instruction parameters")
             print(f"   Current model: {TTS_MODEL} (instructions require gpt-4o-mini-tts)")
-        
+
         # Add logging for random voice selection process
-        print(f"\n🎲 RANDOM VOICE SELECTION DEBUG:")
+        print("\n🎲 RANDOM VOICE SELECTION DEBUG:")
         from config.audio_config import VOICE_ANCHOR_MAPPING, get_random_anchor
-        
+
         print(f"📊 Available voices/anchors ({len(VOICE_ANCHOR_MAPPING)} total):")
         for voice, anchor in VOICE_ANCHOR_MAPPING.items():
             print(f"   • {voice}: {anchor}")
-        
+
         # Show multiple random selections for debugging
-        print(f"\n🎯 Testing random selection (5 samples):")
+        print("\n🎯 Testing random selection (5 samples):")
         for i in range(5):
             test_voice, test_anchor = get_random_anchor()
-            print(f"   Sample {i+1}: {test_voice} → {test_anchor}")
-        
+            print(f"   Sample {i + 1}: {test_voice} → {test_anchor}")
+
         # Execute the real audio generation pipeline with CDN storage
-        print(f"\n🎙️ Executing full pipeline...")
-        print(f"📝 Note: Voice and instruction parameters are now required")
-        
+        print("\n🎙️ Executing full pipeline...")
+        print("📝 Note: Voice and instruction parameters are now required")
+
         podcast = generate_podcast(
             stories,
             openai_client=openai_client,
             r2_client=r2_client,
         )
-        
+
         # Persist podcast metadata to database
-        print(f"\n💾 Persisting podcast to database...")
+        print("\n💾 Persisting podcast to database...")
         persist_podcast(podcast, mongodb_client=mongodb_client)
-        
+
         # Verify podcast was created successfully
         if not podcast:
             print("❌ Failed to generate podcast")
             return False
-            
+
         if not podcast.anchor_script:
             print("❌ No anchor script generated")
             return False
-            
+
         if not podcast.anchor_name:
             print("❌ No anchor name assigned")
             return False
-            
+
         if not podcast.audio_url:
             print("❌ No CDN URL generated")
             return False
-            
+
         if podcast.audio_size_bytes == 0:
             print("❌ No audio size recorded")
             return False
-        
-        print(f"✅ Podcast generated successfully!")
-        
+
+        print("✅ Podcast generated successfully!")
+
         # Show the actual voice selection results
-        print(f"\n🎭 FINAL VOICE SELECTION RESULTS:")
+        print("\n🎭 FINAL VOICE SELECTION RESULTS:")
         print(f"   Selected Anchor: {podcast.anchor_name}")
-        
+
         # Find which voice corresponds to this anchor
         from config.audio_config import VOICE_ANCHOR_MAPPING
+
         selected_voice = None
         for voice, anchor in VOICE_ANCHOR_MAPPING.items():
             if anchor == podcast.anchor_name:
                 selected_voice = voice
                 break
-        
+
         if selected_voice:
             print(f"   Selected Voice: {selected_voice}")
             print(f"   Voice-Anchor Pair: {selected_voice} → {podcast.anchor_name}")
-            print(f"   📝 Note: Voice and instruction explicitly provided as required parameters")
+            print("   📝 Note: Voice and instruction explicitly provided as required parameters")
         else:
             print(f"   ⚠️  Could not find matching voice for anchor: {podcast.anchor_name}")
-        
-        print(f"\n📊 GENERATION STATISTICS:")
+
+        print("\n📊 GENERATION STATISTICS:")
         print(f"   Script length: {len(podcast.anchor_script.split())} words")
         print(f"   Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
         print(f"   CDN URL: {podcast.audio_url}")
-        
+
         # Test CDN access
-        print(f"\n🌐 Testing CDN access...")
+        print("\n🌐 Testing CDN access...")
         response = requests.head(podcast.audio_url)
         print(f"📡 CDN Status: {response.status_code}")
         print(f"📝 Content-Type: {response.headers.get('content-type', 'unknown')}")
         print(f"🕒 Response Time: {response.elapsed.total_seconds():.3f}s")
-        
+
         # Create the test output directory if it doesn't exist
         output_dir = Path("debug/output/audio_output")
         output_dir.mkdir(exist_ok=True)
-        
+
         # Save the script to a text file
-        script_file = output_dir / f"podcast_script_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.txt"
+        script_file = (
+            output_dir
+            / f"podcast_script_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.txt"
+        )
         with open(script_file, "w", encoding="utf-8") as f:
             f.write(f"PODCAST SCRIPT - {get_today_formatted()}\n")
             f.write(f"ANCHOR: {podcast.anchor_name}\n")
             f.write("=" * 50 + "\n\n")
             f.write(podcast.anchor_script)
-        
+
         # Download and save the audio file from CDN
-        print(f"📥 Downloading audio from CDN...")
+        print("📥 Downloading audio from CDN...")
         audio_response = requests.get(podcast.audio_url)
         audio_response.raise_for_status()
-        
+
         from config.audio_config import AUDIO_FORMAT
-        audio_file = output_dir / f"podcast_audio_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.{AUDIO_FORMAT}"
+
+        audio_file = (
+            output_dir
+            / f"podcast_audio_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.{AUDIO_FORMAT}"
+        )
         with open(audio_file, "wb") as f:
             f.write(audio_response.content)
-        
+
         # Save the podcast object metadata as JSON
         podcast_data = {
             "anchor_script": podcast.anchor_script,
@@ -317,50 +330,55 @@ def run_real_audio_generation_test() -> bool:
             "audio_url": podcast.audio_url,
             "audio_size_bytes": podcast.audio_size_bytes,
             "audio_size_mb": round(podcast.audio_size_bytes / (1024 * 1024), 2),
-            "local_audio_file": audio_file.name
+            "local_audio_file": audio_file.name,
         }
-        
-        json_file = output_dir / f"podcast_data_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.json"
+
+        json_file = (
+            output_dir
+            / f"podcast_data_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.json"
+        )
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump(podcast_data, f, indent=2, ensure_ascii=False)
-        
+
         print(f"💾 Script saved to: {script_file}")
         print(f"🎵 Audio downloaded and saved to: {audio_file}")
         print(f"📄 Podcast data saved to: {json_file}")
-        
+
         print("\n🎵 CDN Audio Processing Complete:")
         print(f"✅ {AUDIO_FORMAT.upper()} audio uploaded to Cloudflare R2 CDN")
         print(f"✅ Audio size: {podcast.audio_size_bytes / (1024 * 1024):.1f} MB")
         print(f"✅ CDN URL: {podcast.audio_url}")
         print(f"✅ Anchor: {podcast.anchor_name} with personalized script")
-        
+
         # Report TTS instruction usage
-        print(f"\n📋 TTS INSTRUCTIONS SUMMARY:")
+        print("\n📋 TTS INSTRUCTIONS SUMMARY:")
         if "gpt-4o-mini-tts" in TTS_MODEL:
             print(f"✅ Model supports instructions: {TTS_MODEL}")
             if instructions_working:
-                print(f"✅ Instructions properly sent to OpenAI API")
-                print(f"✅ Enhanced voice control enabled (2025 Feature)")
+                print("✅ Instructions properly sent to OpenAI API")
+                print("✅ Enhanced voice control enabled (2025 Feature)")
             else:
-                print(f"⚠️  Instructions may not be working properly")
+                print("⚠️  Instructions may not be working properly")
         else:
             print(f"⚠️  Model doesn't support instructions: {TTS_MODEL}")
-            print(f"📢 Standard TTS mode (no enhanced voice control)")
-            
-        print(f"✅ MongoDB contains: anchor_script, anchor_name, audio_url, audio_size_bytes")
-        print(f"✅ Frontend can use CDN URL for instant global streaming")
-        print(f"✅ Local files saved to debug/test_output/ for verification")
-        
+            print("📢 Standard TTS mode (no enhanced voice control)")
+
+        print("✅ MongoDB contains: anchor_script, anchor_name, audio_url, audio_size_bytes")
+        print("✅ Frontend can use CDN URL for instant global streaming")
+        print("✅ Local files saved to debug/test_output/ for verification")
+
         print("\nℹ️  Clean MongoDB structure with CDN URL instead of binary data.")
         print("ℹ️  Audio served from Cloudflare's global CDN for 50x faster loading.")
         print("ℹ️  Your frontend gets the CDN URL and streams audio directly.")
         print("ℹ️  Each podcast features a randomly selected anchor with personalized intro/outro.")
-        
+
         if "gpt-4o-mini-tts" in TTS_MODEL:
-            print("ℹ️  TTS Instructions provide enhanced control over voice delivery, tone, and pacing.")
-        
+            print(
+                "ℹ️  TTS Instructions provide enhanced control over voice delivery, tone, and pacing."
+            )
+
         return True
-        
+
     except Exception as e:
         print(f"❌ Error during audio generation test: {e}")
         print("💡 Check your environment variables for Cloudflare R2 credentials")
@@ -372,10 +390,10 @@ if __name__ == "__main__":
     success = run_real_audio_generation_test()
     if success:
         print("\n✅ CDN debug test completed successfully!")
-        
+
     else:
         print("\n❌ CDN debug test failed!")
-        exit(1)
+        sys.exit(1)
 
 
 def demonstrate_tts_instruction() -> None:
@@ -384,27 +402,25 @@ def demonstrate_tts_instruction() -> None:
         TTS_INSTRUCTION,
         TTS_MODEL,
     )
-    
-    print("\n" + "="*60)
+
+    print("\n" + "=" * 60)
     print("🎯 TTS INSTRUCTION DEMONSTRATION (2025 Feature)")
-    print("="*60)
-    
+    print("=" * 60)
+
     if "gpt-4o-mini-tts" not in TTS_MODEL:
         print(f"⚠️  Current TTS model: {TTS_MODEL}")
         print("   TTS Instructions require gpt-4o-mini-tts model.")
         print("   Set TTS_MODEL = 'gpt-4o-mini-tts' in config/audio_config.py")
         return
-    
-    print(f"✅ TTS Instructions: ENABLED")
+
+    print("✅ TTS Instructions: ENABLED")
     print(f"✅ TTS Model: {TTS_MODEL}")
     print("\nOptimized News Podcast Instruction:")
     print("-" * 40)
-    
+
     print(TTS_INSTRUCTION)
-    
+
     print("\n💡 Usage Example:")
     print("   # Use in your code:")
     print("   from config.audio_config import TTS_INSTRUCTION")
     print("   audio_bytes = openai_client.text_to_speech(text, instruction=TTS_INSTRUCTION)")
-
- 

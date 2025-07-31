@@ -51,8 +51,12 @@ def mock_perplexity_client():
     # Mock discovery response
     discovery_response = json.dumps(
         [
-                    {"title": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."},
-        {"title": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."},
+            {
+                "title": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."
+            },
+            {
+                "title": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."
+            },
         ]
     )
     mock_client.lead_discovery.return_value = discovery_response
@@ -148,7 +152,13 @@ def sample_stories():
 @pytest.fixture
 def sample_discovery_response():
     """Sample discovery response from Perplexity API."""
-    return json.dumps([
-        {"discovered_lead": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."},
-        {"discovered_lead": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."},
-    ])
+    return json.dumps(
+        [
+            {
+                "discovered_lead": "Climate Summit 2024: World leaders meet to discuss climate action and set ambitious targets for carbon reduction."
+            },
+            {
+                "discovered_lead": "AI Breakthrough Announced: New AI model shows remarkable capabilities in medical diagnosis and drug discovery."
+            },
+        ]
+    )

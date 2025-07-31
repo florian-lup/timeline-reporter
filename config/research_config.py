@@ -11,7 +11,7 @@ LEAD_RESEARCH_MODEL: str = "sonar-reasoning-pro"
 SEARCH_CONTEXT_SIZE: str = "high"
 
 # ---------------------------------------------------------------------------
-# Research Timeout Configuration  
+# Research Timeout Configuration
 # ---------------------------------------------------------------------------
 RESEARCH_TIMEOUT_SECONDS: float = 240  # Total timeout for research operations
 
@@ -62,5 +62,3 @@ RESEARCH_INSTRUCTIONS = """
 ## Lead to Research:
 **Title:** {lead_title}
 """.strip()
-
-

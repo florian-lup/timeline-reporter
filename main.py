@@ -46,7 +46,12 @@ def run_pipeline() -> None:  # noqa: D401
 
     # 2️⃣ Deduplication
     logger.info("🔄 STEP 2: Deduplication - Removing duplicate stories...")
-    unique_leads = deduplicate_leads(leads, openai_client=openai_client, pinecone_client=pinecone_client, mongodb_client=mongodb_client)
+    unique_leads = deduplicate_leads(
+        leads,
+        openai_client=openai_client,
+        pinecone_client=pinecone_client,
+        mongodb_client=mongodb_client,
+    )
     duplicates_removed = len(leads) - len(unique_leads)
     logger.info(
         "✅ Deduplication complete: %d duplicates removed, %d unique leads remain",
@@ -98,14 +103,17 @@ def run_pipeline() -> None:  # noqa: D401
 
     # 7️⃣ Storage
     if stories and podcast:
-        logger.info("💾 STEP 7: Storage - Saving %d stories and podcast to database...", len(stories))
+        logger.info(
+            "💾 STEP 7: Storage - Saving %d stories and podcast to database...", len(stories)
+        )
         persist_stories_and_podcast(stories, podcast, mongodb_client=mongodb_client)
     elif stories:
         # Fallback: just persist stories if podcast generation failed
         logger.info("💾 STEP 7: Storage - Saving %d stories to database...", len(stories))
         from services.story_persistence import persist_stories
+
         persist_stories(stories, mongodb_client=mongodb_client)
-            # Continue pipeline even if audio generation fails
+        # Continue pipeline even if audio generation fails
 
     logger.info(
         "🎉 PIPELINE COMPLETE: Successfully processed %d leads → %d stories published",

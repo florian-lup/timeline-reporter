@@ -30,11 +30,11 @@ def persist_stories(stories: list[Story], *, mongodb_client: MongoDBClient) -> N
 
 def persist_podcast(podcast: Podcast, *, mongodb_client: MongoDBClient) -> str:
     """Stores podcast metadata in MongoDB.
-    
+
     Args:
         podcast: Podcast object to persist
         mongodb_client: MongoDB client for database operations
-        
+
     Returns:
         MongoDB document ID of the stored podcast
     """
@@ -43,7 +43,7 @@ def persist_podcast(podcast: Podcast, *, mongodb_client: MongoDBClient) -> str:
     podcast_dict = podcast.__dict__.copy()
     inserted_id = mongodb_client.insert_podcast(podcast_dict)
     logger.info("  ✓ Podcast saved with CDN URL (ID: %s)", inserted_id[:12] + "...")
-    
+
     logger.info("✅ Persistence complete: podcast metadata stored")
     return inserted_id
 
@@ -55,26 +55,26 @@ def persist_stories_and_podcast(
     mongodb_client: MongoDBClient,
 ) -> str:
     """Stores both stories and podcast metadata in MongoDB.
-    
+
     Args:
         stories: List of Story objects to persist
         podcast: Podcast object to persist
         mongodb_client: MongoDB client for database operations
-        
+
     Returns:
         MongoDB document ID of the stored podcast
     """
     logger.info("🎙️ STEP 7: Persistence - Saving stories and podcast metadata...")
-    
+
     # Persist stories first
     logger.info("  📰 Persisting %d stories...", len(stories))
     persist_stories(stories, mongodb_client=mongodb_client)
-    
+
     # Then persist podcast
     logger.info("  🎙️ Persisting podcast metadata...")
     podcast_dict = podcast.__dict__.copy()
     inserted_id = mongodb_client.insert_podcast(podcast_dict)
     logger.info("  ✓ Podcast saved with CDN URL (ID: %s)", inserted_id[:12] + "...")
-    
+
     logger.info("✅ Persistence complete: %d stories and podcast saved", len(stories))
     return inserted_id

@@ -14,7 +14,6 @@ from .cloudflare_config import (
     AUDIO_FILE_METADATA,
     CDN_CACHE_CONTROL,
     CDN_ENABLE_COMPRESSION,
-    CLOUDFLARE_R2_CUSTOM_DOMAIN,
     DEFAULT_AUDIO_CONTENT_TYPE,
     R2_CDN_URL_TEMPLATE,
     R2_ENDPOINT_URL_TEMPLATE,
@@ -32,22 +31,22 @@ from .curation_config import (
     MIN_SCORE,
 )
 from .deduplication_config import (
+    # Deduplication Model Configuration
+    DEDUPLICATION_MODEL,
+    DEDUPLICATION_PROMPT_TEMPLATE,
+    DEDUPLICATION_SCHEMA,
+    # Deduplication Prompts
+    DEDUPLICATION_SYSTEM_PROMPT,
     # Deduplication Configuration
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
     INCLUDE_METADATA,
+    LOOKBACK_HOURS,
     METRIC,
     REQUIRED_METADATA_FIELDS,
     SIMILARITY_THRESHOLD,
     TOP_K_RESULTS,
     VECTOR_ID_PREFIX,
-    # Deduplication Prompts
-    DEDUPLICATION_SYSTEM_PROMPT,
-    DEDUPLICATION_PROMPT_TEMPLATE,
-    DEDUPLICATION_SCHEMA,
-    # Deduplication Model Configuration
-    DEDUPLICATION_MODEL,
-    LOOKBACK_HOURS,
 )
 from .discovery_config import (
     DISCOVERY_CATEGORIES,
@@ -57,12 +56,12 @@ from .discovery_config import (
     DISCOVERY_POLITICS_INSTRUCTIONS,
     # Discovery Prompts
     DISCOVERY_SYSTEM_PROMPT,
-    # Discovery Configuration
-    LEAD_DISCOVERY_MODEL,
-    LEAD_DISCOVERY_JSON_SCHEMA,
-    SEARCH_CONTEXT_SIZE,
     # Discovery Timeouts
     DISCOVERY_TIMEOUT_SECONDS,
+    LEAD_DISCOVERY_JSON_SCHEMA,
+    # Discovery Configuration
+    LEAD_DISCOVERY_MODEL,
+    SEARCH_CONTEXT_SIZE,
 )
 from .research_config import (
     # Research Configuration
@@ -70,19 +69,19 @@ from .research_config import (
     RESEARCH_INSTRUCTIONS,
     # Research Prompts
     RESEARCH_SYSTEM_PROMPT,
-    SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
     # Research Timeouts
     RESEARCH_TIMEOUT_SECONDS,
+    SEARCH_CONTEXT_SIZE as RESEARCH_SEARCH_CONTEXT_SIZE,
 )
 from .settings import (
+    CLOUD_PROVIDER,
+    CLOUD_REGION,
     # Cloudflare R2 Configuration
     CLOUDFLARE_ACCOUNT_ID,
     CLOUDFLARE_R2_ACCESS_KEY,
     CLOUDFLARE_R2_BUCKET,
     CLOUDFLARE_R2_CUSTOM_DOMAIN,
     CLOUDFLARE_R2_SECRET_KEY,
-    CLOUD_PROVIDER,
-    CLOUD_REGION,
     MONGODB_COLLECTION_NAME,
     MONGODB_COLLECTION_NAME_AUDIO,
     # MongoDB Configuration
@@ -95,7 +94,6 @@ from .settings import (
     # Pinecone Configuration
     PINECONE_INDEX_NAME,
 )
-
 
 __all__ = [
     # API Keys
@@ -113,7 +111,7 @@ __all__ = [
     "MONGODB_COLLECTION_NAME_AUDIO",
     # Cloudflare R2 Configuration
     "CLOUDFLARE_ACCOUNT_ID",
-    "CLOUDFLARE_R2_ACCESS_KEY", 
+    "CLOUDFLARE_R2_ACCESS_KEY",
     "CLOUDFLARE_R2_SECRET_KEY",
     "CLOUDFLARE_R2_BUCKET",
     "CLOUDFLARE_R2_CUSTOM_DOMAIN",
@@ -143,7 +141,6 @@ __all__ = [
     "LEAD_RESEARCH_MODEL",
     "RESEARCH_SEARCH_CONTEXT_SIZE",
     "RESEARCH_TIMEOUT_SECONDS",
-
     # Deduplication Configuration
     "SIMILARITY_THRESHOLD",
     "TOP_K_RESULTS",
@@ -170,5 +167,4 @@ __all__ = [
     # Research Prompts
     "RESEARCH_SYSTEM_PROMPT",
     "RESEARCH_INSTRUCTIONS",
-
 ]

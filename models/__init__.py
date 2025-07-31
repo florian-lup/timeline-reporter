@@ -6,7 +6,7 @@ This package provides the core domain models:
 - Podcast: Represents audio podcasts generated from story summaries
 """
 
-from .core import Lead, Story, Podcast, LeadEvaluation
+from .core import Lead, LeadEvaluation, Podcast, Story
 
 __all__ = [
     "Lead",

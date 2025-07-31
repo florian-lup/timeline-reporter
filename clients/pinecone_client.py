@@ -49,7 +49,9 @@ class PineconeClient:
     # ------------------------------------------------------------------
     # Public helpers
     # ------------------------------------------------------------------
-    def similarity_search(self, vector: list[float], *, top_k: int | None = None) -> list[tuple[str, float]]:
+    def similarity_search(
+        self, vector: list[float], *, top_k: int | None = None
+    ) -> list[tuple[str, float]]:
         """Returns list of (id, score) above SIMILARITY_THRESHOLD for *vector*."""
         if top_k is None:
             top_k = TOP_K_RESULTS

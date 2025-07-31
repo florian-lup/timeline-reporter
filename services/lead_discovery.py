@@ -45,10 +45,7 @@ def discover_leads(perplexity_client: PerplexityClient) -> list[Lead]:
             # Log each individual lead with first 5 words for tracking
             for idx, lead in enumerate(category_leads, 1):
                 first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
-                logger.info(
-                    "    📋 Lead %d/%d - %s", 
-                    idx, len(category_leads), first_words
-                )
+                logger.info("    📋 Lead %d/%d - %s", idx, len(category_leads), first_words)
 
             all_leads.extend(category_leads)
 
@@ -78,10 +75,5 @@ def _json_to_leads(response_text: str) -> list[Lead]:
     if not isinstance(data, list):
         raise ValueError(f"Expected JSON array, got {type(data)}")
 
-    leads: list[Lead] = [
-        Lead(
-            discovered_lead=item["discovered_lead"]
-        ) 
-        for item in data
-    ]
+    leads: list[Lead] = [Lead(discovered_lead=item["discovered_lead"]) for item in data]
     return leads

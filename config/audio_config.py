@@ -12,30 +12,32 @@ from typing import Literal
 # ---------------------------------------------------------------------------
 
 # Type alias for valid OpenAI TTS voices
-TTSVoice = Literal["alloy", "ash","ballad","coral","echo","fable","nova","sage","shimmer"]
+TTSVoice = Literal["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "sage", "shimmer"]
 
 # Voice to anchor name mapping
 VOICE_ANCHOR_MAPPING = {
     "alloy": "Sarah Mitchell",
-    "ash": "Marcus Thompson", 
+    "ash": "Marcus Thompson",
     "ballad": "Carlos Rodriguez",
     "coral": "Jessica Chen",
     "echo": "David Williams",
     "fable": "Amanda Foster",
     "nova": "Rachel Davis",
     "sage": "Samantha Lee",
-    "shimmer": "Natalie Brooks"
+    "shimmer": "Natalie Brooks",
 }
+
 
 def get_random_anchor() -> tuple[TTSVoice, str]:
     """Get a random voice and corresponding anchor name.
-    
+
     Returns:
         Tuple of (voice, anchor_name)
     """
     voice: TTSVoice = random.choice(list(VOICE_ANCHOR_MAPPING.keys()))  # type: ignore[arg-type]
     anchor_name = VOICE_ANCHOR_MAPPING[voice]
     return voice, anchor_name
+
 
 ANCHOR_SCRIPT_MODEL: str = "gpt-4.1-2025-04-14"  # For generating anchor scripts
 TTS_MODEL: str = "gpt-4o-mini-tts"  # OpenAI TTS model
@@ -73,7 +75,7 @@ Objectives
 
 Style Guide
 • Use clear, precise language; explain acronyms or technical terms on first mention.
-• Prefer rounded numbers or common comparisons for large figures (e.g., “about three million”) to aid comprehension.
+• Prefer rounded numbers or common comparisons for large figures (e.g., "about three million") to aid comprehension.
 • Keep individual sentences under ~25 words and avoid filler phrases.
 • Neutral journalistic voice—no personal opinions, speculation, or sensationalism.
 
@@ -93,7 +95,7 @@ Constraints
 # ---------------------------------------------------------------------------
 ANCHOR_SCRIPT_INSTRUCTIONS = """
 TASK:
-Using ONLY the story summaries provided below, draft a complete anchor script for today’s news-briefing podcast.
+Using ONLY the story summaries provided below, draft a complete anchor script for today's news-briefing podcast.
 
 INPUTS:
 Date: {date}
@@ -103,4 +105,3 @@ Story Summaries: {summaries}
 OUTPUT:
 Return ONLY the finished anchor script text suitable for a text-to-speech engine to read aloud. Do not include stage directions, sound-effect cues, speaker labels, markdown, timestamps, or additional meta-commentary.
 """.strip()
-

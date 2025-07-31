@@ -35,15 +35,14 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
             user_prompt,
             model=WRITING_MODEL,
             system_prompt=WRITING_SYSTEM_PROMPT,
-            response_format={
-                "type": "json_schema",
-                "json_schema": STORY_WRITING_SCHEMA
-            },
+            response_format={"type": "json_schema", "json_schema": STORY_WRITING_SCHEMA},
         )
 
         story = _parse_story_from_response(response_text, lead)
         stories.append(story)
-        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + ("..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else "")
+        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + (
+            "..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else ""
+        )
         logger.info(
             "  ✓ Story %d/%d completed - %s: '%s'",
             idx,
