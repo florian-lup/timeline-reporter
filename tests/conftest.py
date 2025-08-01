@@ -2,6 +2,7 @@
 
 import json
 import os
+from contextlib import ExitStack
 from unittest.mock import Mock, patch
 
 import pytest
@@ -12,16 +13,58 @@ from models import Lead, Story
 @pytest.fixture(autouse=True)
 def mock_environment_variables():
     """Mock environment variables for testing."""
-    with patch.dict(
-        os.environ,
-        {
-            "OPENAI_API_KEY": "test-openai-key",
-            "PINECONE_API_KEY": "test-pinecone-key",
-            "PERPLEXITY_API_KEY": "test-perplexity-key",
-            "MONGODB_URI": "mongodb://test-host:27017/test-db",
-        },
-        clear=False,
-    ):
+    with ExitStack() as stack:
+        # Patch os.environ
+        stack.enter_context(
+            patch.dict(
+                os.environ,
+                {
+                    "OPENAI_API_KEY": "test-openai-key",
+                    "PINECONE_API_KEY": "test-pinecone-key",
+                    "PERPLEXITY_API_KEY": "test-perplexity-key",
+                    "MONGODB_URI": "mongodb://test-host:27017/test-db",
+                    "MONGODB_DATABASE_NAME": "test-database",
+                    "MONGODB_COLLECTION_NAME": "test-collection",
+                    "MONGODB_COLLECTION_NAME_AUDIO": "test-audio-collection",
+                    "PINECONE_INDEX_NAME": "test-index",
+                    "CLOUD_PROVIDER": "test-provider",
+                    "CLOUD_REGION": "test-region",
+                    "CLOUDFLARE_ACCOUNT_ID": "test-account-id",
+                    "CLOUDFLARE_R2_ACCESS_KEY": "test-access-key",
+                    "CLOUDFLARE_R2_SECRET_KEY": "test-secret-key",
+                    "CLOUDFLARE_R2_BUCKET": "test-bucket",
+                },
+                clear=False,
+            )
+        )
+
+        # Patch client module constants (imported from config)
+        # MongoDB client patches
+        stack.enter_context(patch("clients.mongodb_client.MONGODB_DATABASE_NAME", "test-database"))
+        stack.enter_context(patch("clients.mongodb_client.MONGODB_COLLECTION_NAME", "test-collection"))
+        stack.enter_context(patch("clients.mongodb_client.MONGODB_COLLECTION_NAME_AUDIO", "test-audio-collection"))
+        stack.enter_context(patch("clients.mongodb_client.MONGODB_URI", "mongodb://test-host:27017/test-db"))
+
+        # Pinecone client patches
+        stack.enter_context(patch("clients.pinecone_client.PINECONE_INDEX_NAME", "test-index"))
+        stack.enter_context(patch("clients.pinecone_client.CLOUD_PROVIDER", "test-provider"))
+        stack.enter_context(patch("clients.pinecone_client.CLOUD_REGION", "test-region"))
+        stack.enter_context(patch("clients.pinecone_client.PINECONE_API_KEY", "test-pinecone-key"))
+
+        # OpenAI client patches
+        stack.enter_context(patch("clients.openai_client.OPENAI_API_KEY", "test-openai-key"))
+
+        # Perplexity client patches
+        stack.enter_context(patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-perplexity-key"))
+
+        # Config module patches (for services that import from config directly)
+        stack.enter_context(patch("config.MONGODB_DATABASE_NAME", "test-database"))
+        stack.enter_context(patch("config.MONGODB_COLLECTION_NAME", "test-collection"))
+        stack.enter_context(patch("config.MONGODB_COLLECTION_NAME_AUDIO", "test-audio-collection"))
+        stack.enter_context(patch("config.PINECONE_INDEX_NAME", "test-index"))
+        stack.enter_context(patch("config.CLOUD_PROVIDER", "test-provider"))
+        stack.enter_context(patch("config.CLOUD_REGION", "test-region"))
+
         yield
 
 
