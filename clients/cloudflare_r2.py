@@ -129,5 +129,5 @@ class CloudflareR2Client:
             return cdn_url
 
         except ClientError as e:
-            logger.error("Failed to upload audio to R2: %s", e)
-            raise RuntimeError(f"R2 upload failed: {e}") from e
+            logger.error("Failed to upload audio to R2")
+            raise RuntimeError("R2 upload failed") from e

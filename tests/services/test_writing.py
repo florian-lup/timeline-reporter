@@ -190,7 +190,6 @@ class TestWritingService:
 
         # Verify error was logged
         mock_logger.error.assert_called_once()
-        mock_logger.debug.assert_called_once()
 
     def test_write_stories_empty_input(self, mock_openai_client):
         """Test writing with empty lead list."""

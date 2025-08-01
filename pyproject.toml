@@ -5,11 +5,11 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "timeline-reporter"
 version = "0.1.0"
-description = "AI-powered news reporter"
+description = "AI-powered news automation system"
 readme = "README.md"
 license = "Proprietary"
 authors = ["Florian Lup <contact@florianlup.com>"]
-repository = "https://github.com/yourusername/timeline-reporter"
+repository = "https://github.com/florian-lup/timeline-reporter"
 packages = [
     {include = "clients"},
     {include = "config"},

@@ -1,10 +1,10 @@
 # Timeline Reporter
 
-An AI-powered news automation system that discovers, processes, and publishes breaking news stories with full audio podcast generation. Timeline Reporter transforms raw news leads into publication-ready content through an intelligent 7-step pipeline.
+An AI-powered news automation system.
 
 ## Overview
 
-Timeline Reporter automates the entire journalism workflow from discovery to distribution. The system continuously monitors news sources, identifies breaking stories, eliminates duplicates, prioritizes based on impact, conducts research, writes professional articles, and generates audio podcasts - all without human intervention.
+Timeline Reporter automates the entire journalism workflow from discovery to distribution. The system identifies breaking stories, eliminates duplicates, prioritizes based on impact, conducts research, writes professional articles, and generates audio podcasts.
 
 ## Key Features
 
@@ -91,39 +91,6 @@ Timeline Reporter automates the entire journalism workflow from discovery to dis
    poetry install
    ```
 
-3. **Environment configuration**
-   Create a `.env` file in the project root with the following variables:
-
-   ```env
-   # AI Services
-   OPENAI_API_KEY=your_openai_api_key
-   PERPLEXITY_API_KEY=your_perplexity_api_key
-   PINECONE_API_KEY=your_pinecone_api_key
-
-   # Database
-   MONGODB_URI=your_mongodb_connection_string
-   MONGODB_DATABASE_NAME=timeline_reporter
-   MONGODB_COLLECTION_NAME=stories
-   MONGODB_COLLECTION_NAME_AUDIO=podcasts
-
-   # Vector Database
-   PINECONE_INDEX_NAME=news-deduplication
-   CLOUD_PROVIDER=aws
-   CLOUD_REGION=us-east-1
-
-   # Storage
-   CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
-   CLOUDFLARE_R2_ACCESS_KEY=your_r2_access_key
-   CLOUDFLARE_R2_SECRET_KEY=your_r2_secret_key
-   CLOUDFLARE_R2_BUCKET=timeline-reporter-audio
-   CLOUDFLARE_R2_CUSTOM_DOMAIN=your_custom_domain
-   ```
-
-4. **Activate environment**
-   ```bash
-   poetry shell
-   ```
-
 ## Usage
 
 ### Running the Complete Pipeline
@@ -145,43 +112,6 @@ The system executes the following sequence:
 5. **Writing** - Generates publication-ready stories
 6. **Audio** - Creates podcast episodes from stories
 7. **Storage** - Persists content to MongoDB
-
-### Debug Mode
-
-Individual pipeline components can be tested using debug scripts:
-
-```bash
-# Test discovery
-poetry run python debug/debug_discovery.py
-
-# Test deduplication
-poetry run python debug/debug_deduplication.py
-
-# Test curation
-poetry run python debug/debug_curation.py
-```
-
-## Configuration
-
-### Discovery Settings
-
-Configure news source priorities and categories in `config/discovery_config.py`
-
-### Curation Parameters
-
-Adjust evaluation criteria and scoring weights in `config/curation_config.py`
-
-### Deduplication Thresholds
-
-Set similarity matching sensitivity in `config/deduplication_config.py`
-
-### Writing Style
-
-Customize editorial tone and structure in `config/writing_config.py`
-
-### Audio Generation
-
-Configure voice settings and podcast format in `config/audio_config.py`
 
 ## Testing
 
@@ -223,67 +153,9 @@ poetry run mypy
 poetry run python lint.py
 ```
 
-## Deployment
-
-### Production Requirements
-
-- Reliable internet connection for API calls
-- Sufficient storage for MongoDB and audio files
-- Appropriate API rate limits for chosen services
-- Monitoring and alerting infrastructure
-
-### Environment Setup
-
-1. Set up production MongoDB cluster
-2. Configure Pinecone index with appropriate dimensions
-3. Establish Cloudflare R2 bucket with CDN
-4. Secure API keys in environment variables
-5. Set up automated pipeline scheduling
-
-### Monitoring
-
-Monitor key metrics:
-
-- Pipeline execution success rate
-- Story generation volume
-- API usage and costs
-- Storage utilization
-- Error rates by component
-
-## API Reference
-
-### Core Models
-
-**Lead**: Initial news discovery with basic information
-
-- `discovered_lead`: Raw lead content
-- `report`: Enhanced research data
-- `sources`: Attribution URLs
-- `date`: Discovery timestamp
-
-**Story**: Publication-ready content
-
-- `headline`: SEO-optimized title
-- `summary`: Executive summary
-- `body`: Full article content
-- `tag`: Category classification
-- `sources`: Source attributions
-- `date`: Publication timestamp
-
-**Podcast**: Generated audio content
-
-- `anchor_script`: Narration text
-- `anchor_name`: Voice identifier
-- `audio_url`: Hosted file location
-- `audio_size_bytes`: File size
-
 ## License
 
 Proprietary - All rights reserved
-
-## Support
-
-For technical support or feature requests, contact the development team or create an issue in the project repository.
 
 ---
 

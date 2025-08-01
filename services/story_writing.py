@@ -70,7 +70,6 @@ def _parse_story_from_response(response_text: str, lead: Lead) -> Story:
             date=lead.date,
         )
 
-    except json.JSONDecodeError as exc:
-        logger.error("Failed to parse JSON response: %s", exc)
-        logger.debug("Response was: %s", response_text[:500])
+    except json.JSONDecodeError:
+        logger.error("Failed to parse JSON response")
         raise

@@ -98,8 +98,8 @@ def run_pipeline() -> None:  # noqa: D401
                 "🎙️ Podcast generated: %d-story briefing",
                 len(stories),
             )
-        except Exception as e:
-            logger.error("Failed to generate podcast: %s", str(e))
+        except Exception:
+            logger.error("Failed to generate podcast")
 
     # 7️⃣ Storage
     if stories and podcast:
