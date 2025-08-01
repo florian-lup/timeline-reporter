@@ -151,12 +151,8 @@ class TestMongoDBClient:
             MongoDBClient()
 
             # Should log both the main collection and the audio collection
-            mock_logger.info.assert_any_call(
-                "  ✓ MongoDB connected: %s/%s", "test_db", "test_collection"
-            )
-            mock_logger.info.assert_any_call(
-                "  ✓ MongoDB audio collection ready: %s/%s", "test_db", "podcast"
-            )
+            mock_logger.info.assert_any_call("  ✓ MongoDB connected: %s/%s", "test_db", "test_collection")
+            mock_logger.info.assert_any_call("  ✓ MongoDB audio collection ready: %s/%s", "test_db", "podcast")
 
     @patch("clients.mongodb_client.logger")
     def test_logging_on_insert_story(self, mock_logger, mock_mongo_client, sample_story):
@@ -271,9 +267,7 @@ class TestMongoDBClient:
 
         # Set up audio collection
         mock_audio_collection = Mock()
-        mock_db.__getitem__.side_effect = (
-            lambda x: mock_audio_collection if x == "audio" else mock_collection
-        )
+        mock_db.__getitem__.side_effect = lambda x: mock_audio_collection if x == "audio" else mock_collection
 
         # Mock the insert_one result
         mock_result = Mock()

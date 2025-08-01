@@ -80,7 +80,8 @@ Follow these steps:
    - Same type of event (announcement, incident, policy change, etc.)
    - Same timeframe (within 24 hours of each other)
 
-4. Ignore surface differences: Different perspectives, additional details, or varied wording do NOT make stories unique if they cover the same core event.
+4. Ignore surface differences: Different perspectives, additional details, or varied wording do NOT make stories unique
+   if they cover the same core event.
 
 ## DECISION CRITERIA
 

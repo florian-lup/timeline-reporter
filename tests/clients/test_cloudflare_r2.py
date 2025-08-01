@@ -66,9 +66,7 @@ def test_init_with_custom_domain():
         patch("clients.cloudflare_r2.boto3.client"),
         patch("clients.cloudflare_r2.CLOUDFLARE_R2_CUSTOM_DOMAIN", "custom.example.com"),
     ):
-        client = CloudflareR2Client(
-            account_id="test-account", access_key="test-access-key", secret_key="test-secret-key"
-        )
+        client = CloudflareR2Client(account_id="test-account", access_key="test-access-key", secret_key="test-secret-key")
 
         assert client.cdn_domain == "https://custom.example.com"
 
@@ -157,9 +155,7 @@ def test_upload_audio_with_podcast_id(r2_client, mock_boto3_client):
 def test_upload_audio_error(r2_client, mock_boto3_client):
     """Test error handling during upload."""
     # Set up the mock to raise an error
-    error = ClientError(
-        {"Error": {"Code": "TestError", "Message": "Test error message"}}, "put_object"
-    )
+    error = ClientError({"Error": {"Code": "TestError", "Message": "Test error message"}}, "put_object")
     mock_boto3_client.put_object.side_effect = error
 
     # Test that the error is propagated correctly

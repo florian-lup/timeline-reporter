@@ -179,11 +179,7 @@ class PerplexityClient:
         import re
 
         # Split by </think> to get the JSON part, fallback to entire content if no </think> tag
-        json_part = (
-            raw_content.split("</think>", 1)[1].strip()
-            if "</think>" in raw_content
-            else raw_content.strip()
-        )
+        json_part = raw_content.split("</think>", 1)[1].strip() if "</think>" in raw_content else raw_content.strip()
 
         # Clean up any remaining markdown or XML-like tags
         json_part = re.sub(r"```(?:json)?\n?", "", json_part)

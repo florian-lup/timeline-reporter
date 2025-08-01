@@ -56,9 +56,7 @@ class TestResearchService:
         citations = ["https://incomplete.example.com"]
         return content, citations
 
-    def test_research_lead_success(
-        self, mock_perplexity_client, sample_leads, sample_research_response
-    ):
+    def test_research_lead_success(self, mock_perplexity_client, sample_leads, sample_research_response):
         """Test successful lead research."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
@@ -79,9 +77,7 @@ class TestResearchService:
         # Verify research was called for each lead
         assert mock_perplexity_client.lead_research.call_count == 2
 
-    def test_research_lead_prompt_formatting(
-        self, mock_perplexity_client, sample_leads, sample_research_response
-    ):
+    def test_research_lead_prompt_formatting(self, mock_perplexity_client, sample_leads, sample_research_response):
         """Test that research prompts are formatted correctly with lead discovered_leads directly."""
         mock_perplexity_client.lead_research.return_value = sample_research_response
 
@@ -112,9 +108,7 @@ class TestResearchService:
         # Original discovered_lead should be preserved
         assert enhanced_leads[0].discovered_lead == sample_leads[0].discovered_lead
 
-    def test_research_lead_malformed_json(
-        self, mock_perplexity_client, sample_leads, sample_malformed_research_response
-    ):
+    def test_research_lead_malformed_json(self, mock_perplexity_client, sample_leads, sample_malformed_research_response):
         """Test handling of response with problematic content."""
         mock_perplexity_client.lead_research.return_value = sample_malformed_research_response
 
@@ -234,9 +228,7 @@ class TestResearchService:
         citations = ["https://research-source-1.com", "https://research-source-2.com"]
         mock_perplexity_client.lead_research.return_value = content, citations
 
-        enhanced_leads = research_lead(
-            [lead_with_discovery_sources], perplexity_client=mock_perplexity_client
-        )
+        enhanced_leads = research_lead([lead_with_discovery_sources], perplexity_client=mock_perplexity_client)
 
         # Should use the citations from the research response
         assert enhanced_leads[0].sources == citations
@@ -254,9 +246,7 @@ class TestResearchService:
         citations = ["https://research-source-1.com", "https://research-source-2.com"]
         mock_perplexity_client.lead_research.return_value = content, citations
 
-        enhanced_leads = research_lead(
-            [lead_with_sources], perplexity_client=mock_perplexity_client
-        )
+        enhanced_leads = research_lead([lead_with_sources], perplexity_client=mock_perplexity_client)
 
         # Should use the citations directly from the research response
         assert enhanced_leads[0].sources == citations

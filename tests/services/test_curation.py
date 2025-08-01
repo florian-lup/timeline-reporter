@@ -296,9 +296,7 @@ class TestLeadCuration:
         result = curate_leads(sample_leads, openai_client=mock_openai_client)
 
         # Check logging calls - updated to match new emoji-based format
-        mock_logger.info.assert_any_call(
-            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6
-        )
+        mock_logger.info.assert_any_call("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 6)
         mock_logger.info.assert_any_call(
             "  ✓ Priority selection complete: %d high-impact leads selected",
             len(result),
@@ -382,8 +380,7 @@ class TestLeadCurator:
             ),
             Lead(
                 discovered_lead=(
-                    "Local sports team wins championship after 50 years, bringing joy to "
-                    "fans and boosting local economy through celebrations."
+                    "Local sports team wins championship after 50 years, bringing joy to fans and boosting local economy through celebrations."
                 ),
             ),
         ]
@@ -642,12 +639,8 @@ class TestLeadCurator:
         curator.curate_leads(sample_leads[:1])
 
         # Verify logging calls - updated to match new emoji-based format
-        mock_logger.info.assert_any_call(
-            "  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1
-        )
-        mock_logger.info.assert_any_call(
-            "  ✓ Priority selection complete: %d high-impact leads selected", 1
-        )
+        mock_logger.info.assert_any_call("  ⚖️ Analyzing %d leads using multi-criteria evaluation...", 1)
+        mock_logger.info.assert_any_call("  ✓ Priority selection complete: %d high-impact leads selected", 1)
 
 
 class TestLeadCurationEdgeCases:

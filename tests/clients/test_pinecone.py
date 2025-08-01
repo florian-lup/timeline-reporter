@@ -132,9 +132,7 @@ class TestPineconeClient:
             client = PineconeClient()
             client.similarity_search([0.1, 0.2, 0.3], top_k=10)
 
-            mock_index.query.assert_called_once_with(
-                vector=[0.1, 0.2, 0.3], top_k=10, include_values=False
-            )
+            mock_index.query.assert_called_once_with(vector=[0.1, 0.2, 0.3], top_k=10, include_values=False)
 
     def test_upsert_vector_without_metadata(self, mock_pinecone):
         """Test vector upsert without metadata."""

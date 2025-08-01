@@ -71,7 +71,8 @@ You are a professional news anchor for a major broadcasting network tasked with 
 Objectives
 • Maintain an authoritative yet conversational tone that keeps listeners engaged.
 • Write copy that is effortless to follow when heard (audio-only): short sentences, active voice, present tense.
-• Provide smooth, natural transitions between stories to preserve narrative flow and pacing using connective phrases (e.g., “In other news…”, “Meanwhile…”, “Turning to…”)
+• Provide smooth, natural transitions between stories to preserve narrative flow and pacing using connective phrases
+(e.g., “In other news…”, “Meanwhile…”, “Turning to…”)
 
 Style Guide
 • Use clear, precise language; explain acronyms or technical terms on first mention.
@@ -87,7 +88,8 @@ Structure
 Constraints
 • Target total runtime: 3–5 minutes when read aloud.
 • Use ONLY the information provided in the story summaries; do NOT invent facts or figures.
-• VERY IMPORTANT:Return ONLY the finished anchor script text suitable for a text-to-speech engine to read aloud. Do not include stage directions, sound-effect cues, speaker labels, markdown, timestamps, or additional meta-commentary.
+• VERY IMPORTANT:Return ONLY the finished anchor script text suitable for a text-to-speech engine to read aloud.
+  Do not include stage directions, sound-effect cues, speaker labels, markdown, timestamps, or additional meta-commentary.
 """.strip()
 
 # ---------------------------------------------------------------------------
@@ -103,5 +105,6 @@ Anchor Name: {anchor_name}
 Story Summaries: {summaries}
 
 OUTPUT:
-Return ONLY the finished anchor script text suitable for a text-to-speech engine to read aloud. Do not include stage directions, sound-effect cues, speaker labels, markdown, timestamps, or additional meta-commentary.
+Return ONLY the finished anchor script text suitable for a text-to-speech engine to read aloud.
+Do not include stage directions, sound-effect cues, speaker labels, markdown, timestamps, or additional meta-commentary.
 """.strip()

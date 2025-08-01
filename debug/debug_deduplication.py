@@ -174,9 +174,7 @@ def debug_mongodb_queries(mongodb_client: MongoDBClient) -> dict[str, Any]:
 
         # Test with summary field projection
         recent_with_summary = list(mongodb_client._collection.find(query, {"summary": 1}))
-        debug_info["documents_with_summary"] = len(
-            [d for d in recent_with_summary if d.get("summary")]
-        )
+        debug_info["documents_with_summary"] = len([d for d in recent_with_summary if d.get("summary")])
         logger.info("    Documents with summary field: %d", debug_info["documents_with_summary"])
 
         # Try alternative time ranges
@@ -275,9 +273,7 @@ def save_test_outputs(
                 "total_input_leads": len(leads),
                 "unique_output_leads": len(unique_leads),
                 "duplicates_detected": len(leads) - len(unique_leads),
-                "deduplication_rate": round((len(leads) - len(unique_leads)) / len(leads) * 100, 2)
-                if leads
-                else 0,
+                "deduplication_rate": round((len(leads) - len(unique_leads)) / len(leads) * 100, 2) if leads else 0,
             },
             "mongodb_debug": debug_info,
             "file_outputs": {

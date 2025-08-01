@@ -15,9 +15,7 @@ class TestPerplexityClient:
     def sample_response_data(self):
         """Sample API response data."""
         return {
-            "choices": [
-                {"message": {"content": "This is the research content for testing purposes."}}
-            ],
+            "choices": [{"message": {"content": "This is the research content for testing purposes."}}],
             "search_results": [
                 {"url": "https://example.com/source1"},
                 {"url": "https://example.com/source2"},
@@ -153,9 +151,7 @@ class TestPerplexityClient:
     def test_research_http_error(self, mock_httpx_client):
         """Test that HTTP errors are properly raised."""
         mock_client, mock_response = mock_httpx_client
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "404 Not Found", request=Mock(), response=Mock()
-        )
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError("404 Not Found", request=Mock(), response=Mock())
 
         with patch("clients.perplexity_client.PERPLEXITY_API_KEY", "test-api-key"):
             client = PerplexityClient()

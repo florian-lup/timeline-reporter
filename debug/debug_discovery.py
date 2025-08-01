@@ -56,9 +56,7 @@ def main() -> None:
             instructions = DISCOVERY_CATEGORY_INSTRUCTIONS[category_name]
 
             # Get the raw response with <think> content for debugging (structured)
-            raw_response_with_thinking = _debug_lead_discovery_with_thinking(
-                perplexity_client, instructions
-            )
+            raw_response_with_thinking = _debug_lead_discovery_with_thinking(perplexity_client, instructions)
 
             # Extract just the <think> content for analysis
             thinking_content = _extract_thinking_content(raw_response_with_thinking)
@@ -102,9 +100,7 @@ def main() -> None:
                 json.dump(leads_data, f, indent=2, ensure_ascii=False)
 
                 # Save unstructured response for comparison
-                unstructured_file = (
-                    debug_dir / f"unstructured_response_{category_name}_{timestamp}.json"
-                )
+                unstructured_file = debug_dir / f"unstructured_response_{category_name}_{timestamp}.json"
                 with Path(unstructured_file).open("w", encoding="utf-8") as unstructured_f:
                     json.dump(unstructured_response, unstructured_f, indent=2, ensure_ascii=False)
                 logger.info("📝 Unstructured response saved to: %s", unstructured_file)
@@ -124,9 +120,7 @@ def main() -> None:
                     # Log thinking content to console (truncated)
                     max_preview_length = 200
                     thinking_preview = (
-                        thinking_content[:max_preview_length] + "..."
-                        if len(thinking_content) > max_preview_length
-                        else thinking_content
+                        thinking_content[:max_preview_length] + "..." if len(thinking_content) > max_preview_length else thinking_content
                     )
                     logger.info("🧠 AI Thinking: %s", thinking_preview)
 
@@ -198,17 +192,11 @@ def main() -> None:
             if "error" in category_data:
                 print(f"  ✗ {category_name}: ERROR - {category_data['error']}")
             else:
-                thinking_info = (
-                    f" (thinking: {category_data['thinking_length']} chars)"
-                    if category_data.get("thinking_length", 0) > 0
-                    else ""
-                )
+                thinking_info = f" (thinking: {category_data['thinking_length']} chars)" if category_data.get("thinking_length", 0) > 0 else ""
                 structured_len = category_data.get("structured_response_length", 0)
                 unstructured_len = category_data.get("unstructured_response_length", 0)
                 print(f"  ✓ {category_name}: {category_data['leads_count']} leads{thinking_info}")
-                print(
-                    f"    📊 Structured: {structured_len} chars | Unstructured: {unstructured_len} chars"
-                )
+                print(f"    📊 Structured: {structured_len} chars | Unstructured: {unstructured_len} chars")
         else:
             print(f"  ? {category_name}: No data")
 
@@ -277,9 +265,7 @@ def _debug_lead_discovery_with_thinking(perplexity_client: PerplexityClient, pro
     return str(data["choices"][0]["message"]["content"])
 
 
-def _debug_unstructured_discovery(
-    perplexity_client: PerplexityClient, prompt: str
-) -> dict[str, Any]:
+def _debug_unstructured_discovery(perplexity_client: PerplexityClient, prompt: str) -> dict[str, Any]:
     """Debug version that returns natural unstructured response from Perplexity."""
     import httpx
 

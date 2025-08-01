@@ -35,15 +35,11 @@ class MongoDBClient:
         if not MONGODB_DATABASE_NAME:
             raise ValueError("MONGODB_DATABASE_NAME is missing, cannot initialise MongoDB client.")
         if not MONGODB_COLLECTION_NAME:
-            raise ValueError(
-                "MONGODB_COLLECTION_NAME is missing, cannot initialise MongoDB client."
-            )
+            raise ValueError("MONGODB_COLLECTION_NAME is missing, cannot initialise MongoDB client.")
         self._client: MongoClient[dict[str, Any]] = MongoClient(uri)
         self._db = self._client[MONGODB_DATABASE_NAME]
         self._collection = self._db[MONGODB_COLLECTION_NAME]
-        self._audio_collection = (
-            self._db[MONGODB_COLLECTION_NAME_AUDIO] if MONGODB_COLLECTION_NAME_AUDIO else None
-        )
+        self._audio_collection = self._db[MONGODB_COLLECTION_NAME_AUDIO] if MONGODB_COLLECTION_NAME_AUDIO else None
         logger.info(
             "  ✓ MongoDB connected: %s/%s",
             MONGODB_DATABASE_NAME,
@@ -60,9 +56,7 @@ class MongoDBClient:
         """Context manager entry."""
         return self
 
-    def __exit__(
-        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: object
-    ) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: object) -> None:
         """Context manager exit with automatic cleanup."""
         self.close()
 
@@ -83,9 +77,7 @@ class MongoDBClient:
     def insert_podcast(self, podcast: dict[str, Any]) -> str:
         """Inserts *podcast* dict into audio collection and returns inserted document id as str."""
         if self._audio_collection is None:
-            raise ValueError(
-                "Audio collection not configured. Set MONGODB_COLLECTION_NAME_AUDIO in environment."
-            )
+            raise ValueError("Audio collection not configured. Set MONGODB_COLLECTION_NAME_AUDIO in environment.")
         result = self._audio_collection.insert_one(podcast)
         return str(result.inserted_id)
 

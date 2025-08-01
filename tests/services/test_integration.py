@@ -43,25 +43,13 @@ class TestServicesIntegration:
 
         # Set up discovery responses for three categories
         politics_response = json.dumps(
-            [
-                {
-                    "discovered_lead": "Political Summit 2024: World leaders discuss global governance and international cooperation."
-                }
-            ]
+            [{"discovered_lead": "Political Summit 2024: World leaders discuss global governance and international cooperation."}]
         )
         environment_response = json.dumps(
-            [
-                {
-                    "discovered_lead": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."
-                }
-            ]
+            [{"discovered_lead": "Climate Summit 2024: Global climate leaders meet to establish comprehensive environmental policies."}]
         )
         entertainment_response = json.dumps(
-            [
-                {
-                    "discovered_lead": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."
-                }
-            ]
+            [{"discovered_lead": "AI Breakthrough Announced: Major AI advancement in healthcare diagnostics revolutionizes medical practice."}]
         )
 
         # Set lead_discovery to return different responses for each call
@@ -106,34 +94,22 @@ class TestServicesIntegration:
             json.dumps(
                 {
                     "headline": "World Leaders Unite at Political Summit",
-                    "summary": (
-                        "Political leaders agree on new international cooperation framework."
-                    ),
-                    "body": (
-                        "In a historic gathering, world leaders came together to discuss global governance."
-                    ),
+                    "summary": ("Political leaders agree on new international cooperation framework."),
+                    "body": ("In a historic gathering, world leaders came together to discuss global governance."),
                 }
             ),
             json.dumps(
                 {
                     "headline": "Global Climate Summit Sets Ambitious 2030 Targets",
-                    "summary": (
-                        "World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals."
-                    ),
-                    "body": (
-                        "In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments."
-                    ),
+                    "summary": ("World leaders at the 2024 Climate Summit agreed on unprecedented carbon reduction goals."),
+                    "body": ("In a historic gathering, the 2024 Climate Summit concluded with ambitious commitments."),
                 }
             ),
             json.dumps(
                 {
                     "headline": "AI Revolution in Healthcare Diagnostics",
-                    "summary": (
-                        "Breakthrough AI system shows promise in medical diagnosis and drug discovery."
-                    ),
-                    "body": (
-                        "Researchers have developed an AI system that revolutionizes healthcare diagnostics."
-                    ),
+                    "summary": ("Breakthrough AI system shows promise in medical diagnosis and drug discovery."),
+                    "body": ("Researchers have developed an AI system that revolutionizes healthcare diagnostics."),
                 }
             ),
         ]
@@ -209,9 +185,7 @@ class TestServicesIntegration:
             mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        researched_leads = research_lead(
-            prioritized_leads, perplexity_client=mock_clients["perplexity"]
-        )
+        researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
         persist_stories(stories, mongodb_client=mock_clients["mongodb"])
 
@@ -461,9 +435,7 @@ class TestServicesIntegration:
             mongodb_client=mock_clients["mongodb"],
         )
         prioritized_leads = curate_leads(unique_leads, openai_client=mock_clients["openai"])
-        researched_leads = research_lead(
-            prioritized_leads, perplexity_client=mock_clients["perplexity"]
-        )
+        researched_leads = research_lead(prioritized_leads, perplexity_client=mock_clients["perplexity"])
         stories = write_stories(researched_leads, openai_client=mock_clients["openai"])
 
         # Store final stories
@@ -477,9 +449,7 @@ class TestServicesIntegration:
 
         # Lead -> Lead (curation preserves structure, filters by impact)
         assert isinstance(prioritized_leads[0], Lead)
-        assert prioritized_leads[0].discovered_lead in [
-            lead.discovered_lead for lead in unique_leads
-        ]
+        assert prioritized_leads[0].discovered_lead in [lead.discovered_lead for lead in unique_leads]
 
         # Lead -> Enhanced Lead (research adds report and sources)
         assert len(researched_leads) == 3
@@ -512,15 +482,9 @@ class TestServicesIntegration:
         mock_clients["perplexity"].lead_research.side_effect = lead_research_responses
 
         # Create large discovery responses across categories
-        politics_data = [
-            {"discovered_lead": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)
-        ]
-        environment_data = [
-            {"discovered_lead": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)
-        ]
-        entertainment_data = [
-            {"discovered_lead": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)
-        ]
+        politics_data = [{"discovered_lead": f"Political Lead {i}: Political news {i}"} for i in range(1, 5)]
+        environment_data = [{"discovered_lead": f"Environmental Lead {i}: Climate news {i}"} for i in range(5, 8)]
+        entertainment_data = [{"discovered_lead": f"Entertainment Lead {i}: Celebrity news {i}"} for i in range(8, 11)]
 
         mock_clients["perplexity"].lead_discovery.side_effect = [
             json.dumps(politics_data),
@@ -647,9 +611,7 @@ class TestServicesIntegration:
         )
 
         # Set up all responses for this test: 1 curation only
-        mock_clients["openai"].chat_completion.side_effect = [
-            large_scale_curation_response
-        ]  # 1 curation call
+        mock_clients["openai"].chat_completion.side_effect = [large_scale_curation_response]  # 1 curation call
 
         # Override research responses for 5 stories
         research_responses = [

@@ -6,9 +6,7 @@ import subprocess
 import sys
 
 
-def test_all(
-    test_type: str = "all", coverage: bool = True, verbose: bool = False
-) -> subprocess.CompletedProcess[bytes]:
+def test_all(test_type: str = "all", coverage: bool = True, verbose: bool = False) -> subprocess.CompletedProcess[bytes]:
     """Run tests with specified options."""
     cmd = [sys.executable, "-m", "pytest"]
 

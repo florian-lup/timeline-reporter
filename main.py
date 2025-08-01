@@ -103,9 +103,7 @@ def run_pipeline() -> None:  # noqa: D401
 
     # 7️⃣ Storage
     if stories and podcast:
-        logger.info(
-            "💾 STEP 7: Storage - Saving %d stories and podcast to database...", len(stories)
-        )
+        logger.info("💾 STEP 7: Storage - Saving %d stories and podcast to database...", len(stories))
         persist_stories_and_podcast(stories, podcast, mongodb_client=mongodb_client)
     elif stories:
         # Fallback: just persist stories if podcast generation failed

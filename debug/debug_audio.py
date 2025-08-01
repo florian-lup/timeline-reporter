@@ -94,9 +94,7 @@ def test_tts_instructions_verification() -> bool:
         print(f"   Voice: {captured_params.get('voice', 'NOT FOUND')}")
         print(f"   Speed: {captured_params.get('speed', 'NOT FOUND')}")
         print(f"   Response Format: {captured_params.get('response_format', 'NOT FOUND')}")
-        print(
-            f"   Instructions: {'✅ INCLUDED' if 'instructions' in captured_params else '❌ MISSING'}"
-        )
+        print(f"   Instructions: {'✅ INCLUDED' if 'instructions' in captured_params else '❌ MISSING'}")
 
         if "instructions" in captured_params:
             instructions_text = captured_params["instructions"]
@@ -338,10 +336,7 @@ def run_real_audio_generation_test() -> bool:
         output_dir.mkdir(exist_ok=True)
 
         # Save the script to a text file
-        script_file = (
-            output_dir
-            / f"podcast_script_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.txt"
-        )
+        script_file = output_dir / f"podcast_script_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.txt"
         with script_file.open("w", encoding="utf-8") as f:
             f.write(f"PODCAST SCRIPT - {get_today_formatted()}\n")
             f.write(f"ANCHOR: {podcast.anchor_name}\n")
@@ -355,10 +350,7 @@ def run_real_audio_generation_test() -> bool:
 
         from config.audio_config import AUDIO_FORMAT
 
-        audio_file = (
-            output_dir
-            / f"podcast_audio_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.{AUDIO_FORMAT}"
-        )
+        audio_file = output_dir / f"podcast_audio_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.{AUDIO_FORMAT}"
         with audio_file.open("wb") as f:
             f.write(audio_response.content)
 
@@ -372,10 +364,7 @@ def run_real_audio_generation_test() -> bool:
             "local_audio_file": audio_file.name,
         }
 
-        json_file = (
-            output_dir
-            / f"podcast_data_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.json"
-        )
+        json_file = output_dir / f"podcast_data_{get_today_formatted()}_{podcast.anchor_name.replace(' ', '_')}.json"
         with json_file.open("w", encoding="utf-8") as f:
             json.dump(podcast_data, f, indent=2, ensure_ascii=False)
 
@@ -412,9 +401,7 @@ def run_real_audio_generation_test() -> bool:
         print("ℹ️  Each podcast features a randomly selected anchor with personalized intro/outro.")
 
         if "gpt-4o-mini-tts" in TTS_MODEL:
-            print(
-                "ℹ️  TTS Instructions provide enhanced control over voice delivery, tone, and pacing."
-            )
+            print("ℹ️  TTS Instructions provide enhanced control over voice delivery, tone, and pacing.")
 
         return True
 

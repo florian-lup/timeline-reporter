@@ -161,9 +161,7 @@ def _database_deduplication(
 # ---------------------------------------------------------------------------
 
 
-def _compare_with_database_records(
-    lead: Lead, recent_stories: list[dict[str, object]], openai_client: OpenAIClient
-) -> bool:
+def _compare_with_database_records(lead: Lead, recent_stories: list[dict[str, object]], openai_client: OpenAIClient) -> bool:
     """Use GPT-4o to compare a lead against recent database records.
 
     Returns True if the lead is similar to any existing record.
@@ -179,9 +177,7 @@ def _compare_with_database_records(
             story_summaries.append(summary)
 
     # Create comparison prompt using centralized template
-    existing_summaries_text = chr(10).join(
-        [f"{i + 1}. {summary}" for i, summary in enumerate(story_summaries)]
-    )
+    existing_summaries_text = chr(10).join([f"{i + 1}. {summary}" for i, summary in enumerate(story_summaries)])
 
     user_prompt = DEDUPLICATION_PROMPT_TEMPLATE.format(
         lead_text=lead.discovered_lead,

@@ -94,9 +94,7 @@ class TestWritingService:
             }
         )
 
-    def test_write_stories_success(
-        self, mock_openai_client, sample_researched_leads, sample_writing_response
-    ):
+    def test_write_stories_success(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test successful story writing."""
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
@@ -104,9 +102,7 @@ class TestWritingService:
 
         assert len(stories) == 2
         assert isinstance(stories[0], Story)
-        assert stories[0].headline == (
-            "World Leaders Unite at Climate Summit 2024 for Urgent Action"
-        )
+        assert stories[0].headline == ("World Leaders Unite at Climate Summit 2024 for Urgent Action")
         assert "unprecedented cooperation" in stories[0].summary
         assert "Climate Summit 2024 has concluded" in stories[0].body
 
@@ -117,9 +113,7 @@ class TestWritingService:
         # Verify OpenAI client was called for each lead
         assert mock_openai_client.chat_completion.call_count == 2
 
-    def test_write_stories_openai_parameters(
-        self, mock_openai_client, sample_researched_leads, sample_writing_response
-    ):
+    def test_write_stories_openai_parameters(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test that OpenAI client is called with correct parameters."""
         from config.writing_config import WRITING_MODEL
 
@@ -136,9 +130,7 @@ class TestWritingService:
         assert response_format["type"] == "json_schema"
         assert "json_schema" in response_format
 
-    def test_write_stories_prompt_formatting(
-        self, mock_openai_client, sample_researched_leads, sample_writing_response
-    ):
+    def test_write_stories_prompt_formatting(self, mock_openai_client, sample_researched_leads, sample_writing_response):
         """Test that prompts are formatted correctly."""
         mock_openai_client.chat_completion.return_value = sample_writing_response
 
@@ -292,9 +284,7 @@ class TestWritingService:
         assert len(stories) == 1
         assert mock_openai_client.chat_completion.call_count == 1
 
-    def test_write_stories_client_error_propagation(
-        self, mock_openai_client, sample_researched_leads
-    ):
+    def test_write_stories_client_error_propagation(self, mock_openai_client, sample_researched_leads):
         """Test that client errors are properly propagated."""
         mock_openai_client.chat_completion.side_effect = Exception("OpenAI API Error")
 
@@ -325,9 +315,7 @@ class TestWritingService:
                 _parse_story_from_response("invalid json", sample_researched_leads[0])
             mock_logger.error.assert_called()
 
-    def test_write_stories_preserves_lead_attributes(
-        self, mock_openai_client, sample_writing_response
-    ):
+    def test_write_stories_preserves_lead_attributes(self, mock_openai_client, sample_writing_response):
         """Test that lead attributes are properly preserved in stories."""
         lead_with_custom_date = Lead(
             discovered_lead="Custom date lead",

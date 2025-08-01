@@ -82,9 +82,7 @@ class TestClientIntegration:
                     "https://example.com/source2",
                 ],
             }
-            mock_response.json.return_value = {
-                "choices": [{"message": {"content": json.dumps(research_data)}}]
-            }
+            mock_response.json.return_value = {"choices": [{"message": {"content": json.dumps(research_data)}}]}
             mock_response.raise_for_status.return_value = None
             mock_httpx.return_value.__enter__.return_value = mock_http_client
             mock_http_client.post.return_value = mock_response
@@ -97,16 +95,11 @@ class TestClientIntegration:
             # Verify API call
             mock_http_client.post.assert_called_once()
             call_args = mock_http_client.post.call_args
-            assert (
-                "senior investigative research analyst"
-                in call_args[1]["json"]["messages"][0]["content"]
-            )
+            assert "senior investigative research analyst" in call_args[1]["json"]["messages"][0]["content"]
 
             # Verify result parsing - lead research returns context + sources
             result_data = json.loads(content)
-            assert result_data["context"] == (
-                "Comprehensive research context about breaking technology news"
-            )
+            assert result_data["context"] == ("Comprehensive research context about breaking technology news")
             assert len(result_data["sources"]) == 2
 
     def test_mongodb_story_storage_integration(self):
@@ -207,9 +200,7 @@ class TestClientIntegration:
                 "summary": "Important lead summary",
                 "body": "Full story details...",
             }
-            mock_openai_instance.chat.completions.create.return_value = Mock(
-                choices=[Mock(message=Mock(content=json.dumps(story_data)))]
-            )
+            mock_openai_instance.chat.completions.create.return_value = Mock(choices=[Mock(message=Mock(content=json.dumps(story_data)))])
 
             # MongoDB storage
             mock_mongo_instance = Mock()
@@ -321,9 +312,7 @@ class TestClientIntegration:
         ):
             mock_openai_instance = Mock()
             mock_openai.return_value = mock_openai_instance
-            mock_openai_instance.embeddings.create.side_effect = Exception(
-                "API rate limit exceeded"
-            )
+            mock_openai_instance.embeddings.create.side_effect = Exception("API rate limit exceeded")
 
             openai_client = OpenAIClient()
 

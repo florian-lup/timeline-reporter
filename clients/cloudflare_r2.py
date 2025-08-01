@@ -75,9 +75,7 @@ class CloudflareR2Client:
         if CLOUDFLARE_R2_CUSTOM_DOMAIN:
             self.cdn_domain = f"https://{CLOUDFLARE_R2_CUSTOM_DOMAIN}"
         else:
-            self.cdn_domain = R2_CDN_URL_TEMPLATE.format(
-                bucket_name=self.bucket_name, account_id=self.account_id
-            )
+            self.cdn_domain = R2_CDN_URL_TEMPLATE.format(bucket_name=self.bucket_name, account_id=self.account_id)
 
         logger.info("✓ Cloudflare R2 client initialized: %s", self.bucket_name)
 

@@ -109,16 +109,12 @@ class LeadCurator:
         evaluations = []
         for i, lead in enumerate(leads):
             # Find scores for this lead - guaranteed to exist due to schema
-            lead_scores = next(
-                score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1
-            )
+            lead_scores = next(score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1)
 
             criteria_scores = {k: float(lead_scores[k]) for k in CRITERIA_WEIGHTS}
 
             # Calculate weighted score
-            weighted = sum(
-                score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items()
-            )
+            weighted = sum(score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items())
             weighted = round(weighted, 2)
 
             evaluations.append(
@@ -131,9 +127,7 @@ class LeadCurator:
 
             first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
             reasoning = lead_scores["brief_reasoning"]
-            reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + (
-                "..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else ""
-            )
+            reasoning_display = reasoning[:MAX_REASONING_DISPLAY_LENGTH] + ("..." if len(reasoning) > MAX_REASONING_DISPLAY_LENGTH else "")
             logger.info(
                 "  📊 Lead %d/%d scored %.1f - %s: %s",
                 i + 1,

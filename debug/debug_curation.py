@@ -176,9 +176,7 @@ def save_test_outputs(
     # Save comprehensive summary
     summary_file = output_dir / f"curation_summary_{timestamp}.json"
     with Path(summary_file).open("w", encoding="utf-8") as f:
-        selection_rate = (
-            round(len(curated_leads) / len(original_leads) * 100, 2) if original_leads else 0
-        )
+        selection_rate = round(len(curated_leads) / len(original_leads) * 100, 2) if original_leads else 0
 
         summary_data = {
             "test_metadata": {
@@ -208,13 +206,9 @@ def save_test_outputs(
                 "summary": str(summary_file.name),
             },
             "lead_analysis": {
-                "selected_lead_previews": [
-                    " ".join(lead.discovered_lead.split()[:8]) + "..." for lead in curated_leads
-                ],
+                "selected_lead_previews": [" ".join(lead.discovered_lead.split()[:8]) + "..." for lead in curated_leads],
                 "filtered_lead_previews": [
-                    " ".join(lead.discovered_lead.split()[:8]) + "..."
-                    for lead in original_leads
-                    if lead not in curated_leads
+                    " ".join(lead.discovered_lead.split()[:8]) + "..." for lead in original_leads if lead not in curated_leads
                 ],
             },
         }
@@ -268,15 +262,11 @@ def parse_and_display_scores(raw_response: str, leads: list[Lead]) -> list[dict[
 
         for i, lead in enumerate(leads):
             # Find scores for this lead
-            lead_scores = next(
-                score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1
-            )
+            lead_scores = next(score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1)
 
             # Calculate weighted score
             criteria_scores = {k: float(lead_scores[k]) for k in CRITERIA_WEIGHTS}
-            weighted_score = sum(
-                score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items()
-            )
+            weighted_score = sum(score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items())
             weighted_score = round(weighted_score, 2)
 
             # Create result entry
@@ -298,9 +288,7 @@ def parse_and_display_scores(raw_response: str, leads: list[Lead]) -> list[dict[
                 f"   Scores: Impact={criteria_scores['impact']} Proximity={criteria_scores['proximity']} "
                 f"Prominence={criteria_scores['prominence']} Relevance={criteria_scores['relevance']}"
             )
-            logger.info(
-                f"           Hook={criteria_scores['hook']} Novelty={criteria_scores['novelty']} Conflict={criteria_scores['conflict']}"
-            )
+            logger.info(f"           Hook={criteria_scores['hook']} Novelty={criteria_scores['novelty']} Conflict={criteria_scores['conflict']}")
             logger.info(f"   Reasoning: {lead_scores['brief_reasoning']}")
             logger.info("")
 
@@ -338,16 +326,12 @@ def apply_curation_logic(raw_response: str, leads: list[Lead]) -> list[Lead]:
     evaluations = []
     for i, lead in enumerate(leads):
         # Find scores for this lead - same logic as lead_curation.py
-        lead_scores = next(
-            score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1
-        )
+        lead_scores = next(score_entry for score_entry in evaluations_data if score_entry["index"] == i + 1)
 
         criteria_scores = {k: float(lead_scores[k]) for k in CRITERIA_WEIGHTS}
 
         # Calculate weighted score - same formula as lead_curation.py
-        weighted = sum(
-            score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items()
-        )
+        weighted = sum(score * CRITERIA_WEIGHTS[criterion] for criterion, score in criteria_scores.items())
         weighted = round(weighted, 2)
 
         evaluations.append(
@@ -361,9 +345,7 @@ def apply_curation_logic(raw_response: str, leads: list[Lead]) -> list[Lead]:
         first_words = " ".join(lead.discovered_lead.split()[:5]) + "..."
         reasoning = lead_scores["brief_reasoning"]
         max_reasoning_length = 80
-        reasoning_display = reasoning[:max_reasoning_length] + (
-            "..." if len(reasoning) > max_reasoning_length else ""
-        )
+        reasoning_display = reasoning[:max_reasoning_length] + ("..." if len(reasoning) > max_reasoning_length else "")
         logger.info(
             "  📊 Lead %d/%d scored %.1f - %s: %s",
             i + 1,
@@ -426,38 +408,22 @@ def apply_curation_logic(raw_response: str, leads: list[Lead]) -> list[Lead]:
     return [e.lead for e in selected]
 
 
-def analyze_curation_results(
-    original_leads: list[Lead], curated_leads: list[Lead]
-) -> dict[str, dict[str, object]]:
+def analyze_curation_results(original_leads: list[Lead], curated_leads: list[Lead]) -> dict[str, dict[str, object]]:
     """Analyze the curation results and return debug information."""
     return {
         "lead_count_analysis": {
             "input_count": len(original_leads),
             "output_count": len(curated_leads),
             "filtered_count": len(original_leads) - len(curated_leads),
-            "selection_rate": round(len(curated_leads) / len(original_leads) * 100, 2)
-            if original_leads
-            else 0,
+            "selection_rate": round(len(curated_leads) / len(original_leads) * 100, 2) if original_leads else 0,
         },
         "content_analysis": {
-            "avg_lead_length_chars": sum(len(lead.discovered_lead) for lead in original_leads)
-            // len(original_leads)
-            if original_leads
-            else 0,
-            "avg_selected_length_chars": sum(len(lead.discovered_lead) for lead in curated_leads)
-            // len(curated_leads)
-            if curated_leads
-            else 0,
+            "avg_lead_length_chars": sum(len(lead.discovered_lead) for lead in original_leads) // len(original_leads) if original_leads else 0,
+            "avg_selected_length_chars": sum(len(lead.discovered_lead) for lead in curated_leads) // len(curated_leads) if curated_leads else 0,
         },
         "selection_patterns": {
-            "selected_lead_topics": [
-                " ".join(lead.discovered_lead.split()[:5]) + "..." for lead in curated_leads
-            ],
-            "filtered_lead_topics": [
-                " ".join(lead.discovered_lead.split()[:5]) + "..."
-                for lead in original_leads
-                if lead not in curated_leads
-            ],
+            "selected_lead_topics": [" ".join(lead.discovered_lead.split()[:5]) + "..." for lead in curated_leads],
+            "filtered_lead_topics": [" ".join(lead.discovered_lead.split()[:5]) + "..." for lead in original_leads if lead not in curated_leads],
         },
     }
 
@@ -516,9 +482,7 @@ def main() -> None:
         logger.info("  📊 Curated leads: %d", len(curated_leads))
         logger.info("  📊 Leads filtered out: %d", len(original_leads) - len(curated_leads))
         if isinstance(analysis, dict) and "lead_count_analysis" in analysis:
-            logger.info(
-                "  📊 Selection rate: %.1f%%", analysis["lead_count_analysis"]["selection_rate"]
-            )
+            logger.info("  📊 Selection rate: %.1f%%", analysis["lead_count_analysis"]["selection_rate"])
 
         if curated_leads:
             logger.info("🏆 Selected leads:")
@@ -530,9 +494,7 @@ def main() -> None:
 
         # Save comprehensive outputs
         logger.info("💾 Saving test outputs to debug/output...")
-        save_test_outputs(
-            original_leads, curated_leads, test_start_time, raw_response, analysis, scoring_results
-        )
+        save_test_outputs(original_leads, curated_leads, test_start_time, raw_response, analysis, scoring_results)
 
         # Final summary
         test_duration = datetime.now() - test_start_time
@@ -571,9 +533,7 @@ def main() -> None:
                 print(f"  {i:2d}. {preview}")
 
         print("\n📁 All debug files saved in: debug/output/curation_output/")
-        print(
-            "💡 Files include: original leads, curated leads, raw AI response, and detailed analysis"
-        )
+        print("💡 Files include: original leads, curated leads, raw AI response, and detailed analysis")
 
         # return True  # Removed - function should not return value
 

@@ -47,7 +47,8 @@ DISCOVERY_CATEGORIES = [
 # Discovery System Prompt
 # ---------------------------------------------------------------------------
 DISCOVERY_SYSTEM_PROMPT = f"""
-You are an investigative news scout for a global newsroom tasked with identifying fresh, highly newsworthy leads that have emerged today {get_today_formatted()}.
+You are an investigative news scout for a global newsroom tasked with identifying fresh, highly newsworthy leads
+that have emerged today {get_today_formatted()}.
 
 Operational protocol:
 • Remain strictly factual and neutral; do NOT speculate or extrapolate beyond what sources state, never fabricate data.
@@ -69,11 +70,13 @@ Expected output schema (do not include this block in your response):
 # ---------------------------------------------------------------------------
 
 DISCOVERY_POLITICS_INSTRUCTIONS = f"""
-Identify as many significant political or geopolitical developments as possible reported today {get_today_formatted()}. Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
+Identify as many significant political or geopolitical developments as possible reported today {get_today_formatted()}.
+Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
 
 Follow these guidelines:
 • Include all qualifying leads, not just the most impactful.
-• Cover a wide range of topics: elections, government actions, policy changes, international relations, conflicts, treaties, protests, leadership changes, major legislation, and court rulings.
+• Cover a wide range of topics: elections, government actions, policy changes, international relations, conflicts, treaties,
+  protests, leadership changes, major legislation, and court rulings.
 • Prioritize diversity of regions and countries—do not focus solely on major powers.
 • For each lead, ensure it is well-sourced and factually reported.
 • Avoid duplicates and overlapping stories.
@@ -81,11 +84,14 @@ Follow these guidelines:
 """.strip()
 
 DISCOVERY_ENVIRONMENT_INSTRUCTIONS = f"""
-Identify as many significant environmental developments as possible reported today {get_today_formatted()}. Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
+Identify as many significant environmental developments as possible reported today {get_today_formatted()}.
+Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
 
 Follow these guidelines:
 • Include all qualifying leads, not just the most impactful.
-• Cover a wide range of topics: climate change developments, environmental policy announcements, natural disasters, conservation efforts, pollution incidents, scientific discoveries, corporate environmental actions, renewable energy projects, and environmental activism.
+• Cover a wide range of topics: climate change developments, environmental policy announcements, natural disasters,
+  conservation efforts, pollution incidents, scientific discoveries, corporate environmental actions, renewable energy projects,
+  and environmental activism.
 • Prioritize diversity of regions and countries—do not focus solely on major powers.
 • For each lead, ensure it is well-sourced and factually reported.
 • Avoid duplicates and overlapping stories.
@@ -93,11 +99,14 @@ Follow these guidelines:
 """.strip()
 
 DISCOVERY_ENTERTAINMENT_INSTRUCTIONS = f"""
-Identify as many significant entertainment industry developments as possible reported today {get_today_formatted()}. Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
+Identify as many significant entertainment industry developments as possible reported today {get_today_formatted()}.
+Maximize breadth and coverage—include global, national, regional, and local developments, as well as both emerging and ongoing stories.
 
 Follow these guidelines:
 • Include all qualifying leads, not just the most impactful.
-• Cover a wide range of topics: celebrity news, film and television announcements, music industry developments, awards and premieres, box office results, streaming platform updates, entertainment business deals, cultural events, and industry controversies.
+• Cover a wide range of topics: celebrity news, film and television announcements, music industry developments,
+  awards and premieres, box office results, streaming platform updates, entertainment business deals, cultural events,
+  and industry controversies.
 • Prioritize diversity of regions and countries—do not focus solely on major markets like Hollywood or major streaming platforms.
 • For each lead, ensure it is well-sourced and factually reported.
 • Avoid duplicates and overlapping stories.

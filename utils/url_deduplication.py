@@ -99,9 +99,7 @@ def deduplicate_sources(sources: list[str]) -> list[str]:
     return unique_sources
 
 
-def combine_and_deduplicate_sources(
-    existing_sources: list[str], new_sources: list[str]
-) -> list[str]:
+def combine_and_deduplicate_sources(existing_sources: list[str], new_sources: list[str]) -> list[str]:
     """Combine two lists of sources and remove duplicates.
 
     Args:

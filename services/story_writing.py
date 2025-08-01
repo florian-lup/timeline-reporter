@@ -40,9 +40,7 @@ def write_stories(leads: list[Lead], *, openai_client: OpenAIClient) -> list[Sto
 
         story = _parse_story_from_response(response_text, lead)
         stories.append(story)
-        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + (
-            "..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else ""
-        )
+        headline_display = story.headline[:MAX_HEADLINE_DISPLAY_LENGTH] + ("..." if len(story.headline) > MAX_HEADLINE_DISPLAY_LENGTH else "")
         logger.info(
             "  ✓ Story %d/%d completed - %s: '%s'",
             idx,

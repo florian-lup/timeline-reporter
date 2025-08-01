@@ -121,9 +121,7 @@ class TestDeduplicationService:
         # Verify only 2 vectors were upserted (excluding duplicate)
         assert mock_pinecone_client.upsert_vector.call_count == 2
 
-    def test_deduplicate_leads_empty_input(
-        self, mock_openai_client, mock_pinecone_client, mock_mongodb_client
-    ):
+    def test_deduplicate_leads_empty_input(self, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test deduplication with empty input."""
         result = deduplicate_leads(
             [],
@@ -206,9 +204,7 @@ class TestDeduplicationService:
             assert metadata["discovered_lead"] == sample_leads[i].discovered_lead
             assert metadata["date"] == sample_leads[i].date
 
-    def test_database_deduplication_with_duplicates(
-        self, sample_leads, mock_openai_client, mock_pinecone_client, mock_mongodb_client
-    ):
+    def test_database_deduplication_with_duplicates(self, sample_leads, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test database deduplication when duplicates exist."""
         # Setup mocks for vector layer - pass all leads
         mock_openai_client.embed_text.return_value = [0.1] * 1536
@@ -216,9 +212,7 @@ class TestDeduplicationService:
 
         # Setup recent stories in database with similar content
         mock_mongodb_client.get_recent_stories.return_value = [
-            {
-                "summary": "World leaders meet at Climate Summit 2024 to discuss global climate goals."
-            }
+            {"summary": "World leaders meet at Climate Summit 2024 to discuss global climate goals."}
         ]
 
         # Setup GPT response to identify first lead as duplicate
@@ -246,9 +240,7 @@ class TestDeduplicationService:
         # Verify chat completion calls
         assert mock_openai_client.chat_completion.call_count == 3
 
-    def test_database_deduplication_no_recent_stories(
-        self, sample_leads, mock_openai_client, mock_pinecone_client, mock_mongodb_client
-    ):
+    def test_database_deduplication_no_recent_stories(self, sample_leads, mock_openai_client, mock_pinecone_client, mock_mongodb_client):
         """Test database deduplication with no recent stories."""
         # Setup mocks
         mock_openai_client.embed_text.return_value = [0.1] * 1536
