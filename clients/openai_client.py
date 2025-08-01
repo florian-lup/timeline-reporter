@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from openai import OpenAI
 
@@ -97,7 +97,7 @@ class OpenAIClient:
         model: str = TTS_MODEL,
         voice: TTSVoice,
         speed: float = TTS_SPEED,
-        response_format: str = AUDIO_FORMAT,
+        response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] = AUDIO_FORMAT,
         instruction: str,
     ) -> bytes:
         """Convert text to speech using OpenAI TTS.
@@ -115,10 +115,10 @@ class OpenAIClient:
         """
         response = self._client.audio.speech.create(
             model=model,
-            voice=voice,  # type: ignore[arg-type]
+            voice=voice,
             input=text,
             speed=speed,
-            response_format=response_format,  # type: ignore[arg-type]
-            instructions=instruction,  # type: ignore[call-arg]
+            response_format=response_format,
+            instructions=instruction,
         )
         return response.content

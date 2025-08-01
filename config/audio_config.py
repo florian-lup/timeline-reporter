@@ -46,7 +46,7 @@ TTS_SPEED: float = 1.0  # Speed: 0.25 to 4.0
 # ---------------------------------------------------------------------------
 # Audio File Configuration
 # ---------------------------------------------------------------------------
-AUDIO_FORMAT: str = "aac"
+AUDIO_FORMAT: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] = "aac"
 
 # ---------------------------------------------------------------------------
 # TTS Instructions Configuration (2025 Feature)

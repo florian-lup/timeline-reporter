@@ -69,6 +69,13 @@ class PineconeClient:
     # ------------------------------------------------------------------
     def _ensure_index(self) -> Any:  # noqa: D401
         """Return an existing index or create if missing."""
+        if not PINECONE_INDEX_NAME:
+            raise ValueError("PINECONE_INDEX_NAME environment variable is required")
+        if not CLOUD_PROVIDER:
+            raise ValueError("CLOUD_PROVIDER environment variable is required")
+        if not CLOUD_REGION:
+            raise ValueError("CLOUD_REGION environment variable is required")
+
         existing_indexes = self._pc.list_indexes().names()
         if PINECONE_INDEX_NAME not in existing_indexes:
             logger.info("Creating index: %s", PINECONE_INDEX_NAME)
